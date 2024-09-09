@@ -7,6 +7,8 @@ import favoriteIcon from '../assets/images/favoriteIcon.png'; // 즐겨찾기 �
 import favoriteFilledIcon from '../assets/images/favoriteFilledIcon.png'; // 채워진 즐겨찾기 아이콘 이미지 경로
 import profile from '../assets/images/profile.png'; // 즐겨찾기 아이콘 이미지 경로
 
+const BASE_URL = "http://59.5.40.202:8082";
+
 const Container = styled.div`
   padding: 1vw 10vw;
   font-family: Arial, sans-serif;
@@ -125,6 +127,7 @@ const Card = styled.div`
   padding: 1vw;
   text-align: center;
   height: 17.7vw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* 요소들을 왼쪽 정렬 */
@@ -144,8 +147,16 @@ const CardTitle = styled.p`
   top: -0.7vw;
   position: relative;
   margin-bottom: 0.8vw;
+  text-align: center; /* 텍스트를 가운데 정렬 */
+  width: 100%; /* 카드 안에서 제목이 중앙에 위치하도록 */
 `;
-
+const IconContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; /* 컨테이너가 카드의 전체 너비를 사용 */
+  margin-top: auto; /* 카드 하단에 고정 */
+`;
 const FavoriteButton = styled.button`
   border: none;
   background-color: transparent;
@@ -153,17 +164,20 @@ const FavoriteButton = styled.button`
   cursor: pointer;
   width: 1.15vw;
   height: 1.15vw;
-  top: 1.1vw;
   position: relative;
   background-image: url(${props => props.favorited ? favoriteFilledIcon : favoriteIcon});
   background-size: cover;
   background-repeat: no-repeat;
+  position: relative;
+  top: -0.5vw; /* 위로 이동 */
+  left: 0.5vw;
 `;
 const ImageIcon = styled.img`
-  width: 1.95vw; /* 원하는 크기로 설정 */
-  height: 1.95vw; /* 원하는 크기로 설정 */
+  width: 2.1vw; /* 원하는 크기로 설정 */
+  height: 2.1vw; /* 원하는 크기로 설정 */
   margin-left: 18.8vw; /* FavoriteButton과의 간격 조정 */
   top: -0.5vw;
+  left: -0.5vw;
   position: relative;
   border-radius: 0.5vw; /* 옵션: 이미지에 둥근 모서리 적용 */
 `;
@@ -185,6 +199,30 @@ const PageButton = styled.button`
     text-decoration: underline;
   }
 `;
+const searchVideos = async (videoTitle) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/search-videos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        videoTitle: videoTitle
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('searchVideos함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    console.log(data); // 받은 응답을 콘솔에 출력
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
+
 
 function Community() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
@@ -212,9 +250,11 @@ function Community() {
     setSortDropdownOpen(false);
     // 정렬 로직 추가
   };
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = async() => {
     // 검색 로직 추가
     console.log(`검색어: ${searchQuery}`);
+    const searchResults = await searchVideos(searchQuery); // 검색 함수 호출
+    console.log('검색 결과:', searchResults); // 검색 결과 처리 (추후 UI 업데이트 가능)
   }
   const toggleFavorite = (index) => {
     const newFavorites = [...favorites];
@@ -231,7 +271,10 @@ function Community() {
           <SearchButton onClick={handleSearchSubmit}>
             <SearchIcon src={searchIconSrc} alt="search" />
           </SearchButton>
-          <SearchBar placeholder="검색어를 입력하세요" />
+          <SearchBar placeholder="검색어를 입력하세요" 
+            value={searchQuery} // 입력 값 상태 연결
+            onChange={(e) => setSearchQuery(e.target.value)} // 입력 값 변경 시 상태 업데이트
+          />
         </SearchBarContainer>
           <RightAlignedFilters>
             <Dropdown>
@@ -261,11 +304,13 @@ function Community() {
             <Card key={index}>
               <ImagePlaceholder />
               <CardTitle>[정보처리기사 필기 절대족보] 핵심이론 1과목-1</CardTitle>
+              <IconContainer>
               <FavoriteButton 
                 favorited={favorites[index]} 
                 onClick={() => toggleFavorite(index)}
               />
               <ImageIcon src={profile} alt="Description" />
+              </IconContainer>
             </Card>
           ))}
         </GridContainer>
