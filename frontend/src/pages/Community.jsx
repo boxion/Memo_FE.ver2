@@ -199,6 +199,7 @@ const PageButton = styled.button`
     text-decoration: underline;
   }
 `;
+//제목 검색 통신코드
 const searchVideos = async (videoTitle) => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/community/search-videos`, {
@@ -217,6 +218,48 @@ const searchVideos = async (videoTitle) => {
 
     const data = await response.json();
     console.log(data); // 받은 응답을 콘솔에 출력
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
+//인기순 정렬 통신코드
+const fetchPopularVideos = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/popular`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('fetchPopularVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    console.log(data); // 받은 인기순 데이터를 콘솔에 출력
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
+//최신순 정렬 통신코드
+const fetchLatestVideos = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/latest`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('fetchLatestVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    console.log(data); // 최신순 데이터를 콘솔에 출력
     return data;
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
@@ -245,11 +288,11 @@ function Community() {
     setCategoryDropdownOpen(false);
   };
 
-  const handleSortSelect = (type) => {
-    setSortType(type);
-    setSortDropdownOpen(false);
-    // 정렬 로직 추가
-  };
+  // const handleSortSelect = (type) => {
+  //   setSortType(type);
+  //   setSortDropdownOpen(false);
+  //   // 정렬 로직 추가
+  // };
   const handleSearchSubmit = async() => {
     // 검색 로직 추가
     console.log(`검색어: ${searchQuery}`);
@@ -261,7 +304,20 @@ function Community() {
     newFavorites[index] = !newFavorites[index];
     setFavorites(newFavorites);
   };
-
+  const handleSortSelect = async (type) => {
+    setSortType(type);
+    setSortDropdownOpen(false);
+  
+    if (type === '인기순') {
+      // 인기순 데이터를 요청하는 함수 호출
+      const popularResults = await fetchPopularVideos();
+      console.log('인기순 결과:', popularResults); // 검색 결과 처리 (추후 UI 업데이트 가능)
+    }
+    if (type === '최신순') {
+      const latestResults = await fetchLatestVideos();
+      console.log('최신순 결과:', latestResults);
+    }  };
+  
   return (
     <>
       <Header />
