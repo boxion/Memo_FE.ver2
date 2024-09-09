@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
 import YouTube from "react-youtube";
-import CategoryDropdown from "../Community/CategoryDropdown";
 
+// 스타일 설정
 const Container = styled.div`
   padding: 2vw;
   display: flex;
@@ -45,12 +45,31 @@ const TabButton = styled.button`
   padding: 0.5vw 1vw;
   font-size: 1vw;
   cursor: pointer;
-  border-radius: 1vw;
+  border-radius: 2vw;
+  margin-right: 0.5vw;
+  background-color: #ffffff;
+  border: 0.1vw solid #D9D9D9;
+  color: #000000;
+
+  &.active {
+    background-color: #d0d0d0;
+  }
+`;
+
+const FilterButton = styled.button`
+  padding: 0.5vw 1vw;
+  font-size: 1vw;
+  cursor: pointer;
+  border-radius: 2vw;
   margin-right: 0.5vw;
   background-color: #ffffff;
   border: 0.1vw solid #582FFF;
   color: #582FFF;
-
+ 
+    width: auto; /* 너비를 자동으로 설정 */
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+  max-width: 15vw; /* 버튼의 최대 너비 설정, 필요에 따라 조정 */
+'
   &:hover {
     background-color: #d0d0d0;
   }
@@ -58,6 +77,41 @@ const TabButton = styled.button`
   &.active {
     background-color: #ffffff;
     border: 0.1vw solid #000000;
+  }
+`;
+
+const DropdownContainer = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const DropdownMenu = styled.div`
+  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 1vw;
+  font-size: 1vw;
+`;
+
+const DropdownItem = styled.button`
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1vw;
+  margin: 0.5vw;
+
+  &:hover {
+    background-color: #f1f1f1;
+  }
+
+  &.selected {
+    color: #582FFF;
   }
 `;
 
@@ -153,8 +207,8 @@ const MVCList = styled.ol`
 const MVCListItem = styled.div`
   margin-bottom: 1vw;
   background-color: #f0f0f0;
-  border-radius: 1vw;        
-  padding: 1vw;         
+  border-radius: 1vw;
+  padding: 1vw;
 `;
 
 const MVCListTitle = styled.h3`
@@ -189,9 +243,45 @@ const ActionButton = styled.button`
   }
 `;
 
+const Divider = styled.div`
+  height: 1px;
+  background-color: #d9d9d9;
+`;
+
+const PlaceholderText = styled.span`
+  color: #888;
+`;
+
 const VideoSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
-  const [viewMode, setViewMode] = useState(true); 
+  const [viewMode, setViewMode] = useState(true);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const dropdownRef = useRef(null);
+
+  const categories = [
+    "일반", "창업", "IT/프로그래밍", "공부", "뉴스", "정보", 
+    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타"
+  ];
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setDropdownOpen(false); // 선택 후 드롭다운 닫기
+  };
+
+  // 드롭다운 외부 클릭 감지하여 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -224,10 +314,6 @@ const VideoSummary = () => {
           <p>여기에 전체 스크립트 내용을 추가하세요.</p>
         </div>
       );
-    } else if (activeTab === "filter") {
-      return (
-        <CategoryDropdown onSelectCategory={(category) => console.log(category)} />
-      );
     }
   };
 
@@ -254,7 +340,6 @@ const VideoSummary = () => {
 
         <RightSection>
           <MVCTheorySection>
-
             <TabButtonContainer>
               <div>
                 <TabButton
@@ -269,12 +354,26 @@ const VideoSummary = () => {
                 >
                   전체 스크립트
                 </TabButton>
-                <TabButton
-                  className={activeTab === "filter" ? "active" : ""}
-                  onClick={() => setActiveTab("filter")}
-                >
-                  필터를 선택하세요
-                </TabButton>
+                <DropdownContainer ref={dropdownRef}>
+                  <FilterButton
+                    onClick={() => setDropdownOpen(!isDropdownOpen)}
+                  >
+                    {selectedCategory || <PlaceholderText>필터를 선택해주세요</PlaceholderText>}
+                  </FilterButton>
+                  <DropdownMenu isOpen={isDropdownOpen}>
+                    {categories.map((category, index) => (
+                      <React.Fragment key={category}>
+                        <DropdownItem
+                          onClick={() => handleCategorySelect(category)}
+                          className={selectedCategory === category ? "selected" : ""}
+                        >
+                          {category}
+                        </DropdownItem>
+                        {index < categories.length - 1 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </DropdownMenu>
+                </DropdownContainer>
               </div>
               <ViewEditButton onClick={() => setViewMode(!viewMode)}>
                 {viewMode ? "View" : "Edit"}
