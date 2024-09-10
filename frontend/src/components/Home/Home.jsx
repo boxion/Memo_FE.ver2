@@ -6,6 +6,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import checkImg from "../../assets/images/check3.png";
 import YoutubeIcon from "../../assets/images/youtubebutton.png";
 import RankVideo from "./RankingVideo";
+import Config from "../Config/config";
 
 const CheckImage = styled.img`
   width: 7%;
@@ -121,22 +122,170 @@ const RankingItem = styled.div`
   display: flex;
 `;
 
+
 const Home = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
+  const selectVideo = async (videoUrl) => {
+    const memberEmail = localStorage.getItem("memberEmail");
+
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/select-video`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          memberEmail,
+          videoUrl
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("서버에서 오류를 반환했습니다.");
+      }
+
+      const responseData = await response.json();
+      console.log("[ 선택한 video의 데이터: ] ", responseData);
+
+      const { summary, document, videoUrl, documentDate, categoryName, videoTitle } = responseData.video;
+      const { questions } = responseData;
+      const document2 = document == null ? "" : document;
+      const extractedQuestions = questions.map((question) => question.question);
+      const extractedAnswers = questions.map((question) => question.answer);
+
+      localStorage.setItem("summary", summary);
+      localStorage.setItem("document", document2);
+      localStorage.setItem("videoUrl", videoUrl);
+      localStorage.setItem("videoTitle", videoTitle);
+      localStorage.setItem("documentDate", documentDate);
+      localStorage.setItem("categoryName", categoryName);
+      localStorage.setItem("questions", JSON.stringify(extractedQuestions));
+      localStorage.setItem("answers", JSON.stringify(extractedAnswers));
+
+      navigate("/memory");
+
+      return responseData;
+    } catch (error) {
+      console.error("에러 발생:", error);
+    }
+  };
+
+  const duplicateVideo = async (memberEmail, videoUrl) => {
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/select-video`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          memberEmail,
+          videoUrl
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("서버에서 오류를 반환했습니다.");
+      }
+
+      const responseData = await response.json();
+      console.log("[ 선택한 video의 데이터: ] ", responseData);
+
+      const { summary, document, videoUrl, documentDate, categoryName } = responseData.video;
+      const { questions } = responseData;
+      const document2 = document == null ? "" : document;
+      const extractedQuestions = questions.map((question) => question.question);
+      const extractedAnswers = questions.map((question) => question.answer);
+
+      localStorage.setItem("summary", summary);
+      localStorage.setItem("document", document2);
+      localStorage.setItem("videoUrl", videoUrl);
+      localStorage.setItem("documentDate", documentDate);
+      localStorage.setItem("categoryName", categoryName);
+      localStorage.setItem("questions", JSON.stringify(extractedQuestions));
+      localStorage.setItem("answers", JSON.stringify(extractedAnswers));
+
+      return responseData;
+    } catch (error) {
+      console.error("에러 발생:", error);
+    }
+  };
+
+  const GPTSummary = async (url) => {
+    try {
+      const userId = localStorage.getItem("userId"); // 로컬 스토리지에서 userId 가져오기
+
+      console.log("GPT 모델에 summary 요청을 전송하는 중...");
+      console.log("[ 대상 URL ] : ", url);
+      console.log("[ userId ] : ", userId);
+        
+      const response = await fetch(`${Config.baseURL}/api/v1/video/summary`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"          
+        },
+        body: JSON.stringify({
+          url: url,
+          memberEmail: userId // userId 값을 함께 전송
+        })
+      });
+
+      if (!response.ok) {
+        console.error("서버에서 오류를 반환했습니다.");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("받은 summary:", data);
+
+
+      localStorage.setItem("summary", data.summary);
+      localStorage.setItem("fullScript", data.fullScript);
+      localStorage.setItem("videoTitle", data.videoTitle);
+      localStorage.setItem("documentDate", data.date);
+
+      return data;
+    
+    } catch (error) {
+      console.error("에러 발생:", error);
+    }
+  };
+
+  const checkDuplicate = async (userId, url) => {
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/check-duplicate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId,
+          url
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("서버에서 오류를 반환했습니다.");
+      }
+
+      const data = await response.json();
+      return data.isDuplicate;
+    } catch (error) {
+      console.error("중복 확인 에러 발생:", error);
+    }
+  };
+
   const handleUpload = async () => {
     setIsLoading(true);
     try {
-      // GPTSummary 호출 대신에 단순히 로딩 시뮬레이션
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 딜레이
       console.log("영상 링크:", videoUrl);
-      localStorage.setItem("videoUrl", videoUrl); // 로컬스토리지에 videoUrl 저장
+      localStorage.setItem("videoUrl", videoUrl);
+      await GPTSummary(videoUrl); // GPTSummary 함수 호출
       setIsCompleted(true);
     } catch (error) {
       console.error("영상 요약 중 에러 발생:", error);
-      // 에러 처리
     }
     setIsLoading(false);
   };
@@ -198,6 +347,7 @@ const Home = () => {
     const match = url.match(regExp);
     return match && match[1] ? match[1] : null;
   };
+  //지금은 그냥 {} 유튜브만 유효하다고 판단되는데     {}쇼츠넣고 이렇게 생긴 쇼츠도 유효하다고 판단하게해줘
 
   const handleChange = (event) => {
     const url = event.target.value;
@@ -208,6 +358,13 @@ const Home = () => {
   const handleLoadVideo = () => {
     const id = extractVideoId(videoUrl);
     setVideoId(id);
+  };
+
+  const removeSurroundingQuotes = (str) => {
+    if (str.startsWith('"') && str.endsWith('"')) {
+      return str.slice(1, -1);
+    }
+    return str;
   };
 
   return (

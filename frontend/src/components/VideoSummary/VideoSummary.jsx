@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
 import YouTube from "react-youtube";
+import Chat from "./Chatgpt";
 
 // 스타일 설정
 const Container = styled.div`
@@ -134,58 +135,7 @@ const VideoContainer = styled.div`
   margin-bottom: 2vw;
 `;
 
-const ChatContainer = styled.div`
-  flex-grow: 1;
-  background-color: #000000;
-  border-radius: 1vw;
-  padding: 1vw;
-`;
-
-const ChatHeader = styled.div`
-  background-color: #000000;
-  color: white;
-  padding: 1vw;
-  border-radius: 1vw 1vw 0 0;
-  font-size: 1vw;
-`;
-
-const ChatBox = styled.div`
-  height: 20vw;
-  overflow-y: auto;
-  padding: 1vw;
-  background-color: white;
-  border-radius: 0 0 1vw 1vw;
-`;
-
-const ChatInputContainer = styled.div`
-  display: flex;
-  margin-top: 1vw;
-`;
-
-const ChatInput = styled.input`
-  flex: 1;
-  padding: 1vw;
-  border-radius: 0.5vw;
-  border: 1px solid #ccc;
-  font-size: 1vw;
-`;
-
-const SendButton = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 0.5vw;
-  padding: 1vw 2vw;
-  font-size: 1vw;
-  cursor: pointer;
-  margin-left: 1vw;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const MVCTheorySection = styled.section`
+const TheorySection = styled.section`
   background-color: #fff;
   border-radius: 1vw;
   padding: 2vw;
@@ -193,31 +143,25 @@ const MVCTheorySection = styled.section`
   width: 100%;
 `;
 
-const MVCHeading = styled.h2`
+const VideoTitle = styled.h2`
   font-size: 1.2vw;
   color: #333;
   margin-bottom: 1vw;
 `;
 
-const MVCList = styled.ol`
+const ListBox = styled.ol`
   margin: 0;
   padding-left: 1vw;
 `;
 
-const MVCListItem = styled.div`
+const ListItem = styled.div`
   margin-bottom: 1vw;
   background-color: #f0f0f0;
   border-radius: 1vw;
   padding: 1vw;
 `;
 
-const MVCListTitle = styled.h3`
-  font-size: 1vw;
-  color: #555;
-  margin-bottom: 1vw;
-`;
-
-const MVCListText = styled.p`
+const ListText = styled.p`
   font-size: 1vw;
   color: #333;
   margin: 0;
@@ -230,7 +174,7 @@ const ActionButtonContainer = styled.div`
 `;
 
 const ActionButton = styled.button`
-  background-color: #4144E9;
+  background-color: #202D94;
   color: white;
   border: none;
   border-radius: 0.5vw;
@@ -257,6 +201,10 @@ const VideoSummary = () => {
   const [viewMode, setViewMode] = useState(true);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [showChat, setShowChat] = useState(true); 
+  const [videoTitle, setVideoTitle] = useState("");
+  const [summary, setSummary] = useState([]);
+  const [fullScript, setFullScript] = useState("");
   const dropdownRef = useRef(null);
 
   const categories = [
@@ -264,12 +212,27 @@ const VideoSummary = () => {
     "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타"
   ];
 
+  useEffect(() => {
+    const storedVideoTitle = localStorage.getItem("videoTitle");
+    const storedSummary = localStorage.getItem("summary");
+    const storedFullScript = localStorage.getItem("fullScript");
+    
+    if (storedVideoTitle) {
+      setVideoTitle(storedVideoTitle);
+    }
+    if (storedSummary) {
+      setSummary(storedSummary.split("\n\n")); // 단락을 \n\n로 나눔
+    }
+    if (storedFullScript) {
+      setFullScript(storedFullScript.split("\nT"));
+    }
+  }, []);
+
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     setDropdownOpen(false); // 선택 후 드롭다운 닫기
   };
 
-  // 드롭다운 외부 클릭 감지하여 닫기
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -286,32 +249,19 @@ const VideoSummary = () => {
   const renderContent = () => {
     if (activeTab === "summary") {
       return (
-        <MVCList>
-          <MVCListItem>
-            <MVCListTitle>1. MVC패턴이란 무엇인가?</MVCListTitle>
-            <MVCListText>
-              MVC패턴은 사용자 인터페이스와 비즈니스 로직을 분리하여 각각의 문제를 독립적으로 운영하여
-              유지보수를 용이하게 만들 수 있는 디자인 패턴입니다.
-            </MVCListText>
-          </MVCListItem>
-          <MVCListItem>
-            <MVCListTitle>2. 두 모델의 핵심적인 차이</MVCListTitle>
-            <MVCListText>
-              두 모델의 핵심적인 차이는 두 가지로 요약할 수 있습니다.
-            </MVCListText>
-          </MVCListItem>
-          <MVCListItem>
-            <MVCListTitle>3. Dispatcher Servlet</MVCListTitle>
-            <MVCListText>
-              요청을 처리할 컨트롤러를 찾아 위임하고 최종적인 결과를 반환하는 것.
-            </MVCListText>
-          </MVCListItem>
-        </MVCList>
+        <ListBox>
+          <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
+          {summary.map((paragraph, index) => (
+            <ListItem key={index}>
+              <ListText>{paragraph}</ListText>
+            </ListItem>
+          ))}
+        </ListBox>
       );
     } else if (activeTab === "script") {
       return (
         <div>
-          <p>여기에 전체 스크립트 내용을 추가하세요.</p>
+          <p>{fullScript}</p>
         </div>
       );
     }
@@ -325,21 +275,11 @@ const VideoSummary = () => {
           <VideoContainer>
             <YouTube videoId="your-video-id-here" opts={{ width: "100%", height: "300px" }} />
           </VideoContainer>
-
-          <ChatContainer>
-            <ChatHeader>ChatGPT와 대화</ChatHeader>
-            <ChatBox>
-              {/*채팅 내용 */}
-            </ChatBox>
-            <ChatInputContainer>
-              <ChatInput type="text" placeholder="무엇이든 물어보세요..." />
-              <SendButton>전송</SendButton>
-            </ChatInputContainer>
-          </ChatContainer>
+          {showChat && <Chat visible={showChat} />}
         </LeftSection>
 
         <RightSection>
-          <MVCTheorySection>
+          <TheorySection>
             <TabButtonContainer>
               <div>
                 <TabButton
@@ -380,14 +320,12 @@ const VideoSummary = () => {
               </ViewEditButton>
             </TabButtonContainer>
 
-            <MVCHeading>MVC 패턴 이론</MVCHeading>
-            
             {renderContent()}
 
             <ActionButtonContainer>
               <ActionButton>등록하기</ActionButton>
             </ActionButtonContainer>
-          </MVCTheorySection>
+          </TheorySection>
         </RightSection>
       </Container>
     </>
