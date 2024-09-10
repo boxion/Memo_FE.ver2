@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect  } from 'react';
 import styled from 'styled-components';
 import Header from "../components/Header/Header";
 import CategoryDropdown from "../components/Community/CategoryDropdown";
@@ -117,7 +117,7 @@ const DropdownItem = styled.li`
 const GridContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2vw;
+  gap: 3vw;
 `;
 
 const Card = styled.div`
@@ -126,7 +126,6 @@ const Card = styled.div`
   box-shadow: 0px 0.4vw 0.8vw rgba(0, 0, 0, 0.1);
   padding: 1vw;
   text-align: center;
-  height: 17.7vw;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -135,8 +134,12 @@ const Card = styled.div`
 
 const ImagePlaceholder = styled.div`
   width: 100%;
+  height: 1.45vw; /* 고정된 높이 설정으로 이미지 비율 유지 */
   padding-bottom: 50%;
   background-color: #e0e0e0;
+  background-size: cover;
+  object-fit: contain; /* 이미지가 잘리지 않고 전체가 보이도록 설정 */
+  background-position: center; /* 이미지를 가운데에 맞춤 */
   border-radius: 0.5vw;
   margin-bottom: 0.8vw;
 `;
@@ -265,16 +268,61 @@ const fetchLatestVideos = async () => {
     console.error('There was a problem with the fetch operation:', error);
   }
 };
+// Filter별 영상 정렬 통신 코드
+const fetchFilteredVideos = async (filter) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/filter-videos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ filter }),
+    });
 
+    if (!response.ok) {
+      throw new Error('fetchFilteredVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    console.log('필터링된 결과:', data); // 받은 응답을 콘솔에 출력
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
 
 function Community() {
+  const [videos, setVideos]= useState([]);// 비디오 데이터를 저장하는 상태
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('분야를 선택해보세요!');
   const [sortType, setSortType] = useState('정렬');
   const [favorites, setFavorites] = useState(Array(6).fill(false)); // 초기값 false로 설정
   const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태 추가
+  // 페이지 처음 로드 시 비디오 데이터 요청
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/api/v1/community`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
+        if (!response.ok) {
+          throw new Error('데이터 가져오기에 실패했습니다.');
+        }
+
+        const data = await response.json();
+        setVideos(data); // 가져온 데이터를 상태에 저장
+      } catch (error) {
+        console.error('비디오 데이터를 가져오는 중 오류 발생:', error);
+      }
+    };
+
+  fetchVideos();
+}, []); // 빈 배열을 두어 컴포넌트가 처음 마운트될 때만 호출
   const toggleCategoryDropdown = () => {
     setCategoryDropdownOpen(!categoryDropdownOpen);
   };
@@ -283,16 +331,16 @@ function Community() {
     setSortDropdownOpen(!sortDropdownOpen);
   };
 
-  const handleCategorySelect = (category) => {
+  // 필터 선택 시 호출하는 함수
+  const handleCategorySelect = async (category) => {
     setSelectedCategory(category);
     setCategoryDropdownOpen(false);
+
+    // 필터링된 비디오 데이터를 요청하는 함수 호출
+    const filteredResults = await fetchFilteredVideos(category);
+    console.log('카테고리 선택 후 필터링된 결과:', filteredResults); // 검색 결과 처리 (추후 UI 업데이트 가능)
   };
 
-  // const handleSortSelect = (type) => {
-  //   setSortType(type);
-  //   setSortDropdownOpen(false);
-  //   // 정렬 로직 추가
-  // };
   const handleSearchSubmit = async() => {
     // 검색 로직 추가
     console.log(`검색어: ${searchQuery}`);
@@ -354,8 +402,23 @@ function Community() {
             </Dropdown>
           </RightAlignedFilters>
         </FilterContainer>
-        
         <GridContainer>
+          {videos.map((video, index) => (
+            <Card key={video.videoId}>
+              <ImagePlaceholder style={{ backgroundImage: `url(${video.thumbnailUrl})`, backgroundSize: 'cover' }} />
+              <CardTitle> {video.videoTitle.length > 67 ? video.videoTitle.slice(0, 65) + '...' : video.videoTitle}</CardTitle>
+              <IconContainer>
+                <FavoriteButton 
+                  favorited={favorites[index]} 
+                  onClick={() => toggleFavorite(index)}
+                />
+                <ImageIcon src={profile} alt="Description" />
+              </IconContainer>
+            </Card>
+          ))}
+        </GridContainer>
+
+        {/* <GridContainer>
           {[...Array(6)].map((_, index) => (
             <Card key={index}>
               <ImagePlaceholder />
@@ -369,7 +432,7 @@ function Community() {
               </IconContainer>
             </Card>
           ))}
-        </GridContainer>
+        </GridContainer> */}
         
         <PageNavigation>
           <PageButton>1</PageButton>
