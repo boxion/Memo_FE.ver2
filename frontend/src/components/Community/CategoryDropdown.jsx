@@ -4,9 +4,8 @@ import styled from 'styled-components';
 const CategoryDropdownContent = styled.div`
   position: absolute;
   width: 8.9vw;
-  // top: 55%;
-  // left: 0;
-  top: 7%;
+  top: 55%;
+  left: 0;
   right: 40%;
   background-color: #fff;
   border: 0.1vw solid #000000;
@@ -31,9 +30,8 @@ const DropdownItem = styled.li`
 
 const CategoryDropdown = ({ onSelectCategory }) => {
   const categories = [
-    '전체', 'IT프로그래밍', '공무원', '언어', '자격증',
-    '디자인', '취업/이직', '주식/투자', '부동산',
-    '라이프', '커리어', '기타'
+    "일반", "창업", "IT/프로그래밍", "공부", "뉴스", "정보", 
+    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타"
   ];
 
   return (
