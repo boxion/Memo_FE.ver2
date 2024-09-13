@@ -156,6 +156,11 @@ const Home = () => {
       const extractedQuestions = questions.map((question) => question.question);
       const extractedAnswers = questions.map((question) => question.answer);
 
+      // YouTube Shorts 주소라면 watch 주소로 변환
+      if (videoUrl.includes("youtube.com/shorts/")) {
+        videoUrl = videoUrl.replace("youtube.com/shorts/", "youtube.com/watch?v=");
+      }
+
       localStorage.setItem("summary", summary);
       localStorage.setItem("document", document2);
       localStorage.setItem("videoUrl", videoUrl);
@@ -166,46 +171,6 @@ const Home = () => {
       localStorage.setItem("answers", JSON.stringify(extractedAnswers));
 
       navigate("/memory");
-
-      return responseData;
-    } catch (error) {
-      console.error("에러 발생:", error);
-    }
-  };
-
-  const duplicateVideo = async (memberEmail, videoUrl) => {
-    try {
-      const response = await fetch(`${Config.baseURL}/api/v1/video/select-video`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          memberEmail,
-          videoUrl
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("서버에서 오류를 반환했습니다.");
-      }
-
-      const responseData = await response.json();
-      console.log("[ 선택한 video의 데이터: ] ", responseData);
-
-      const { summary, document, videoUrl, documentDate, categoryName } = responseData.video;
-      const { questions } = responseData;
-      const document2 = document == null ? "" : document;
-      const extractedQuestions = questions.map((question) => question.question);
-      const extractedAnswers = questions.map((question) => question.answer);
-
-      localStorage.setItem("summary", summary);
-      localStorage.setItem("document", document2);
-      localStorage.setItem("videoUrl", videoUrl);
-      localStorage.setItem("documentDate", documentDate);
-      localStorage.setItem("categoryName", categoryName);
-      localStorage.setItem("questions", JSON.stringify(extractedQuestions));
-      localStorage.setItem("answers", JSON.stringify(extractedAnswers));
 
       return responseData;
     } catch (error) {
@@ -286,7 +251,7 @@ const Home = () => {
       if (processedUrl.includes("youtube.com/shorts/")) {
         processedUrl = processedUrl.replace("youtube.com/shorts/", "youtube.com/watch?v=");
       }
-      
+
       console.log("영상 링크:", videoUrl);
       localStorage.setItem("videoUrl", videoUrl);
       await GPTSummary(videoUrl); // GPTSummary 함수 호출

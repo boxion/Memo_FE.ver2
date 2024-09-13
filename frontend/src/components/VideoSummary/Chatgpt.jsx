@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import gptIcon from "../../assets/images/GPTIcon.png";
-
+import Config from "../Config/config";
 
 const FLASK_BASE_URL = process.env.REACT_APP_FLASK_BASE_URL; // 환경 변수에서 가져오기
 
@@ -177,14 +177,14 @@ const GPTQuery = async (query) => {
     console.log("[ videoUrl ] : ", videoUrl);
 
     // 서버에 쿼리와 userId를 함께 전송하고 응답을 기다림
-    const response = await fetch(`${FLASK_BASE_URL}/questionurl`, {
+    const response = await fetch(`${Config.baseURL}/api/v1/questions/ask`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         question: query,
-        userId: userId,
+        memberEmail: userId,
         videoUrl: videoUrl
       })
     });
@@ -193,13 +193,16 @@ const GPTQuery = async (query) => {
       console.error("GPTQuery 실행 중 서버에서 오류를 반환했습니다. 개발자에게 문의하세요.");
     }
 
-    const data = await response.json();
-    console.log("[ 받은 답변: ]\n", data.qAnswer); // 받은 답변을 로그로 출력
+    // 응답을 텍스트로 처리
+    const data = await response.text();
+    console.log("[ 받은 답변: ]\n", data);
 
-    return data;
+    // 텍스트를 그대로 반환
+    return { qAnswer: data };
   } catch (error) {
     console.error("에러 발생:", error);
     console.error("쿼리 전송 중 에러가 발생했습니다. 개발자에게 문의하세요.");
+    return { qAnswer: "쿼리 전송 중 에러가 발생했습니다. 다시 시도해주세요." };
   }
 };
 
