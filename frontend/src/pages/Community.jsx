@@ -13,6 +13,8 @@ const Container = styled.div`
   padding: 1vw 10vw;
   font-family: Arial, sans-serif;
   margin: 1vw 2vw;
+  justify-content: space-between; /* 컨테이너 내 요소들이 상하로 공간을 채우도록 설정 */
+  min-height: 80vh; /* 최소 높이 설정 */
 `;
 const SearchBarContainer = styled.div`
   position: relative;
@@ -190,7 +192,7 @@ const PageNavigation = styled.div`
   justify-content: center;
   align-items: center;
   margin-top: 2vw;
-`;
+  `;
 
 const PageButton = styled.button`
   border: none;
@@ -202,7 +204,7 @@ const PageButton = styled.button`
     text-decoration: underline;
   }
 `;
-//제목 검색 통신코드
+// 제목 검색 통신 코드
 const searchVideos = async (videoTitle) => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/community/search-videos`, {
@@ -216,9 +218,8 @@ const searchVideos = async (videoTitle) => {
     });
 
     if (!response.ok) {
-      throw new Error('searchVideos함수 처리 중 네트워크 응답에 실패했습니다.');
+      throw new Error('searchVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
     }
-
     const data = await response.json();
     console.log(data); // 받은 응답을 콘솔에 출력
     return data;
@@ -293,13 +294,16 @@ const fetchFilteredVideos = async (filter) => {
 
 function Community() {
   const [videos, setVideos]= useState([]);// 비디오 데이터를 저장하는 상태
+  const [displayedVideos, setDisplayedVideos] = useState([]); // 현재 화면에 표시할 비디오 데이터
+  const [currentPage, setCurrentPage] = useState(1); // 현재 페이지를 저장하는 상태
+  const videosPerPage = 6; // 한 페이지에 표시할 비디오 개수
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('분야를 선택해보세요!');
   const [sortType, setSortType] = useState('정렬');
   const [favorites, setFavorites] = useState(Array(6).fill(false)); // 초기값 false로 설정
   const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태 추가
-  // 페이지 처음 로드 시 비디오 데이터 요청
+  const [filteredVideos, setFilteredVideos] = useState([]); // 필터링된 비디오
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -309,20 +313,56 @@ function Community() {
             'Content-Type': 'application/json',
           },
         });
-
+    
         if (!response.ok) {
           throw new Error('데이터 가져오기에 실패했습니다.');
         }
-
+    
         const data = await response.json();
-        setVideos(data); // 가져온 데이터를 상태에 저장
+        console.log("서버에서 받아온 데이터: ", data);
+        setVideos([...data]); // 기존 비디오와 구분하여 새로운 데이터를 설정
+        setFilteredVideos([...data]); // 필터링된 비디오도 새로운 데이터를 기반으로 초기화
       } catch (error) {
         console.error('비디오 데이터를 가져오는 중 오류 발생:', error);
       }
     };
-
-  fetchVideos();
-}, []); // 빈 배열을 두어 컴포넌트가 처음 마운트될 때만 호출
+    fetchVideos();
+  }, []);  
+  
+  useEffect(() => {
+    const applyFiltersAndSort = async () => {
+      let filteredResults = [...videos];
+  
+      // 필터링 적용
+      if (selectedCategory !== '분야를 선택해보세요!') {
+        filteredResults = await fetchFilteredVideos(selectedCategory);
+      }
+  
+      // 정렬 적용
+      if (sortType === '인기순') {
+        filteredResults = await fetchPopularVideos();
+      } else if (sortType === '최신순') {
+        filteredResults = await fetchLatestVideos();
+      }
+  
+      // 새로운 필터링된 비디오 결과를 기존 비디오와 구분해서 덮어쓰기
+      setFilteredVideos([...filteredResults]);
+      setCurrentPage(1); // 필터 및 정렬 후 페이지를 첫 페이지로 리셋
+    };
+  
+    applyFiltersAndSort();
+  }, [selectedCategory, sortType]);
+  
+  
+  useEffect(() => {
+    // 페이지에 맞는 비디오만 표시
+    const indexOfLastVideo = currentPage * videosPerPage;
+    const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
+    const currentVideos = filteredVideos.slice(indexOfFirstVideo, indexOfLastVideo);
+    setDisplayedVideos(currentVideos);
+  }, [currentPage, filteredVideos]);  
+  
+  
   const toggleCategoryDropdown = () => {
     setCategoryDropdownOpen(!categoryDropdownOpen);
   };
@@ -330,23 +370,35 @@ function Community() {
   const toggleSortDropdown = () => {
     setSortDropdownOpen(!sortDropdownOpen);
   };
-
-  // 필터 선택 시 호출하는 함수
+  // CategoryDropdown 컴포넌트에서 카테고리 선택 시 필터링된 비디오 불러오기
   const handleCategorySelect = async (category) => {
     setSelectedCategory(category);
     setCategoryDropdownOpen(false);
-
-    // 필터링된 비디오 데이터를 요청하는 함수 호출
+  
+    // 선택된 카테고리에 맞는 데이터를 가져와 필터링된 비디오를 업데이트
     const filteredResults = await fetchFilteredVideos(category);
-    console.log('카테고리 선택 후 필터링된 결과:', filteredResults); // 검색 결과 처리 (추후 UI 업데이트 가능)
+    if (filteredResults) {
+      setVideos(filteredResults); // 전체 비디오를 필터링된 비디오로 대체
+      setFilteredVideos(filteredResults); // 필터링된 결과를 상태에 반영하여 화면에 표시
+      setCurrentPage(1); // 페이지를 첫 페이지로 리셋
+    }
   };
+  
+  const handleSearchSubmit = async () => {
+    if (searchQuery) {
+      // 검색어가 있을 경우 검색을 수행
+      const searchResults = await searchVideos(searchQuery);
+      if (searchResults) {
+        setFilteredVideos(searchResults); // 검색 결과를 상태에 저장
+      }
+    } else {
+      // 검색어가 없을 경우 전체 비디오를 다시 설정
+      setFilteredVideos(videos); // 전체 비디오를 상태에 저장
+    }
+    setCurrentPage(1); // 검색 후 또는 전체 비디오로 돌아올 때 첫 페이지로 리셋
+  };
+  
 
-  const handleSearchSubmit = async() => {
-    // 검색 로직 추가
-    console.log(`검색어: ${searchQuery}`);
-    const searchResults = await searchVideos(searchQuery); // 검색 함수 호출
-    console.log('검색 결과:', searchResults); // 검색 결과 처리 (추후 UI 업데이트 가능)
-  }
   const toggleFavorite = (index) => {
     const newFavorites = [...favorites];
     newFavorites[index] = !newFavorites[index];
@@ -355,31 +407,40 @@ function Community() {
   const handleSortSelect = async (type) => {
     setSortType(type);
     setSortDropdownOpen(false);
-  
-    if (type === '인기순') {
-      // 인기순 데이터를 요청하는 함수 호출
-      const popularResults = await fetchPopularVideos();
-      console.log('인기순 결과:', popularResults); // 검색 결과 처리 (추후 UI 업데이트 가능)
-    }
-    if (type === '최신순') {
-      const latestResults = await fetchLatestVideos();
-      console.log('최신순 결과:', latestResults);
-    }  };
-  
+  };
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(filteredVideos.length / videosPerPage); i++) {
+    pageNumbers.push(i);
+  }
+  // 현재 페이지에 해당하는 비디오 데이터 슬라이스
+  const indexOfLastVideo = currentPage * videosPerPage;
+  const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
+  const currentVideos = videos.slice(indexOfFirstVideo, indexOfLastVideo);
+
+  // // 페이지 변경 핸들러
+  // const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // const pageNumbers = [];
+  // for (let i = 1; i <= Math.ceil(videos.length / videosPerPage); i++) {
+  //   pageNumbers.push(i);
+  // }
   return (
     <>
       <Header />
       <Container>
         <FilterContainer>
-        <SearchBarContainer>
-          <SearchButton onClick={handleSearchSubmit}>
-            <SearchIcon src={searchIconSrc} alt="search" />
-          </SearchButton>
-          <SearchBar placeholder="검색어를 입력하세요" 
-            value={searchQuery} // 입력 값 상태 연결
-            onChange={(e) => setSearchQuery(e.target.value)} // 입력 값 변경 시 상태 업데이트
-          />
-        </SearchBarContainer>
+          <SearchBarContainer>
+            <SearchButton onClick={handleSearchSubmit}>
+              <SearchIcon src={searchIconSrc} alt="search" />
+            </SearchButton>
+            <SearchBar
+              placeholder="검색어를 입력하세요"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </SearchBarContainer>
           <RightAlignedFilters>
             <Dropdown>
               <CategoryDropdownButton onClick={toggleCategoryDropdown}>
@@ -403,43 +464,26 @@ function Community() {
           </RightAlignedFilters>
         </FilterContainer>
         <GridContainer>
-          {videos.map((video, index) => (
+          {displayedVideos.map((video, index) => (
             <Card key={video.videoId}>
               <ImagePlaceholder style={{ backgroundImage: `url(${video.thumbnailUrl})`, backgroundSize: 'cover' }} />
               <CardTitle> {video.videoTitle.length > 67 ? video.videoTitle.slice(0, 65) + '...' : video.videoTitle}</CardTitle>
               <IconContainer>
                 <FavoriteButton 
-                  favorited={favorites[index]} 
-                  onClick={() => toggleFavorite(index)}
+                  favorited={favorites[indexOfFirstVideo + index]} 
+                  onClick={() => toggleFavorite(indexOfFirstVideo + index)}
                 />
                 <ImageIcon src={profile} alt="Description" />
               </IconContainer>
             </Card>
           ))}
         </GridContainer>
-
-        {/* <GridContainer>
-          {[...Array(6)].map((_, index) => (
-            <Card key={index}>
-              <ImagePlaceholder />
-              <CardTitle>[정보처리기사 필기 절대족보] 핵심이론 1과목-1</CardTitle>
-              <IconContainer>
-              <FavoriteButton 
-                favorited={favorites[index]} 
-                onClick={() => toggleFavorite(index)}
-              />
-              <ImageIcon src={profile} alt="Description" />
-              </IconContainer>
-            </Card>
-          ))}
-        </GridContainer> */}
-        
         <PageNavigation>
-          <PageButton>1</PageButton>
-          <PageButton>2</PageButton>
-          <PageButton>3</PageButton>
-          <PageButton>4</PageButton>
-          <PageButton>5</PageButton>
+          {pageNumbers.map((number) => (
+            <PageButton key={number} onClick={() => paginate(number)}>
+              {number}
+            </PageButton>
+          ))}
         </PageNavigation>
       </Container>
     </>
