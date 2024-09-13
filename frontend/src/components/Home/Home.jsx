@@ -280,6 +280,13 @@ const Home = () => {
   const handleUpload = async () => {
     setIsLoading(true);
     try {
+      let processedUrl = videoUrl;
+
+      // YouTube Shorts 주소라면 watch 주소로 변환
+      if (processedUrl.includes("youtube.com/shorts/")) {
+        processedUrl = processedUrl.replace("youtube.com/shorts/", "youtube.com/watch?v=");
+      }
+      
       console.log("영상 링크:", videoUrl);
       localStorage.setItem("videoUrl", videoUrl);
       await GPTSummary(videoUrl); // GPTSummary 함수 호출
@@ -342,8 +349,7 @@ const Home = () => {
   const [isValidUrl, setIsValidUrl] = useState(true); // URL 유효성 상태 추가
 
   const extractVideoId = (url) => {
-    const regExp =
-      /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]{11}).*/;
+    const regExp = /^(?:.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/))([^#\&\?]{11}).*/;
     const match = url.match(regExp);
     return match && match[1] ? match[1] : null;
   };
