@@ -174,13 +174,18 @@ const FavoriteButton = styled.button`
   background-size: cover;
   background-repeat: no-repeat;
   position: relative;
-  top: -0.5vw; /* 위로 이동 */
   left: 0.5vw;
 `;
+const MemberEmail = styled.p`
+  font-size: 1vw;
+  color: #555;
+  margin-left: 8vw; /* 왼쪽 여백 조정 */
+  top: -0.2vw; /* 위로 이동 */
+`;
+
 const ImageIcon = styled.img`
   width: 2.1vw; /* 원하는 크기로 설정 */
   height: 2.1vw; /* 원하는 크기로 설정 */
-  margin-left: 18.8vw; /* FavoriteButton과의 간격 조정 */
   top: -0.5vw;
   left: -0.5vw;
   position: relative;
@@ -222,6 +227,28 @@ const searchVideos = async (videoTitle) => {
     }
     const data = await response.json();
     console.log(data); // 받은 응답을 콘솔에 출력
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
+// Filter별 영상 정렬 통신 코드
+const fetchFilteredVideos = async (filter) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/filter-videos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ filter }),
+    });
+
+    if (!response.ok) {
+      throw new Error('fetchFilteredVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    console.log('필터링된 결과:', data); // 받은 응답을 콘솔에 출력
     return data;
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
@@ -269,28 +296,6 @@ const fetchLatestVideos = async () => {
     console.error('There was a problem with the fetch operation:', error);
   }
 };
-// Filter별 영상 정렬 통신 코드
-const fetchFilteredVideos = async (filter) => {
-  try {
-    const response = await fetch(`${BASE_URL}/api/v1/community/filter-videos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ filter }),
-    });
-
-    if (!response.ok) {
-      throw new Error('fetchFilteredVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
-    }
-
-    const data = await response.json();
-    console.log('필터링된 결과:', data); // 받은 응답을 콘솔에 출력
-    return data;
-  } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
-  }
-};
 
 function Community() {
   const [videos, setVideos]= useState([]);// 비디오 데이터를 저장하는 상태
@@ -313,46 +318,48 @@ function Community() {
             'Content-Type': 'application/json',
           },
         });
-    
+  
         if (!response.ok) {
           throw new Error('데이터 가져오기에 실패했습니다.');
         }
-    
         const data = await response.json();
         console.log("서버에서 받아온 데이터: ", data);
-        setVideos([...data]); // 기존 비디오와 구분하여 새로운 데이터를 설정
-        setFilteredVideos([...data]); // 필터링된 비디오도 새로운 데이터를 기반으로 초기화
+  
+        // 전체 비디오를 로드하고 이를 필터링된 비디오로도 초기화
+        setVideos([...data]);
+        setFilteredVideos([...data]); // 초기에는 전체 비디오가 필터링된 비디오로 설정됨
       } catch (error) {
         console.error('비디오 데이터를 가져오는 중 오류 발생:', error);
       }
     };
     fetchVideos();
-  }, []);  
+  }, []);
   
-  useEffect(() => {
-    const applyFiltersAndSort = async () => {
-      let filteredResults = [...videos];
   
-      // 필터링 적용
-      if (selectedCategory !== '분야를 선택해보세요!') {
-        filteredResults = await fetchFilteredVideos(selectedCategory);
-      }
-  
-      // 정렬 적용
-      if (sortType === '인기순') {
-        filteredResults = await fetchPopularVideos();
-      } else if (sortType === '최신순') {
-        filteredResults = await fetchLatestVideos();
-      }
-  
-      // 새로운 필터링된 비디오 결과를 기존 비디오와 구분해서 덮어쓰기
-      setFilteredVideos([...filteredResults]);
-      setCurrentPage(1); // 필터 및 정렬 후 페이지를 첫 페이지로 리셋
-    };
-  
-    applyFiltersAndSort();
-  }, [selectedCategory, sortType]);
-  
+useEffect(() => {
+  const applyFiltersAndSort = async () => {
+    let filteredResults = [...videos]; // videos를 기준으로 항상 시작
+
+    // 먼저 카테고리 필터 적용
+    if (selectedCategory !== '분야를 선택해보세요!') {
+      filteredResults = await fetchFilteredVideos(selectedCategory);
+    }
+
+    // 카테고리 필터가 적용된 결과에 대해 정렬 적용
+    if (sortType === '인기순') {
+      filteredResults = await fetchPopularVideos();
+    } else if (sortType === '최신순') {
+      filteredResults = await fetchLatestVideos();
+    }
+
+    // 필터링된 결과를 다시 저장
+    setFilteredVideos(filteredResults);
+    setCurrentPage(1); // 필터 및 정렬 후 페이지를 첫 페이지로 리셋
+  };
+
+  applyFiltersAndSort();
+}, [selectedCategory, sortType]); // 카테고리와 정렬 타입을 모두 의존성으로 설정
+
   
   useEffect(() => {
     // 페이지에 맞는 비디오만 표시
@@ -360,7 +367,8 @@ function Community() {
     const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
     const currentVideos = filteredVideos.slice(indexOfFirstVideo, indexOfLastVideo);
     setDisplayedVideos(currentVideos);
-  }, [currentPage, filteredVideos]);  
+  }, [currentPage, filteredVideos]);
+  
   
   
   const toggleCategoryDropdown = () => {
@@ -370,19 +378,19 @@ function Community() {
   const toggleSortDropdown = () => {
     setSortDropdownOpen(!sortDropdownOpen);
   };
-  // CategoryDropdown 컴포넌트에서 카테고리 선택 시 필터링된 비디오 불러오기
   const handleCategorySelect = async (category) => {
     setSelectedCategory(category);
     setCategoryDropdownOpen(false);
   
     // 선택된 카테고리에 맞는 데이터를 가져와 필터링된 비디오를 업데이트
     const filteredResults = await fetchFilteredVideos(category);
+  
     if (filteredResults) {
-      setVideos(filteredResults); // 전체 비디오를 필터링된 비디오로 대체
-      setFilteredVideos(filteredResults); // 필터링된 결과를 상태에 반영하여 화면에 표시
+      // 필터링된 비디오만 상태에 저장하여 화면에 표시
+      setFilteredVideos([...filteredResults]); 
       setCurrentPage(1); // 페이지를 첫 페이지로 리셋
     }
-  };
+  };  
   
   const handleSearchSubmit = async () => {
     if (searchQuery) {
@@ -467,12 +475,13 @@ function Community() {
           {displayedVideos.map((video, index) => (
             <Card key={video.videoId}>
               <ImagePlaceholder style={{ backgroundImage: `url(${video.thumbnailUrl})`, backgroundSize: 'cover' }} />
-              <CardTitle> {video.videoTitle.length > 67 ? video.videoTitle.slice(0, 65) + '...' : video.videoTitle}</CardTitle>
+              <CardTitle> {video.videoTitle.length > 60 ? video.videoTitle.slice(0, 60) + '...' : video.videoTitle}</CardTitle>
               <IconContainer>
                 <FavoriteButton 
                   favorited={favorites[indexOfFirstVideo + index]} 
                   onClick={() => toggleFavorite(indexOfFirstVideo + index)}
                 />
+                <MemberEmail>{video.memberEmail}</MemberEmail>
                 <ImageIcon src={profile} alt="Description" />
               </IconContainer>
             </Card>
