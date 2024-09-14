@@ -4,7 +4,6 @@ import Header from "../Header/Header";
 import YouTube from "react-youtube";
 import Chat from "./Chatgpt";
 
-// 스타일 설정
 const Container = styled.div`
   padding: 2vw;
   display: flex;
@@ -18,10 +17,6 @@ const LeftSection = styled.div`
   padding-right: 2vw;
   display: flex;
   flex-direction: column;
-
-  @media (min-width: 768px) {
-    width: 50%;
-  }
 `;
 
 const RightSection = styled.div`
@@ -29,10 +24,6 @@ const RightSection = styled.div`
   max-width: 600px;
   padding-left: 2vw;
   position: relative;
-
-  @media (min-width: 768px) {
-    width: 50%;
-  }
 `;
 
 const TabButtonContainer = styled.div`
@@ -49,7 +40,7 @@ const TabButton = styled.button`
   border-radius: 2vw;
   margin-right: 0.5vw;
   background-color: #ffffff;
-  border: 0.1vw solid #D9D9D9;
+  border: 0.1vw solid #d9d9d9;
   color: #000000;
 
   &.active {
@@ -64,13 +55,13 @@ const FilterButton = styled.button`
   border-radius: 2vw;
   margin-right: 0.5vw;
   background-color: #ffffff;
-  border: 0.1vw solid #582FFF;
-  color: #582FFF;
- 
-    width: auto; /* 너비를 자동으로 설정 */
-  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-  max-width: 15vw; /* 버튼의 최대 너비 설정, 필요에 따라 조정 */
-'
+  border: 0.1vw solid #582fff;
+  color: #582fff;
+
+  width: auto;
+  white-space: nowrap; 
+  max-width: 15vw;
+
   &:hover {
     background-color: #d0d0d0;
   }
@@ -112,12 +103,12 @@ const DropdownItem = styled.button`
   }
 
   &.selected {
-    color: #582FFF;
+    color: #582fff;
   }
 `;
 
 const ViewEditButton = styled.button`
-  background-color: #4144E9;
+  background-color: #4144e9;
   color: white;
   border: none;
   border-radius: 1vw;
@@ -133,6 +124,9 @@ const ViewEditButton = styled.button`
 
 const VideoContainer = styled.div`
   margin-bottom: 2vw;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 `;
 
 const TheorySection = styled.section`
@@ -140,7 +134,7 @@ const TheorySection = styled.section`
   border-radius: 1vw;
   padding: 2vw;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  //width: 100%;
 `;
 
 const VideoTitle = styled.h2`
@@ -174,7 +168,7 @@ const ActionButtonContainer = styled.div`
 `;
 
 const ActionButton = styled.button`
-  background-color: #202D94;
+  background-color: #202d94;
   color: white;
   border: none;
   border-radius: 0.5vw;
@@ -188,7 +182,7 @@ const ActionButton = styled.button`
 `;
 
 const Divider = styled.div`
-  height: 1px;
+  height: 0.1vw;
   background-color: #d9d9d9;
 `;
 
@@ -196,41 +190,128 @@ const PlaceholderText = styled.span`
   color: #888;
 `;
 
+const ScriptLine = styled.div`
+  display: flex;
+  margin-bottom: 0.5vw;
+`;
+
+const ScriptContainer = styled.div`
+  max-height: 55vh; 
+  overflow-y: auto;
+  padding-right: 1vw;
+`;
+
+const TimeText = styled.span`
+  font-weight: bold;
+  font-size: 1vw;
+  margin-right: 1vw;
+  color: #333;
+`;
+
+const ScriptText = styled.span`
+  color: #333;
+  font-size: 1vw;
+`;
+
+const DateText = styled.div`
+  font-size: 1rem;
+  margin-bottom: 0.5vw;
+  color: #838383;
+`;
+
+const parseScript = (scriptArray) => {
+  return scriptArray
+    .map((line) => {
+      // "TS: 0:00 | TXT: 안녕하세요." 형식의 문자열에서 TS:와 TXT: 제거
+      const match = line.match(/TS: (\d+:\d+) \| TXT: (.+)/);
+      if (match) {
+        return { time: match[1], text: match[2] };
+      }
+      return null;
+    })
+    .filter(Boolean); // null 값 제거
+};
+
 const VideoSummary = () => {
+  const [videoId, setVideoId] = useState(null);
+  const [playerSize, setPlayerSize] = useState({ width: 560, height: 315 });
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [showChat, setShowChat] = useState(true); 
+  const [showChat, setShowChat] = useState(true);
   const [videoTitle, setVideoTitle] = useState("");
   const [summary, setSummary] = useState([]);
-  const [fullScript, setFullScript] = useState("");
+  const [fullScript, setFullScript] = useState([]);
   const dropdownRef = useRef(null);
 
   const categories = [
-    "일반", "창업", "IT/프로그래밍", "공부", "뉴스", "정보", 
-    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타"
+    "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
+    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "선택안함"
   ];
 
   useEffect(() => {
     const storedVideoTitle = localStorage.getItem("videoTitle");
     const storedSummary = localStorage.getItem("summary");
     const storedFullScript = localStorage.getItem("fullScript");
-    
+    const storedVideoUrl = localStorage.getItem("videoUrl");
+
     if (storedVideoTitle) {
       setVideoTitle(storedVideoTitle);
     }
     if (storedSummary) {
-      setSummary(storedSummary.split("\n\n")); // 단락을 \n\n로 나눔
+      // '###'로 분리한 뒤, 각 항목을 소제목과 내용으로 나눕니다.
+      const parsedSummary = storedSummary
+        .split("###")
+        .filter(item => item.trim()) // 빈 항목 제거
+        .map(item => {
+          const lines = item.split("\n"); // 줄바꿈 기준으로 나눔
+          const title = lines[0].trim(); // 첫 번째 줄을 소제목으로
+          const content = lines.slice(1).join("\n").trim(); // 나머지를 내용으로
+          return { title, content }; // 소제목과 내용을 객체로 반환
+        });
+  
+      setSummary(parsedSummary);
     }
     if (storedFullScript) {
-      setFullScript(storedFullScript.split("\nT"));
+      setFullScript(storedFullScript.split("\n"));
     }
+    if (storedVideoUrl) {
+      const videoId = extractVideoId(storedVideoUrl);
+      setVideoId(videoId);
+    }
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    const interval = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 1000);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     setDropdownOpen(false); // 선택 후 드롭다운 닫기
+  };
+
+  const extractVideoId = (url) => {
+    // 숏츠 URL을 포함한 유튜브 URL에서 videoId를 추출합니다.
+    const regExp = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[1] ? match[1] : null;
+  };
+
+  const handleResize = () => {
+    setPlayerSize({
+      width: window.innerWidth * 0.41,
+      height: (window.innerWidth * 0.41 * 9) / 16,
+    });
   };
 
   useEffect(() => {
@@ -250,19 +331,29 @@ const VideoSummary = () => {
     if (activeTab === "summary") {
       return (
         <ListBox>
-          <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
-          {summary.map((paragraph, index) => (
-            <ListItem key={index}>
-              <ListText>{paragraph}</ListText>
-            </ListItem>
-          ))}
-        </ListBox>
+        <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
+        {summary.map((paragraph, index) => (
+          <ListItem key={index}>
+            {/* title과 content를 분리하여 각각 렌더링 */}
+            <ListText>
+              <strong>{paragraph.title}</strong> {/* 소제목 */}
+            </ListText>
+            <ListText>{paragraph.content}</ListText> {/* 내용 */}
+          </ListItem>
+        ))}
+      </ListBox>
       );
     } else if (activeTab === "script") {
+      const parsedScript = parseScript(fullScript); // 스크립트 파싱
       return (
-        <div>
-          <p>{fullScript}</p>
-        </div>
+        <ScriptContainer>
+          {parsedScript.map((line, index) => (
+            <ScriptLine key={index}>
+              <TimeText>{line.time}</TimeText>
+              <ScriptText>{line.text}</ScriptText>
+            </ScriptLine>
+          ))}
+        </ScriptContainer>
       );
     }
   };
@@ -273,7 +364,21 @@ const VideoSummary = () => {
       <Container>
         <LeftSection>
           <VideoContainer>
-            <YouTube videoId="your-video-id-here" opts={{ width: "100%", height: "300px" }} />
+          <DateText>{localStorage.getItem("documentDate")}</DateText>
+            {videoId && (
+              <YouTube
+                videoId={videoId}
+                opts={{
+                  width: playerSize.width.toString(),
+                  height: playerSize.height.toString(),
+                  playerVars: {
+                    autoplay: 1,
+                    rel: 0,
+                    modestbranding: 1,
+                  },
+                }}
+              />
+            )}
           </VideoContainer>
           {showChat && <Chat visible={showChat} />}
         </LeftSection>
