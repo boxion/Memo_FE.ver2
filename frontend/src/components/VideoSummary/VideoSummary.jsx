@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Header from "../Header/Header";
 import YouTube from "react-youtube";
 import Chat from "./Chatgpt";
+import SaveFolderModal from "./SaveFolderModal";
 
 const Container = styled.div`
   padding: 2vw;
@@ -248,6 +249,7 @@ const VideoSummary = () => {
   const [summary, setSummary] = useState([]);
   const [fullScript, setFullScript] = useState([]);
   const dropdownRef = useRef(null);
+  const [isModalOpen, setModalOpen] = useState(false);
 
   const categories = [
     "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
@@ -301,6 +303,14 @@ const VideoSummary = () => {
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
     setDropdownOpen(false); // 선택 후 드롭다운 닫기
+  };
+
+  const handleRegisterClick = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
   };
 
   const extractVideoId = (url) => {
@@ -431,8 +441,9 @@ const VideoSummary = () => {
             {renderContent()}
 
             <ActionButtonContainer>
-              <ActionButton>등록하기</ActionButton>
+              <ActionButton onClick={handleRegisterClick}>등록하기</ActionButton>
             </ActionButtonContainer>
+            <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
           </TheorySection>
         </RightSection>
       </Container>

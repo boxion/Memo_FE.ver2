@@ -35,7 +35,7 @@ const ChatInput = styled.input`
 `;
 
 const SendButton = styled.button`
-  background-color: #4144E9;
+  background-color: #000395;
   color: white;
   border: none;
   border-radius: 1vw;
@@ -50,11 +50,11 @@ const SendButton = styled.button`
 `;
 
 const RefreshButton = styled.button`
-  background-color: #FF7168;
+  background-color: #0004EB;
   color: white;
   border: none;
   border-radius: 1vw;
-  padding: 1vw 2vw;
+  padding: 1vw 1.5vw;
   font-size: 1vw;
   cursor: pointer;
   margin-left: 1vw;
