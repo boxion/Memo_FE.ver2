@@ -9,7 +9,7 @@ const ChatContainer = styled.div`
   border-radius: 1vw;
   padding: 1vw;
   //border: 1px solid #ccc;
-  width: 90%;
+  width: 93%;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 `;
 
