@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Header from "../Header/Header";
 import YouTube from "react-youtube";
 import Chat from "./Chatgpt";
+import SaveFolderModal from "./SaveFolderModal";
 
 const Container = styled.div`
   padding: 2vw;
@@ -14,7 +15,6 @@ const Container = styled.div`
 const LeftSection = styled.div`
   width: 100%;
   max-width: 600px;
-  padding-right: 2vw;
   display: flex;
   flex-direction: column;
 `;
@@ -22,7 +22,6 @@ const LeftSection = styled.div`
 const RightSection = styled.div`
   width: 100%;
   max-width: 600px;
-  padding-left: 2vw;
   position: relative;
 `;
 
@@ -133,7 +132,7 @@ const TheorySection = styled.section`
   background-color: #fff;
   border-radius: 1vw;
   padding: 2vw;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   //width: 100%;
 `;
 
@@ -146,10 +145,12 @@ const VideoTitle = styled.h2`
 const ListBox = styled.ol`
   margin: 0;
   padding-left: 1vw;
+  max-height: 62vh; 
+  overflow-y: auto;
 `;
 
 const ListItem = styled.div`
-  margin-bottom: 1vw;
+  margin: 1vw 1vw 1vw 0;
   background-color: #f0f0f0;
   border-radius: 1vw;
   padding: 1vw;
@@ -196,9 +197,12 @@ const ScriptLine = styled.div`
 `;
 
 const ScriptContainer = styled.div`
-  max-height: 55vh; 
+  max-height: 60vh; 
   overflow-y: auto;
-  padding-right: 1vw;
+  padding: 1vw;
+  margin: 1vw 0 0 0;
+  background-color: #f0f0f0;
+  border-radius: 1vw;
 `;
 
 const TimeText = styled.span`
@@ -245,6 +249,7 @@ const VideoSummary = () => {
   const [summary, setSummary] = useState([]);
   const [fullScript, setFullScript] = useState([]);
   const dropdownRef = useRef(null);
+  const [isModalOpen, setModalOpen] = useState(false);
 
   const categories = [
     "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
@@ -300,6 +305,14 @@ const VideoSummary = () => {
     setDropdownOpen(false); // 선택 후 드롭다운 닫기
   };
 
+  const handleRegisterClick = () => {
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
   const extractVideoId = (url) => {
     // 숏츠 URL을 포함한 유튜브 URL에서 videoId를 추출합니다.
     const regExp = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
@@ -309,8 +322,8 @@ const VideoSummary = () => {
 
   const handleResize = () => {
     setPlayerSize({
-      width: window.innerWidth * 0.41,
-      height: (window.innerWidth * 0.41 * 9) / 16,
+      width: window.innerWidth * 0.44,
+      height: (window.innerWidth * 0.44 * 9) / 16,
     });
   };
 
@@ -428,8 +441,9 @@ const VideoSummary = () => {
             {renderContent()}
 
             <ActionButtonContainer>
-              <ActionButton>등록하기</ActionButton>
+              <ActionButton onClick={handleRegisterClick}>등록하기</ActionButton>
             </ActionButtonContainer>
+            <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
           </TheorySection>
         </RightSection>
       </Container>

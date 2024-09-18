@@ -3,13 +3,14 @@ import styled from "styled-components";
 import gptIcon from "../../assets/images/GPTIcon.png";
 import Config from "../Config/config";
 
-const FLASK_BASE_URL = process.env.REACT_APP_FLASK_BASE_URL; // 환경 변수에서 가져오기
 
 const ChatContainer = styled.div`
-  flex-grow: 1;
+  //flex-grow: 1;
   border-radius: 1vw;
   padding: 1vw;
-  border: 1px solid #ccc;
+  //border: 1px solid #ccc;
+  width: 90%;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 `;
 
 const ChatBox = styled.div`
@@ -34,10 +35,10 @@ const ChatInput = styled.input`
 `;
 
 const SendButton = styled.button`
-  background-color: #202D94;
+  background-color: #000395;
   color: white;
   border: none;
-  border-radius: 0.5vw;
+  border-radius: 1vw;
   padding: 1vw 2vw;
   font-size: 1vw;
   cursor: pointer;
@@ -49,11 +50,11 @@ const SendButton = styled.button`
 `;
 
 const RefreshButton = styled.button`
-  background-color: #ff3b30;
+  background-color: #0004EB;
   color: white;
   border: none;
-  border-radius: 0.5vw;
-  padding: 1vw 2vw;
+  border-radius: 1vw;
+  padding: 1vw 1.5vw;
   font-size: 1vw;
   cursor: pointer;
   margin-left: 1vw;
@@ -65,8 +66,9 @@ const RefreshButton = styled.button`
 
 const UserMessage = styled.div`
   display: flex;
-  margin-bottom: 1.5vh;
-  padding: 1vh 1.5vw;
+  margin-bottom: 1vw;
+  padding: 1vw 1.5vw;
+   font-size: 1vw;
   background-color: #f2f2f2;
   border-radius: 1vw;
   align-self: flex-end;
@@ -75,7 +77,8 @@ const UserMessage = styled.div`
 
 const BotMessage = styled.div`
   display: flex;
-  margin-bottom: 1.5vh;
+  margin-bottom: 1vw;
+  font-size: 1vw;
   padding: 1vh 1.5vw;
   background-color: #e6e6e6;
   border-radius: 1vw;
@@ -84,8 +87,8 @@ const BotMessage = styled.div`
 
 const GptIcon = styled.img`
   margin-right: 1vw;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.5vw;
+  height: 1.5vw;
 `;
 
 const Chat = ({ visible }) => {
