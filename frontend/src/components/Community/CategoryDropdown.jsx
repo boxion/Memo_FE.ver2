@@ -30,7 +30,7 @@ const DropdownItem = styled.li`
 
 const CategoryDropdown = ({ onSelectCategory }) => {
   const categories = [
-    "일반", "창업", "IT/프로그래밍", "공부", "뉴스", "정보", 
+    "전체", "창업", "IT/프로그래밍", "공부", "뉴스", "정보", 
     "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타"
   ];
 

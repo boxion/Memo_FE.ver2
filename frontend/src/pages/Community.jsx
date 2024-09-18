@@ -161,6 +161,7 @@ const IconContainer = styled.div`
   align-items: center;
   width: 100%; /* 컨테이너가 카드의 전체 너비를 사용 */
   margin-top: auto; /* 카드 하단에 고정 */
+  position: relative; /* 이 줄을 추가하여 상대 위치 설정 */
 `;
 const FavoriteButton = styled.button`
   border: none;
@@ -177,12 +178,19 @@ const FavoriteButton = styled.button`
   left: 0.5vw;
 `;
 const MemberEmail = styled.p`
-  font-size: 1vw;
+  position: relative;
+  font-size: 0.8vw;
   color: #555;
-  margin-left: 8vw; /* 왼쪽 여백 조정 */
-  top: -0.2vw; /* 위로 이동 */
+  margin-right: -10.4vw; /* 왼쪽 여백 조정 */
+  top: -1vw; /* 위로 이동 */
 `;
-
+const DocumentDate = styled.p`
+  font-size: 0.7vw;
+  color: #999;
+  position: absolute; /* absolute로 위치 고정 */
+  top: 0.5vw;
+  right: 3.5vw;
+  `;
 const ImageIcon = styled.img`
   width: 2.1vw; /* 원하는 크기로 설정 */
   height: 2.1vw; /* 원하는 크기로 설정 */
@@ -240,7 +248,7 @@ const fetchFilteredVideos = async (filter) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ filter }),
+      body: JSON.stringify({ filter }), 
     });
 
     if (!response.ok) {
@@ -336,30 +344,29 @@ function Community() {
   }, []);
   
   
-useEffect(() => {
-  const applyFiltersAndSort = async () => {
-    let filteredResults = [...videos]; // videos를 기준으로 항상 시작
-
-    // 먼저 카테고리 필터 적용
-    if (selectedCategory !== '분야를 선택해보세요!') {
-      filteredResults = await fetchFilteredVideos(selectedCategory);
-    }
-
-    // 카테고리 필터가 적용된 결과에 대해 정렬 적용
-    if (sortType === '인기순') {
-      filteredResults = await fetchPopularVideos();
-    } else if (sortType === '최신순') {
-      filteredResults = await fetchLatestVideos();
-    }
-
-    // 필터링된 결과를 다시 저장
-    setFilteredVideos(filteredResults);
-    setCurrentPage(1); // 필터 및 정렬 후 페이지를 첫 페이지로 리셋
-  };
-
-  applyFiltersAndSort();
-}, [selectedCategory, sortType]); // 카테고리와 정렬 타입을 모두 의존성으로 설정
-
+  useEffect(() => {
+    const applyFiltersAndSort = async () => {
+      let filteredResults = [...videos];
+  
+      // 카테고리 필터만 적용 (선택한 카테고리가 기본값이 아닌 경우에만)
+      if (selectedCategory !== '분야를 선택해보세요!') {
+        filteredResults = await fetchFilteredVideos(selectedCategory);
+      }
+  
+      // 정렬 방식 적용
+      if (sortType === '인기순') {
+        filteredResults = await fetchPopularVideos();
+      } else if (sortType === '최신순') {
+        filteredResults = await fetchLatestVideos();
+      }
+  
+      setFilteredVideos(filteredResults);
+      setCurrentPage(1); // 필터 적용 후 첫 페이지로 이동
+    };
+  
+    applyFiltersAndSort();
+  }, [sortType]); // sortType을 의존성으로 설정 (카테고리 필터링은 handleCategorySelect에서 처리)
+  
   
   useEffect(() => {
     // 페이지에 맞는 비디오만 표시
@@ -380,17 +387,17 @@ useEffect(() => {
   };
   const handleCategorySelect = async (category) => {
     setSelectedCategory(category);
+    setSortType('정렬'); // 카테고리를 선택하면 정렬 타입을 '정렬'로 리셋
     setCategoryDropdownOpen(false);
   
-    // 선택된 카테고리에 맞는 데이터를 가져와 필터링된 비디오를 업데이트
+    // 선택된 카테고리에 맞는 필터링 작업만 수행
     const filteredResults = await fetchFilteredVideos(category);
   
     if (filteredResults) {
-      // 필터링된 비디오만 상태에 저장하여 화면에 표시
-      setFilteredVideos([...filteredResults]); 
-      setCurrentPage(1); // 페이지를 첫 페이지로 리셋
+      setFilteredVideos(filteredResults);
+      setCurrentPage(1); // 필터 적용 후 첫 페이지로 이동
     }
-  };  
+  };
   
   const handleSearchSubmit = async () => {
     if (searchQuery) {
@@ -482,6 +489,7 @@ useEffect(() => {
                   onClick={() => toggleFavorite(indexOfFirstVideo + index)}
                 />
                 <MemberEmail>{video.memberEmail}</MemberEmail>
+                <DocumentDate>{video.documentDate}</DocumentDate>
                 <ImageIcon src={profile} alt="Description" />
               </IconContainer>
             </Card>
