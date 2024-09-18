@@ -306,8 +306,15 @@ const VideoSummary = () => {
   };
 
   const handleRegisterClick = () => {
-    setModalOpen(true);
+    if (!selectedCategory) {
+      // 필터가 선택되지 않았을 경우 경고창 띄우기
+      alert("필터를 선택해주세요.");
+    } else {
+      // 필터가 선택되었을 경우 모달 열기
+      setModalOpen(true);
+    }
   };
+  
 
   const handleCloseModal = () => {
     setModalOpen(false);

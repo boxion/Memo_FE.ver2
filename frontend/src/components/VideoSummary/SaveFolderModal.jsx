@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -134,6 +135,7 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
   const [folders, setFolders] = useState(foldersData);
   const [content, setContent] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     setContent(e.target.value);
@@ -153,6 +155,15 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
+    }
+  };
+
+  const handleConfirmClick = () => {
+    if (selectedFolder) {
+      alert("저장되었습니다");
+      navigate("/");
+    } else {
+      alert("폴더를 선택해주세요.");
     }
   };
 
@@ -184,7 +195,7 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
           <AddButton onClick={handleAddFolder}>폴더 추가</AddButton>
         </AddTextBox>
         <ActionButtons>
-          <ConfirmButton onClick={onClose}>확인</ConfirmButton>
+          <ConfirmButton onClick={handleConfirmClick}>확인</ConfirmButton>
           <CancelButton onClick={onClose}>취소</CancelButton>
         </ActionButtons>
       </ModalContainer>
