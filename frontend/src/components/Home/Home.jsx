@@ -269,7 +269,7 @@ const Home = () => {
           <LoadingIcon spin />
           <LoadingText>
             Loading...
-            <br />
+            <br /><br />
             잠깐! 새로고침은 안돼요!
             <br />
             <RedText>새로고침 시 영상변환이 초기화되니 유의해주세요.</RedText>

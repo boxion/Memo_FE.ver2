@@ -197,7 +197,7 @@ const ScriptLine = styled.div`
 `;
 
 const ScriptContainer = styled.div`
-  max-height: 60vh; 
+  max-height: 59vh; 
   overflow-y: auto;
   padding: 1vw;
   margin: 1vw 0 0 0;
@@ -218,7 +218,7 @@ const ScriptText = styled.span`
 `;
 
 const DateText = styled.div`
-  font-size: 1rem;
+  font-size: 1.3vw;
   margin-bottom: 0.5vw;
   color: #838383;
 `;
