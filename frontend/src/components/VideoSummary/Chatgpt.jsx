@@ -2,19 +2,17 @@ import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import gptIcon from "../../assets/images/GPTIcon.png";
 import Config from "../Config/config";
-
+import { marked } from "marked";
 
 const ChatContainer = styled.div`
-  //flex-grow: 1;
   border-radius: 1vw;
   padding: 1vw;
-  //border: 1px solid #ccc;
-  width: 93%;
+  width: 92%;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 `;
 
 const ChatBox = styled.div`
-  height: 20vw;
+  height: 23vw;
   overflow-y: auto;
   padding: 1vw;
   background-color: white;
@@ -28,7 +26,7 @@ const ChatInputContainer = styled.div`
 
 const ChatInput = styled.input`
   flex: 1;
-  padding: 1vw;
+  padding: 0.5vw;
   border-radius: 0.5vw;
   border: 1px solid #ccc;
   font-size: 1vw;
@@ -39,7 +37,7 @@ const SendButton = styled.button`
   color: white;
   border: none;
   border-radius: 1vw;
-  padding: 1vw 2vw;
+  padding: 0.5vw 1vw;
   font-size: 1vw;
   cursor: pointer;
   margin-left: 1vw;
@@ -54,7 +52,7 @@ const RefreshButton = styled.button`
   color: white;
   border: none;
   border-radius: 1vw;
-  padding: 1vw 1.5vw;
+  padding: 0.5vw 1vw;
   font-size: 1vw;
   cursor: pointer;
   margin-left: 1vw;
@@ -68,7 +66,7 @@ const UserMessage = styled.div`
   display: flex;
   margin-bottom: 1vw;
   padding: 1vw 1.5vw;
-   font-size: 1vw;
+  font-size: 1vw;
   background-color: #f2f2f2;
   border-radius: 1vw;
   align-self: flex-end;
@@ -79,16 +77,17 @@ const BotMessage = styled.div`
   display: flex;
   margin-bottom: 1vw;
   font-size: 1vw;
-  padding: 1vh 1.5vw;
+  padding: 0.5vw;
   background-color: #e6e6e6;
   border-radius: 1vw;
   align-self: flex-start;
+  word-wrap: break-word;
 `;
 
 const GptIcon = styled.img`
-  margin-right: 1vw;
-  width: 1.5vw;
-  height: 1.5vw;
+  margin: 0.5vw 1vw 0 0.5vw;
+  width: 2.5vw;
+  height: 2.5vw;
 `;
 
 const Chat = ({ visible }) => {
@@ -112,6 +111,9 @@ const Chat = ({ visible }) => {
     if (message.trim() !== "") {
       const newUserMessage = { type: "user", content: message };
       setMessages((prevMessages) => [...prevMessages, newUserMessage]);
+
+      // 입력창을 바로 비움
+      setMessage("");
 
       // GPTQuery 함수 호출
       const response = await GPTQuery(message);
@@ -139,14 +141,15 @@ const Chat = ({ visible }) => {
         <ChatBox>
           {messages.map((msg, index) => (
             <>
-              {msg.type === "user" ? (
-                <UserMessage key={index}>{msg.content}</UserMessage>
-              ) : (
-                <BotMessage key={index}>
-                  <GptIcon src={gptIcon} alt="GPT Icon" />
-                  {msg.content}
-                </BotMessage>
-              )}
+            {msg.type === "user" ? (
+  <UserMessage key={index}>{msg.content}</UserMessage>
+) : (
+  <BotMessage key={index}>
+    <GptIcon src={gptIcon} alt="GPT Icon" />
+    <div dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
+  </BotMessage>
+)}
+
             </>
           ))}
           <div ref={messagesEndRef} />
@@ -170,7 +173,6 @@ const Chat = ({ visible }) => {
 // GPTQuery 함수 정의
 const GPTQuery = async (query) => {
   try {
-    // 로컬스토리지에서 userId와 videoUrl을 가져옴
     const userId = localStorage.getItem("userId");
     const videoUrl = localStorage.getItem("videoUrl");
 
@@ -179,7 +181,6 @@ const GPTQuery = async (query) => {
     console.log("[ userId ] : ", userId);
     console.log("[ videoUrl ] : ", videoUrl);
 
-    // 서버에 쿼리와 userId를 함께 전송하고 응답을 기다림
     const response = await fetch(`${Config.baseURL}/api/v1/questions/ask`, {
       method: "POST",
       headers: {
@@ -196,15 +197,13 @@ const GPTQuery = async (query) => {
       console.error("GPTQuery 실행 중 서버에서 오류를 반환했습니다. 개발자에게 문의하세요.");
     }
 
-    // 응답을 텍스트로 처리
     const data = await response.text();
     console.log("[ 받은 답변: ]\n", data);
 
-    // 텍스트를 그대로 반환
+    // 텍스트 그대로 반환 (마크다운을 처리 가능하도록)
     return { qAnswer: data };
   } catch (error) {
     console.error("에러 발생:", error);
-    console.error("쿼리 전송 중 에러가 발생했습니다. 개발자에게 문의하세요.");
     return { qAnswer: "쿼리 전송 중 에러가 발생했습니다. 다시 시도해주세요." };
   }
 };
