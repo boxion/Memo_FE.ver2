@@ -145,7 +145,7 @@ const VideoTitle = styled.h2`
 const ListBox = styled.ol`
   margin: 0;
   padding-left: 1vw;
-  max-height: 62vh; 
+  max-height: 80vh; 
   overflow-y: auto;
 `;
 
@@ -197,7 +197,7 @@ const ScriptLine = styled.div`
 `;
 
 const ScriptContainer = styled.div`
-  max-height: 60vh; 
+  max-height: 75vh; 
   overflow-y: auto;
   padding: 1vw;
   margin: 1vw 0 0 0;
@@ -218,7 +218,7 @@ const ScriptText = styled.span`
 `;
 
 const DateText = styled.div`
-  font-size: 1rem;
+  font-size: 1.3vw;
   margin-bottom: 0.5vw;
   color: #838383;
 `;
@@ -253,7 +253,7 @@ const VideoSummary = () => {
 
   const categories = [
     "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
-    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "선택안함"
+    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음"
   ];
 
   useEffect(() => {
@@ -322,8 +322,8 @@ const VideoSummary = () => {
 
   const handleResize = () => {
     setPlayerSize({
-      width: window.innerWidth * 0.44,
-      height: (window.innerWidth * 0.44 * 9) / 16,
+      width: window.innerWidth * 0.4,
+      height: (window.innerWidth * 0.35 * 9) / 16,
     });
   };
 
@@ -452,3 +452,5 @@ const VideoSummary = () => {
 };
 
 export default VideoSummary;
+//필터를 선택해주세요 경고창 띄우기
+//저장이 되었습니다 모달창 띄우기
