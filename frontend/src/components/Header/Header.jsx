@@ -16,7 +16,7 @@ const HeaderContainer = styled.div`
 const TopSection = styled.div`
   display: flex;
   justify-content: space-between;
-  width: 95%;
+  width: 94%;
   padding: 1vw;
 `;
 
@@ -24,7 +24,7 @@ const BottomSection = styled.div`
   display: flex;
   justify-content: space-evenly;
   gap: 2vw;
-  width: 100%;
+  width: 99.7%;
   border-top: 1px solid #e0e0e0;
   padding: 0.7vw;
   background-color: #202D94;
