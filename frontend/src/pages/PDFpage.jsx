@@ -11,7 +11,7 @@ const Container = styled.div`
   align-items: center;
   padding: 2vw;
   font-family: Arial, sans-serif;
-  margin-top: 7vw;
+  margin-top: 4vw;
 `;
 
 const Title = styled.h1`
@@ -59,7 +59,7 @@ const PDFIconText = styled.span`
 
 const OptionsContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
 `;
 
 const SelectContainer = styled.div`
@@ -126,6 +126,7 @@ const FileName = styled.p`
 function PDFpage() {
   const [language, setLanguage] = useState('한국어');
   const [pdfFile, setPdfFile] = useState(null);
+  const [pdfTitle, setPdfTitle] = useState(''); // PDF 제목 상태 추가
   const fileInputRef = useRef(null); // 파일 입력 참조
   const navigate = useNavigate(); // 페이지 이동
 
@@ -133,70 +134,40 @@ function PDFpage() {
     setLanguage(e.target.value);
   };
 
+  // 파일 선택 핸들러
   const handlePdfUpload = (e) => {
-    setPdfFile(e.target.files[0]);
+    setPdfFile(e.target.files[0]); // 파일 선택
   };
-// PDF 파일 업로드 함수
-const handleUploadButtonClick = async () => {
-  if (pdfFile) {
-    try {
-      // FormData 생성
-      const formData = new FormData();
-      formData.append('file', pdfFile);
-      formData.append('memberEmail', localStorage.getItem('userId')); // 로컬스토리지에서 가져온 memberEmail
-      formData.append('language', language);
 
-      // 백엔드로 파일 업로드 요청
-      const response = await axios.post(`${Config.baseURL}/api/v1/files/pdfupload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        responseType: 'json', // 응답을 JSON으로 받음
-      });
+  // 백엔드로 파일을 전송하는 함수
+  const handleSendButtonClick = async () => {
+    if (pdfFile) {
+      try {
+        // FormData 생성
+        const formData = new FormData();
+        formData.append('file', pdfFile);
+        formData.append('memberEmail', localStorage.getItem('userId')); // 로컬스토리지에서 가져온 memberEmail
+        formData.append('language', language);
 
-      // JSON 응답에서 필요한 정보를 추출
-      const parsedJson = response.data; // JSON 데이터를 그대로 사용
-      console.log(parsedJson);
+        // 백엔드로 파일 업로드 요청
+        const response = await axios.post(`${Config.baseURL}/api/v1/files/pdfupload`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-      // PDF 다운로드를 별도로 처리
-      const pdfResponse = await axios.get(`${Config.baseURL}/api/v1/files/download`, {
-        responseType: 'blob', // PDF 파일을 받기 위해 blob으로 설정
-      });
+        // 서버 응답에서 PDF 제목 추출
+        const { pdfTitle } = response.data;
+        setPdfTitle(pdfTitle);
 
-      const pdfBlob = new Blob([pdfResponse.data], { type: 'application/pdf' });
+        // 성공 메시지 또는 기타 처리
+        alert('PDF 파일이 성공적으로 업로드되었습니다!');
+        navigate('/PDF-Summary'); 
 
-      // Blob을 다운로드할 수 있도록 링크 생성
-      const downloadLink = URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.href = downloadLink;
-      a.download = parsedJson.pdfTitle; // JSON에서 받은 PDF 제목을 사용
-      a.click();
-
-      // 다운로드 후 링크 해제
-      URL.revokeObjectURL(downloadLink);
-    } catch (error) {
-      console.error('PDF 업로드 중 오류가 발생했습니다:', error);
+      } catch (error) {
+        console.error('PDF 업로드 중 오류 발생:', error);
+      }
     }
-  } else {
-    fileInputRef.current.click(); // 파일 입력을 클릭하여 파일 선택을 유도
-  }
-};
-
-// Base64 데이터를 Blob으로 변환하는 함수
-const base64ToBlob = (base64, mimeType) => {
-  const byteCharacters = atob(base64);
-  const byteNumbers = new Array(byteCharacters.length).fill().map((_, i) => byteCharacters.charCodeAt(i));
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: mimeType });
-};
-
-const handlePDFIconClick = () => {
-  fileInputRef.current.click(); // PDF 아이콘 클릭 시 파일 선택창 열림
-};
-
-
-  const handleSendButtonClick = () => {
-    navigate('/PDF-Summary'); // 선택된 파일이 있을 때만 페이지 이동
   };
 
   return (
@@ -205,26 +176,15 @@ const handlePDFIconClick = () => {
       <Container>
         <Title>요약할 PDF파일을 업로드해주세요!</Title>
         <Subtitle>PDF파일을 업로드 하시면 AI가 요약해 드립니다!</Subtitle>
-        
+
         <UploadContainer>
-          <PDFIcon>
+          <PDFIcon onClick={() => fileInputRef.current.click()}>
             <PDFIconText>PDF</PDFIconText>
           </PDFIcon>
-          
-          <OptionsContainer>
-          <UploadButton onClick={handleUploadButtonClick}>
-              {pdfFile ? 'pdf 요약시작' : '업로드 할 파일 선택'} 
-              이거 이렇게 안해도 될거같은데 그냥 파일 선택하면 밑에 보내기 뜨면 페이지 넘어가게 해
-              <UploadFile
-                type="file"
-                accept="application/pdf"
-                onChange={handlePdfUpload}
-                ref={fileInputRef} // 참조 연결
-              />
-            </UploadButton>
 
+          <OptionsContainer>
             <SelectContainer>
-              <Label>요약내용의 언어를 정해주세요</Label>
+              <Label>PDF의 언어를 알려주세요</Label>
               <SelectBox value={language} onChange={handleLanguageChange}>
                 <option value="한국어">한국어</option>
                 <option value="영어">영어</option>
@@ -232,15 +192,22 @@ const handlePDFIconClick = () => {
                 <option value="일본어">일본어</option>
               </SelectBox>
             </SelectContainer>
+            <UploadButton onClick={() => fileInputRef.current.click()}>
+              {pdfFile ? pdfFile.name : '파일 선택'}
+              <UploadFile
+                type="file"
+                accept="application/pdf"
+                onChange={handlePdfUpload}
+                ref={fileInputRef} // 참조 연결
+              />
+            </UploadButton>
           </OptionsContainer>
         </UploadContainer>
 
-        {/* 업로드된 파일명이 있을 때 파일명 표시 */}
-        {pdfFile && <FileName>첨부된 파일: {pdfFile.name}</FileName>}
-
-
         {/* 파일이 선택된 경우에만 보내기 버튼 표시 */}
         {pdfFile && <SendButton onClick={handleSendButtonClick}>보내기</SendButton>}
+
+        {pdfTitle && <FileName>{pdfTitle}</FileName>}
 
         <InfoText>ⓘ 선택된 PDF파일은 외부에 공개되지 않습니다</InfoText>
       </Container>
