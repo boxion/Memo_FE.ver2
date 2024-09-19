@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -128,6 +128,41 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
+  // 렌더링될 때 로컬스토리지의 isLoggedIn 값이 true인지 확인 후 요청
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+    if (isLoggedIn === "true") {
+      const memberEmail = localStorage.getItem("userId");
+
+      // 백엔드로 POST 요청 보내기
+      const sendToHome = async () => {
+        try {
+          const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              memberEmail, // userId를 memberEmail로 전달
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("서버에서 오류가 발생했습니다.");
+          }
+
+          const responseData = await response.json();
+          console.log("백엔드 응답:", responseData);
+        } catch (error) {
+          console.error("POST 요청 중 에러 발생:", error);
+        }
+      };
+
+      sendToHome();
+    }
+  }, []);
+
   const selectVideo = async (videoUrl) => {
     const memberEmail = localStorage.getItem("memberEmail");
 
@@ -215,30 +250,6 @@ const Home = () => {
     
     } catch (error) {
       console.error("에러 발생:", error);
-    }
-  };
-
-  const checkDuplicate = async (userId, url) => {
-    try {
-      const response = await fetch(`${Config.baseURL}/api/v1/video/check-duplicate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          userId,
-          url
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("서버에서 오류를 반환했습니다.");
-      }
-
-      const data = await response.json();
-      return data.isDuplicate;
-    } catch (error) {
-      console.error("중복 확인 에러 발생:", error);
     }
   };
 
