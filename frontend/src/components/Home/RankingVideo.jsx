@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import Config from "../Config/config";
 
 const RankingContainer = styled.div`
   margin-top: 1vw;
@@ -48,45 +49,23 @@ const ButtonContent = styled.div`
 `;
 
 const RankingVideo = () => {
-  useEffect(() => {
-    // 로컬 스토리지에서 각 영상 정보를 가져와서 출력하고 로그를 출력합니다.
-    for (let i = 1; i <= 3; i++) {
-      const rankingData = JSON.parse(localStorage.getItem(`ranking${i}`));
-      if (rankingData) {
-        console.log(`Ranking ${i} Data:`, rankingData);
-      }
-    }
-  }, []);
+  // 상태로 받아올 데이터를 저장
+  const [rankingData, setRankingData] = useState([]);
 
-  // rankingData 변수 정의
-  const rankingData = [];
-  for (let i = 1; i <= 3; i++) {
-    const data = JSON.parse(localStorage.getItem(`ranking${i}`));
-    if (data) {
-      rankingData.push(data);
-    }
-  }
-      // // 클립보드 API가 지원되는지 확인
-      // if (navigator.clipboard && navigator.clipboard.writeText) {
-      //   // 클립보드에 videoUrl 복사
-      //   navigator.clipboard.writeText(videoUrl)
-      //     .then(() => {
-      //       // 클립보드에 복사되었을 때의 처리
-      //       alert(
-      //         `YouTube URL이 클립보드에 복사되었습니다😁\n아래의 입력창에 붙여넣어주세요❗❗`
-      //       );
-      //     })
-      //     .catch((error) => {
-      //       // 복사 실패 시 처리
-      //       console.error("클립보드에 복사 실패:", error);
-      //       alert("클립보드에 복사하는 중 오류가 발생했습니다.");
-      //     });
-      // } else {
-      //   // 클립보드 API가 지원되지 않는 경우
-      //   console.error("클립보드 API가 지원되지 않습니다.");
-      //   alert("클립보드 API가 지원되지 않습니다. 다른 브라우저를 사용해 보세요.");
-      // }
-  
+  useEffect(() => {
+    // 컴포넌트가 렌더링될 때 API 요청을 보냄
+    const fetchRankingData = async () => {
+      try {
+        const response = await fetch(`${Config.baseURL}/api/v1/video/most-frequent-url`);
+        const data = await response.json();
+        setRankingData(data); // 받아온 데이터를 상태에 저장
+      } catch (error) {
+        console.error("Error fetching ranking data:", error);
+      }
+    };
+
+    fetchRankingData(); // 데이터 요청 함수 호출
+  }, []);
 
   const handleButtonClick = (videoUrl) => {
     const textarea = document.createElement("textarea");
@@ -96,7 +75,6 @@ const RankingVideo = () => {
     document.execCommand("copy");
     document.body.removeChild(textarea);
     alert(`YouTube URL이 복사되었습니다😁\n아래의 입력창에 넣어보세요❗❗\n`);
-    // alert(`YouTube URL이 복사되었습니다😁\n아래의 입력창에 넣어보세요❗❗\n${videoUrl}`);
   };
 
   return (
