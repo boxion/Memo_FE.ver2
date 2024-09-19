@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import Config from "../Config/config";
 
 const MypageText = styled.div`
   font-size: 1.5rem;
@@ -7,7 +8,6 @@ const MypageText = styled.div`
   text-align: center;
 `;
 
-// 그리드 형식으로 카드들을 표시하는 컨테이너
 const GridContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -20,7 +20,6 @@ const GridContainer = styled.div`
   }
 `;
 
-// 카드를 나타내는 버튼 스타일 컴포넌트
 const StyledButton = styled.button`
   background-color: white;
   border: 0.2vw solid #838383;
@@ -59,7 +58,6 @@ const ButtonContent = styled.div`
   text-overflow: ellipsis;
 `;
 
-// 페이지네이션 컨테이너
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -109,36 +107,34 @@ const NextButton = styled.button`
   }
 `;
 
-// 페이지당 보여질 항목 수
 const itemsPerPage = 12;
+
+const getEmailFromLocalStorage = () => {
+  return localStorage.getItem("memberEmail");
+};
 
 const Mypage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const videoList = JSON.parse(localStorage.getItem("videoList")) || [];
   const categoryName = localStorage.getItem("categoryName");
 
-  // 현재 페이지에 따른 데이터 계산
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = videoList.slice(startIndex, endIndex);
 
-  // 이전 페이지로 이동
   const goToPrevPage = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
 
-  // 다음 페이지로 이동
   const goToNextPage = () => {
     const totalPages = Math.ceil(videoList.length / itemsPerPage);
     setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
   };
 
-  // 페이지 번호를 클릭하여 해당 페이지로 이동
   const goToPage = (page) => {
     setCurrentPage(page);
   };
 
-  // 페이지 버튼 렌더링
   const renderPageButtons = () => {
     const totalPages = Math.ceil(videoList.length / itemsPerPage);
     const pages = [];
@@ -159,9 +155,82 @@ const Mypage = () => {
   const handleContextMenu = (event, video) => {
     event.preventDefault();
     if (window.confirm("이 영상을 삭제하시겠습니까?")) {
-      const updatedVideoList = videoList.filter(v => v.videoUrl !== video.videoUrl);
-      localStorage.setItem("videoList", JSON.stringify(updatedVideoList));
-      window.location.reload();  // 페이지를 새로고침하여 삭제된 항목을 반영
+      deleteVideo(video.videoUrl);
+    }
+  };
+
+  const selectVideo = async (videoUrl) => {
+    const memberEmail = getEmailFromLocalStorage();
+
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/select-video`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          memberEmail,
+          videoUrl
+        })
+      });
+
+      if (!response.ok) {
+        console.error("서버에서 오류가 발생했습니다.");
+        return;
+      }
+
+      const responseData = await response.json();
+      console.log("[ 선택한 video의 데이터: ] ", responseData);
+
+      const { summary, document, videoUrl, documentDate, categoryName, videoTitle } = responseData.video;
+      const { questions } = responseData;
+      var document2 = document == null ? "" : document;
+      const extractedQuestions = questions.map((question) => question.question);
+      const extractedAnswers = questions.map((question) => question.answer);
+
+      localStorage.setItem("summary", summary);
+      localStorage.setItem("document", document2);
+      localStorage.setItem("videoUrl", videoUrl);
+      localStorage.setItem("videoTitle", videoTitle);
+      localStorage.setItem("documentDate", documentDate);
+      localStorage.setItem("categoryName", categoryName);
+      localStorage.setItem("questions", JSON.stringify(extractedQuestions));
+      localStorage.setItem("answers", JSON.stringify(extractedAnswers));
+
+      window.location.href = "/memory";
+    } catch (error) {
+      console.error("영상 선택 중 에러가 발생했습니다:", error);
+    }
+  };
+
+  const deleteVideo = async (videoUrl) => {
+    try {
+      const memberEmail = getEmailFromLocalStorage();
+      const videoList = JSON.parse(localStorage.getItem("videoList")) || [];
+
+      const response = await fetch(`${Config.baseURL}/api/v1/video/delete-video`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          memberEmail,
+          videoUrl
+        })
+      });
+
+      if (response.status === 200) {
+        console.log("영상 삭제 성공");
+        const updatedVideoList = videoList.filter(
+          (video) => video.videoUrl !== videoUrl
+        );
+        localStorage.setItem("videoList", JSON.stringify(updatedVideoList));
+        window.location.reload();
+      } else {
+        console.error(`영상 삭제 오류. 상태 코드: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("영상 삭제 중 에러가 발생했습니다:", error);
     }
   };
 
@@ -176,7 +245,7 @@ const Mypage = () => {
         {currentData.map((video, index) => (
           <StyledButton
             key={index}
-            onClick={() => window.location.href = video.videoUrl}
+            onClick={() => selectVideo(video.videoUrl)}
             onContextMenu={(e) => handleContextMenu(e, video)}
           >
             <ButtonImage src={video.thumbnailUrl} />
