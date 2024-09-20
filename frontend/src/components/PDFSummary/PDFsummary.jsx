@@ -201,7 +201,7 @@ const PDFSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true);
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [isFetching, setIsFetching] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const pdfContainerRef = useRef(null); // ref 생성
 
   useEffect(() => {
@@ -209,15 +209,18 @@ const PDFSummary = () => {
   }, []);
   
   const fetchPdfFile = async () => {
+    setIsLoading(true); // 로딩 시작
     try {
+      let memberEmail = localStorage.getItem("userId");
+      let pdfTitle = localStorage.getItem("PDFFileName");
       const response = await fetch(`${Config.baseURL}/api/v1/files/getpdffile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          memberEmail: '44',  // 예시 데이터
-          pdfTitle: 'Ch08_유효성 검사.pdf',  // 예시 데이터
+          memberEmail: memberEmail,  // 예시 데이터
+          pdfTitle: pdfTitle,  // 예시 데이터
         }),
       });
   
@@ -236,8 +239,8 @@ const PDFSummary = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          memberEmail: '44',  // 예시 데이터
-          pdfTitle: 'Ch08_유효성 검사.pdf',  // 예시 데이터
+          memberEmail: memberEmail,  // 예시 데이터
+          pdfTitle: pdfTitle,  // 예시 데이터
         }),
       });
   
@@ -250,16 +253,28 @@ const PDFSummary = () => {
   
     } catch (error) {
       console.error('PDF 파일 가져오기 오류:', error);
+    } finally {
+      setIsLoading(false); // 로딩 끝
     }
   };
   
 
-  // PDF가 로드된 후 스크롤을 최하단으로 이동
   useEffect(() => {
+    // PDF가 변경될 때마다 초기화 처리
     if (pdfContainerRef.current) {
-      pdfContainerRef.current.scrollTop = pdfContainerRef.current.scrollHeight; // 스크롤을 최하단으로 이동
+      pdfContainerRef.current.innerHTML = ''; // 기존의 canvas 삭제
     }
-  }, [pdfUrl]); // pdfUrl이 업데이트될 때마다 실행
+  }, [pdfUrl]); // pdfUrl이 변경될 때마다 초기화
+
+
+  const handleLoadSuccess = () => {
+    console.log("PDF 렌더링 성공");
+    // 추가적인 작업을 여기서 수행할 수 있습니다.
+  };
+  
+  const handleLoadError = (error) => {
+    console.error("PDF 렌더링 오류:", error);
+  };
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -305,10 +320,12 @@ const PDFSummary = () => {
       <Container>
         <LeftSection>
           <PdfContainer ref={pdfContainerRef}> {/* ref를 PdfContainer에 추가 */}
-            {pdfUrl && (
-              <PdfViewer 
+            {pdfUrl && !isLoading && (
+              <PdfViewer
+                key={pdfUrl} // key 속성 추가
                 pdfUrl={pdfUrl} 
-                onErrorPDFRender={(e) => console.error('PDF 렌더링 오류:', e)} // 오류 핸들링
+                onErrorPDFRender={handleLoadError}
+                onLoadSuccess={handleLoadSuccess}
               />
             )}
           </PdfContainer>
