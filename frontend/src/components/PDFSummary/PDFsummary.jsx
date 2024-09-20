@@ -217,7 +217,7 @@ const PDFSummary = () => {
         },
         body: JSON.stringify({
           memberEmail: '44',  // 예시 데이터
-          pdfTitle: 'SW서버프로그램_사용자인터페이스_보강_3강.pdf',  // 예시 데이터
+          pdfTitle: 'Ch08_유효성 검사.pdf',  // 예시 데이터
         }),
       });
   
@@ -237,7 +237,7 @@ const PDFSummary = () => {
         },
         body: JSON.stringify({
           memberEmail: '44',  // 예시 데이터
-          pdfTitle: 'SW서버프로그램_사용자인터페이스_보강_3강.pdf',  // 예시 데이터
+          pdfTitle: 'Ch08_유효성 검사.pdf',  // 예시 데이터
         }),
       });
   
