@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../../assets/images/logo.png";
 import Profile from "../../assets/images/profile.png";
-import ProfileModal from "../Mypage/ProfileModal";
 import SideMenu from "../Home/SideMenu";
-import { useNavigate } from "react-router-dom";
+import Config from "../Config/config";
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -65,10 +64,37 @@ const ProfileTitle = styled.div`
 `;
 
 const ProfileImage = styled.img`
-  width: 40px;
-  height: auto;
+  width: 3vw;
+  height: 3vw;
   border-radius: 50%;
   cursor: pointer;
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 0.1vw solid #ccc;
+  border-radius: 1.5vw;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow: 0 0.2vw 1vw rgba(0, 0, 0, 0.1);
+  display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
+`;
+
+const DropdownItem = styled(Link)`
+  display: block;
+  padding: 1vw 1.5vw;
+  color: #333;
+  font-size: 1.2vw;
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 0.1vw solid #e0e0e0;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
 `;
 
 const Button = styled.button`
@@ -85,31 +111,16 @@ const Button = styled.button`
   }
 `;
 
-const UserProfileDropdown = styled(ProfileModal)`
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-`;
-
 function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     setIsLoggedIn(isLoggedIn === "true");
   }, []);
-
-  const openProfileModal = () => {
-    setIsProfileModalOpen(true);
-  };
-
-  const closeProfileModal = () => {
-    setIsProfileModalOpen(false);
-  };
 
   const handleRefresh = () => {
     navigate("/");
@@ -118,6 +129,38 @@ function Header() {
 
   const handleHamburgerButtonClick = () => {
     setIsSideMenuOpen(!isSideMenuOpen);
+  };
+
+  const handleProfileClick = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+    window.location.reload();
+  };
+
+  const handleMypageClick = async () => {
+    try {
+      const memberEmail = localStorage.getItem("memberEmail");
+      const categoryName = localStorage.getItem("categoryName");
+      const response = await fetch(`${Config.baseURL}/api/v1/video/category-video`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ memberEmail, categoryName })
+      });
+      const data = await response.json();
+      
+      // Assuming you want to save the fetched data to local storage or some state
+      localStorage.setItem("videoList", JSON.stringify(data));
+      
+      navigate("/mypage");
+    } catch (error) {
+      console.error("Error fetching video data:", error);
+    }
   };
 
   return (
@@ -136,11 +179,14 @@ function Header() {
             <ProfileImage
               src={Profile}
               alt="Profile"
-              onClick={openProfileModal}
+              onClick={handleProfileClick}
             />
-            {isProfileModalOpen && (
-              <UserProfileDropdown closeModal={closeProfileModal} />
-            )}
+            <DropdownMenu isOpen={isDropdownOpen}>
+              <DropdownItem to="#" onClick={handleMypageClick}>내 게시판</DropdownItem>
+              <DropdownItem to="/savepage">저장 게시판</DropdownItem>
+              <DropdownItem to="/memo">팀 정보</DropdownItem>
+              <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
+            </DropdownMenu>
           </ProfileTitle>
         ) : (
           <ProfileTitle>
