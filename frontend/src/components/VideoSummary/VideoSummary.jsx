@@ -278,10 +278,14 @@ const VideoSummary = () => {
   
       // summary와 fullScript가 정의되어 있는지 확인
       if (summary) {
-        setSummary(summary.split("###").map(item => {
-          const lines = item.split("\n");
-          return { title: lines[0], content: lines.slice(1).join("\n").trim() };
-        }));
+        setSummary(
+          summary.split("###")
+            .map(item => {
+              const lines = item.split("\n");
+              return { title: lines[0], content: lines.slice(1).join("\n").trim() };
+            })
+            .filter(item => item.title.trim() !== "" || item.content.trim() !== "") // 공백이나 빈 문자열 필터링
+        );
       } else {
         console.error("Summary is undefined or empty");
       }
@@ -303,10 +307,14 @@ const VideoSummary = () => {
   
       // localStorage에서 가져온 summary와 fullScript가 정의되어 있는지 확인
       if (storedSummary && storedSummary.trim() !== "") {
-        setSummary(storedSummary.split("###").map(item => {
-          const lines = item.split("\n");
-          return { title: lines[0], content: lines.slice(1).join("\n").trim() };
-        }));
+        setSummary(
+          storedSummary.split("###")
+            .map(item => {
+              const lines = item.split("\n");
+              return { title: lines[0], content: lines.slice(1).join("\n").trim() };
+            })
+            .filter(item => item.title.trim() !== "" || item.content.trim() !== "") // 공백이나 빈 문자열 필터링
+        );
       } else {
         console.error("Stored summary is undefined or empty");
       }
