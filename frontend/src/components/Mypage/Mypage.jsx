@@ -3,59 +3,85 @@ import styled from "styled-components";
 import Config from "../Config/config";
 
 const MypageText = styled.div`
-  font-size: 1.5rem;
+  font-size: 1.5vw;
+  margin-top: 1vw;
   font-weight: bold;
   text-align: center;
+  color: #202020;
 `;
 
 const GridContainer = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr); 
+  grid-template-rows: repeat(2, 1fr);   
   grid-gap: 2vw;
-  margin: 2vw 15vw 1vw 15vw;
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(6, 1fr);
-  }
+  margin: 1vw 15vw 1vw 15vw;
 `;
 
-const StyledButton = styled.button`
+
+const VideoCard = styled.button`
   background-color: white;
-  border: 0.2vw solid #838383;
+  border: none;
   border-radius: 1vw;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 11vw;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
   padding-bottom: 1vw;
   cursor: pointer;
-  transition: background-color 0.3s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-0.5vw);
+    background-color: #f1f1f1;
+  }
 
   &:active {
-    background-color: #ccc;
+    background-color: #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
   }
 `;
 
-const ButtonImage = styled.img`
-  height: 70%;
-  object-fit: cover;
-  margin: 0.5vw;
+const VideoCardImage = styled.img`
+  width: 100%; 
+  height: 13vw;
+  background-color: #e0e0e0;
+  background-size: cover;
+  object-fit: cover; 
+  border-radius: 0.5vw;
+  margin-bottom: 0.5vw;
+  transition: transform 0.3s ease-in-out;
 `;
 
-const ButtonContent = styled.div`
+const VideoCardContent = styled.div`
   text-align: center;
   font-size: 1vw;
-  font-weight: bold;
+  font-weight: 600;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-top: 0.5vw;
+`;
+
+const LockButton = styled.button`
+  position: absolute;
+  right: 1vw;
+  background-color: ${({ isLocked }) => (isLocked ? "#D9534F" : "#202D94")};
+  color: white;
+  border: none;
+  width: 3vw;
+  height: 3vw;
+  font-size: 1vw;
+  cursor: pointer;
 `;
 
 const PaginationContainer = styled.div`
@@ -66,58 +92,53 @@ const PaginationContainer = styled.div`
 `;
 
 const PageButton = styled.button`
-  padding: 0.5vw 0.7vw;
-  margin: 0 0.3vw;
-  border: 0.1vw solid #838383;
-  background-color: ${({ isActive }) => (isActive ? "#838383" : "transparent")};
+  padding: 1vw;
+  margin: 0 0.2vw;
+  border: none;
+  font-size: 1vw;
+  background-color: ${({ isActive }) => (isActive ? "#4144E9" : "transparent")};
   border-radius: 0.5vw;
   cursor: pointer;
-  &:hover {
-    color: #ffffff;
-  }
+  color: #000000;
+  border: 0.1vw solid #4144E9;
 `;
 
 const PrevButton = styled.button`
-  padding: 0.5vw 0.7vw;
-  border: 0.1vw solid #d9d9d9;
-  border-radius: 0.6vw;
+  padding: 1vw;
+  margin: 0 0.2vw;
+  border: none;
+  border-radius: 0.5vw;
   cursor: pointer;
-  color: #fff;
-  font-size: 1rem;
+  color: #ffffff;
+  font-size: 1vw;
   font-weight: bold;
-  background-color: #838383;
-
-  &:hover {
-    background-color: #606060;
-  }
+  background-color: #D9D9D9;
 `;
 
 const NextButton = styled.button`
-  padding: 0.5vw 0.7vw;
-  border: 0.1vw solid #d9d9d9;
-  border-radius: 0.6vw;
+  padding: 1vw;
+  margin: 0 0.2vw;
+  border: none;
+  border-radius: 0.5vw;
   cursor: pointer;
-  color: #d9d9d9;
-  font-size: 1rem;
+  color: #ffffff;
+  font-size: 1vw;
   font-weight: bold;
-  background-color: #ffffff;
-
-  &:hover {
-    background-color: #606060;
-  }
+  background-color: #D9D9D9;
 `;
 
-const itemsPerPage = 12;
+const itemsPerPage = 6;
 
 const Mypage = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [videoList, setVideoList] = useState([]); // videoList 상태 추가
+  const [videoList, setVideoList] = useState([]);
   const [categoryName, setCategoryName] = useState(localStorage.getItem("categoryName") || "최근 본 영상");
 
   useEffect(() => {
-    getVideoList(categoryName); // 컴포넌트가 처음 마운트될 때 호출
+    getVideoList(categoryName);
   }, [categoryName]);
 
+  // 비디오 목록을 서버에서 가져오는 함수
   const getVideoList = async (categoryName) => {
     try {
       if (categoryName === "최근 본 영상") {
@@ -140,7 +161,8 @@ const Mypage = () => {
       }
 
       let responseData = await response.json();
-      responseData.reverse(); // 비디오 리스트를 내림차순으로 정렬
+      responseData = responseData.map((video) => ({ ...video, isLocked: false })); // isLocked 속성 추가
+      responseData.reverse(); //내림차순으로 비디오 정렬
 
       setVideoList(responseData); // 받아온 데이터를 상태에 저장
     } catch (error) {
@@ -149,6 +171,18 @@ const Mypage = () => {
     }
   };
 
+  // 잠금장치 기능
+  const toggleLock = (videoUrl) => {
+    setVideoList((prevVideoList) =>
+      prevVideoList.map((video) =>
+        video.videoUrl === videoUrl
+          ? { ...video, isLocked: !video.isLocked }
+          : video
+      )
+    );
+  };
+
+  // 페이지네이션 = 6 이상일시 화면 전환 기능
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = videoList.slice(startIndex, endIndex);
@@ -162,7 +196,7 @@ const Mypage = () => {
     setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
   };
 
-  const goToPage = (page) => {
+  const goToPage = (page) => { // 특정 페이지로 이동하는 함수
     setCurrentPage(page);
   };
 
@@ -183,6 +217,7 @@ const Mypage = () => {
     return pages;
   };
 
+   // 비디오의 오른쪽 클릭 시 삭제 확인 후 삭제 처리
   const handleContextMenu = (event, video) => {
     event.preventDefault();
     if (window.confirm("이 영상을 삭제하시겠습니까?")) {
@@ -190,6 +225,7 @@ const Mypage = () => {
     }
   };
 
+  // 비디오 선택 시 해당 비디오의 데이터를 가져오는 함수
   const selectVideo = async (videoUrl) => {
     const memberEmail = localStorage.getItem("userId");
 
@@ -228,12 +264,13 @@ const Mypage = () => {
       localStorage.setItem("questions", JSON.stringify(extractedQuestions));
       localStorage.setItem("answers", JSON.stringify(extractedAnswers));
 
-      window.location.href = "/memory";
+      window.location.href = "/video-summary";
     } catch (error) {
       console.error("영상 선택 중 에러가 발생했습니다:", error);
     }
   };
 
+  // 비디오를 삭제하는 함수
   const deleteVideo = async (videoUrl) => {
     try {
       const memberEmail = localStorage.getItem("userId");
@@ -274,14 +311,23 @@ const Mypage = () => {
       </MypageText>
       <GridContainer>
         {currentData.map((video, index) => (
-          <StyledButton
+          <VideoCard
             key={index}
             onClick={() => selectVideo(video.videoUrl)}
             onContextMenu={(e) => handleContextMenu(e, video)}
           >
-            <ButtonImage src={video.thumbnailUrl} />
-            <ButtonContent>{video.videoTitle}</ButtonContent>
-          </StyledButton>
+            <VideoCardImage src={video.thumbnailUrl} />
+            <VideoCardContent>{video.videoTitle}</VideoCardContent>
+            <LockButton
+              isLocked={video.isLocked}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleLock(video.videoUrl);
+              }}
+            >
+              {video.isLocked ? "🔒" : "🔓"}
+            </LockButton>
+          </VideoCard>
         ))}
       </GridContainer>
       <PaginationContainer>

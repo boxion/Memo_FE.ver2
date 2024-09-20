@@ -39,7 +39,7 @@ const RankingCardContent = styled.div`
   text-align: center;
   width: 100%;
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* 두 줄까지만 표시 */
+  -webkit-line-clamp: 2; 
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
