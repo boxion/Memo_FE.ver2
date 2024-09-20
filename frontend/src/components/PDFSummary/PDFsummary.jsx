@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
-import YouTube from "react-youtube";
 import CategoryDropdown from "../Community/CategoryDropdown";
+import Config from "../Config/config";
+import { PdfViewer } from '@naverpay/react-pdf'; // PdfViewer import
 
 const Container = styled.div`
   padding: 2vw;
@@ -81,8 +82,10 @@ const ViewEditButton = styled.button`
   }
 `;
 
-const VideoContainer = styled.div`
+const PdfContainer = styled.div`
   margin-bottom: 2vw;
+  height: 60vh; // 원하는 높이로 조절
+  overflow-y: auto; // 세로 스크롤 추가
 `;
 
 const ChatContainer = styled.div`
@@ -196,7 +199,47 @@ const ActionButton = styled.button`
 
 const PDFSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
-  const [viewMode, setViewMode] = useState(true); 
+  const [viewMode, setViewMode] = useState(true);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const pdfContainerRef = useRef(null); // ref 생성
+
+  useEffect(() => {
+      fetchPdfFile();
+  }, []);
+  
+  const fetchPdfFile = async () => {
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/files/getpdffile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail: '44',  // 예시 데이터
+          pdfTitle: 'SW서버프로그램_사용자인터페이스_보강_3강.pdf',  // 예시 데이터
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('PDF 파일 가져오기 오류: ' + response.statusText);
+      }
+
+      const blob = await response.blob();
+      const pdfUrl = window.URL.createObjectURL(blob);
+      setPdfUrl(pdfUrl); // pdfUrl 상태 업데이트
+
+    } catch (error) {
+      console.error('PDF 파일 가져오기 오류:', error);
+    }
+  };
+
+  // PDF가 로드된 후 스크롤을 최하단으로 이동
+  useEffect(() => {
+    if (pdfContainerRef.current) {
+      pdfContainerRef.current.scrollTop = pdfContainerRef.current.scrollHeight; // 스크롤을 최하단으로 이동
+    }
+  }, [pdfUrl]); // pdfUrl이 업데이트될 때마다 실행
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -241,9 +284,14 @@ const PDFSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-          <VideoContainer>
-            <YouTube videoId="your-video-id-here" opts={{ width: "100%", height: "300px" }} />
-          </VideoContainer>
+          <PdfContainer ref={pdfContainerRef}> {/* ref를 PdfContainer에 추가 */}
+            {pdfUrl && (
+              <PdfViewer 
+                pdfUrl={pdfUrl} 
+                onErrorPDFRender={(e) => console.error('PDF 렌더링 오류:', e)} // 오류 핸들링
+              />
+            )}
+          </PdfContainer>
 
           <ChatContainer>
             <ChatHeader>ChatGPT와 대화</ChatHeader>
@@ -259,7 +307,6 @@ const PDFSummary = () => {
 
         <RightSection>
           <MVCTheorySection>
-
             <TabAndViewContainer>
               <TabButtonContainer>
                 <TabButton
