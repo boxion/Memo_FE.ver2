@@ -1,272 +1,346 @@
-import React, { useEffect, useState, useRef } from "react";
-import styled from "styled-components";
-import Profile from "../../assets/images/profile.png";
-import SettingsIconImg from "../../assets/images/SettingsIcon.png";
-import HistoryIconImg from "../../assets/images/history.png";
-import LogoutIconImg from "../../assets/images/logout.png";
-import { useNavigate } from "react-router-dom";
+// import React, { useEffect, useState, useRef } from "react";
+// import styled from "styled-components";
+// import Profile from "../../assets/images/profile.png";
+// import SettingsIconImg from "../../assets/images/SettingsIcon.png";
+// import HistoryIconImg from "../../assets/images/history.png";
+// import LogoutIconImg from "../../assets/images/logout.png";
+// import { useNavigate } from "react-router-dom";
+// import Config from "../Config/config";
 
-const Overlay = styled.div`
-  position: fixed;
-  top: ${({ top }) => top - top * 0.9}px; /* y 좌푯값 지정 */
-  left: ${({ left }) => left - left * 0.27}px; /* x 좌푯값 지정 */
-  z-index: 99;
-  width: ${({ width }) => width - width * 1.15}px; /* 동적으로 width 조정 */
-  height: ${({ height }) => height - height * 1.2}px; /* 동적으로 height 조정 */
-  background: rgba(0, 0, 0, 0);
-  display: flex;
-  justify-content: flex-end;
-`;
 
-const DropdownContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  gap: 2vw;
-  align-items: flex-start;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  padding: 10px;
-`;
+// const Overlay = styled.div`
+//   position: fixed;
+//   top: ${({ top }) => top - top * 0.9}px; /* y 좌푯값 지정 */
+//   left: ${({ left }) => left - left * 0.27}px; /* x 좌푯값 지정 */
+//   z-index: 99;
+//   width: ${({ width }) => width - width * 1.15}px; /* 동적으로 width 조정 */
+//   height: ${({ height }) => height - height * 1.2}px; /* 동적으로 height 조정 */
+//   background: rgba(0, 0, 0, 0);
+//   display: flex;
+//   justify-content: flex-end;
+// `;
 
-const InfoBox = styled.div``;
+// const DropdownContainer = styled.div`
+//   width: 100%;
+//   display: flex;
+//   flex-direction: row;
+//   gap: 2vw;
+//   align-items: flex-start;
+//   background: rgba(255, 255, 255, 0.9);
+//   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+//   border-radius: 5px;
+//   padding: 10px;
+// `;
 
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  width: 100%;
-  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-`;
+// const InfoBox = styled.div``;
 
-const ProfileBox = styled.div``;
+// const UserInfo = styled.div`
+//   display: flex;
+//   align-items: center;
+//   margin-bottom: 10px;
+//   width: 100%;
+//   white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+// `;
 
-const ProfileImage = styled.img`
-  margin-top: 1vw;  
-  border-radius: 50%;
-  cursor: pointer;
-`;
+// const ProfileBox = styled.div``;
 
-const Email = styled.div`
-  font-size: 1rem;
-  color: #838383;
-  margin: 0 1vw 0.5vw 1vw;
-`;
+// const ProfileImage = styled.img`
+//   margin-top: 1vw;  
+//   border-radius: 50%;
+//   cursor: pointer;
+// `;
 
-const Nickname = styled.div`
-  font-size: 1vw;
-  margin: 0 1vw 0 1vw;
-  font-weight: bold;
-  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
-`;
+// const Email = styled.div`
+//   font-size: 1rem;
+//   color: #838383;
+//   margin: 0 1vw 0.5vw 1vw;
+// `;
 
-const Options = styled.div`
-  list-style: none;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-`;
+// const Nickname = styled.div`
+//   font-size: 1vw;
+//   margin: 0 1vw 0 1vw;
+//   font-weight: bold;
+//   white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+// `;
 
-const Option = styled.div`
-  display: flex;
-  align-items: center;
-  &:hover {
-    background-color: #f0f0f0;
-  }
-`;
+// const Options = styled.div`
+//   list-style: none;
+//   padding: 0;
+//   display: flex;
+//   flex-direction: column;
+// `;
 
-const OptionItem = styled.div`
-  font-size: 0.8vw;
-  padding: 0.5vw 1vw;
-  cursor: pointer;
-`;
+// const Option = styled.div`
+//   display: flex;
+//   align-items: center;
+//   &:hover {
+//     background-color: #f0f0f0;
+//   }
+// `;
 
-const IconImg = styled.img`
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-`;
+// const OptionItem = styled.div`
+//   font-size: 0.8vw;
+//   padding: 0.5vw 1vw;
+//   cursor: pointer;
+// `;
 
-const Modal = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #e7e7e7;
-  padding: 20px;
-  border-radius: 1vw;
-`;
+// const IconImg = styled.img`
+//   width: 20px;
+//   height: 20px;
+//   cursor: pointer;
+// `;
 
-const TextInput = styled.input`
-  font-size: 1vw;
-  background-color: #f0f0f0;
-  font-weight: bold;
-  margin: 1vw;
-  padding: 1vw;
-  border-radius: 1vw;
-  border: 0.1vw solid #000000;
-`;
+// const Modal = styled.div`
+//   position: fixed;
+//   top: 50%;
+//   left: 50%;
+//   transform: translate(-50%, -50%);
+//   background-color: #e7e7e7;
+//   padding: 20px;
+//   border-radius: 1vw;
+// `;
 
-const Button = styled.button`
-  margin: 1vw;
-  padding: 1vw;
-  border-radius: 1vw;
-  border: 0.2vw solid #000000;
-  font-weight: bold;
-  font-size: 1vw;
+// const TextInput = styled.input`
+//   font-size: 1vw;
+//   background-color: #f0f0f0;
+//   font-weight: bold;
+//   margin: 1vw;
+//   padding: 1vw;
+//   border-radius: 1vw;
+//   border: 0.1vw solid #000000;
+// `;
 
-  &:hover {
-    background-color: #b8b8b8;
-  }
-`;
+// const Button = styled.button`
+//   margin: 1vw;
+//   padding: 1vw;
+//   border-radius: 1vw;
+//   border: 0.2vw solid #000000;
+//   font-weight: bold;
+//   font-size: 1vw;
 
-const UserProfileDropdown = ({ closeModal }) => {
-  const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [newNickname, setNewNickname] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [showWarning, setShowWarning] = useState(false); // 경고 메시지 상태 추가
-  const navigate = useNavigate();
-  const modalRef = useRef();
-  const overlayRef = useRef();
+//   &:hover {
+//     background-color: #b8b8b8;
+//   }
+// `;
 
-  const [windowSize, setWindowSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+// const UserProfileDropdown = ({ closeModal }) => {
+//   const [nickname, setNickname] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [newNickname, setNewNickname] = useState("");
+//   const [showModal, setShowModal] = useState(false);
+//   const [showWarning, setShowWarning] = useState(false);
+//   const navigate = useNavigate();
+//   const modalRef = useRef();
+//   const overlayRef = useRef();
 
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
+//   const [windowSize, setWindowSize] = useState({
+//     width: window.innerWidth,
+//     height: window.innerHeight,
+//   });
 
-    window.addEventListener("resize", handleResize);
+//   useEffect(() => {
+//     const handleResize = () => {
+//       setWindowSize({
+//         width: window.innerWidth,
+//         height: window.innerHeight,
+//       });
+//     };
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+//     window.addEventListener("resize", handleResize);
 
-  useEffect(() => {
-    const memberName = localStorage.getItem("memberName");
-    if (memberName) {
-      setNickname(memberName);
-    }
+//     return () => {
+//       window.removeEventListener("resize", handleResize);
+//     };
+//   }, []);
 
-    const memberEmail = localStorage.getItem("userId");
-    if (memberEmail) {
-      setEmail(memberEmail);
-    }
+//   useEffect(() => {
+//     const memberName = localStorage.getItem("memberName");
+//     if (memberName) {
+//       setNickname(memberName);
+//     }
 
-    const handleClickOutside = (e) => {
-      if (overlayRef.current && !overlayRef.current.contains(e.target)) {
-        closeModal();
-      }
-    };
+//     const memberEmail = localStorage.getItem("userId");
+//     if (memberEmail) {
+//       setEmail(memberEmail);
+//     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+//     const handleClickOutside = (e) => {
+//       if (overlayRef.current && !overlayRef.current.contains(e.target)) {
+//         closeModal();
+//       }
+//     };
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [closeModal]);
+//     document.addEventListener("mousedown", handleClickOutside);
 
-  const handleNicknameChange = (e) => {
-    if (e.target.value.length <= 3) {
-      setNewNickname(e.target.value);
-      setShowWarning(false);
-    } else {
-      setShowWarning(true); // 3글자를 초과하면 경고 메시지 표시
-    }
-  };
+//     return () => {
+//       document.removeEventListener("mousedown", handleClickOutside);
+//     };
+//   }, [closeModal]);
 
-  const handleNicknameSubmit = () => {
-    if (newNickname) {
-      setNickname(newNickname);
-      localStorage.setItem("memberName", newNickname);
-      setNewNickname("");
-      setShowModal(false);
-    }
-  };
+//   // 닉네임 변경 로직
+//   const handleNicknameChange = (e) => {
+//     if (e.target.value.length <= 3) {
+//       setNewNickname(e.target.value);
+//       setShowWarning(false);
+//     } else {
+//       setShowWarning(true);
+//     }
+//   };
 
-  return (
-    <Overlay ref={overlayRef} top={windowSize.height} left={windowSize.width} width={windowSize.width} height={windowSize.height}>
-      <DropdownContainer>
-        <InfoBox>
-          <UserInfo>
-            <Nickname>{nickname}님 안녕하세요ᵔᴗᵔ</Nickname>
-          </UserInfo>
-          <Email>{email}</Email>
-          <Options>
-            <Option>
-              <OptionItem
-                onClick={() => {
-                  navigate("/mypage");
-                }}
-              >
-                내 기록보기
-              </OptionItem>
-              <IconImg src={HistoryIconImg} alt="History" />
-            </Option>
-            <Option>
-              <OptionItem onClick={() => setShowModal(true)}>
-                닉네임 변경
-              </OptionItem>
-              <IconImg
-                onClick={() => setShowModal(true)}
-                src={SettingsIconImg}
-                alt="Settings"
-              />
-            </Option>
-            <Option>
-              <OptionItem
-                onClick={() => {
-                  localStorage.removeItem("memberName");
-                  localStorage.removeItem("userId");
-                  navigate("/login"); // 로그아웃 후 로그인 페이지로 이동
-                }}
-              >
-                로그아웃
-              </OptionItem>
-              <IconImg src={LogoutIconImg} alt="Logout" />
-            </Option>
-          </Options>
-        </InfoBox>
-        <ProfileBox>
-          <ProfileImage src={Profile} alt="Profile" />
-        </ProfileBox>
-      </DropdownContainer>
-      {showModal && (
-        <Modal ref={modalRef}>
-          <div
-            style={{
-              fontWeight: "bold",
-              fontSize: "1.5rem",
-              textAlign: "center",
-            }}
-          >
-            닉네임을 변경하시겠습니까?
-          </div>
-          <TextInput
-            type="text"
-            value={newNickname}
-            onChange={handleNicknameChange}
-            placeholder="새 닉네임 입력"
-          />
-          <Button onClick={handleNicknameSubmit}>변경하기</Button>
-          {showWarning && (
-            <div style={{ fontSize: "1vw", color: "red", fontWeight: "bold", marginLeft: "1.5vw" }}>
-              닉네임은 3글자까지 가능합니다.
-            </div>
-          )}
-        </Modal>
-      )}
-    </Overlay>
-  );
-};
+//   // 닉네임 서버로 전송
+//   const handleNicknameSubmit = async () => {
+//     try {
+//       await changeNickname(newNickname);
+//       setNickname(newNickname);
+//       localStorage.setItem("memberName", newNickname);
+//       setNewNickname("");
+//       setShowModal(false);
+//     } catch (error) {
+//       console.error("닉네임 변경 오류:", error);
+//     }
+//   };
 
-export default UserProfileDropdown;
+//   // -----------------------------------------------------------------------------
+//   // - Name: getVideoList
+//   // - Desc: 해당 카테고리의 전체 영상 가져오기
+//   const getVideoList = async (categoryName) => {
+//     try {
+//       localStorage.setItem("categoryName", categoryName);
+//       if (categoryName === "최근 본 영상") {
+//         categoryName = null;
+//       }
+//       const memberEmail = localStorage.getItem("userId");
+
+//       const response = await fetch(`${Config.baseURL}/api/v1/video/category-video`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ memberEmail, categoryName }),
+//       });
+
+//       if (!response.ok) {
+//         throw new Error("네트워크 응답이 실패했습니다.");
+//       }
+
+//       let responseData = await response.json();
+
+//       responseData = responseData.map((video) => ({
+//         ...video,
+//         videoTitle: video.videoTitle.replace(/_/g, " "),
+//       }));
+
+//       responseData.reverse();
+
+//       localStorage.setItem("videoList", JSON.stringify(responseData));
+//       navigate("/mypage");
+//       window.location.reload();
+
+//       return responseData;
+//     } catch (error) {
+//       console.error("에러 발생:", error);
+//     }
+//   };
+
+//   // 로그아웃 함수
+//   const logout = () => {
+//     const ranking1Data = localStorage.getItem("ranking1");
+//     const ranking2Data = localStorage.getItem("ranking2");
+//     const ranking3Data = localStorage.getItem("ranking3");
+//     localStorage.clear();
+//     localStorage.setItem("isLoggedIn", false);
+//     if (ranking1Data) {
+//       localStorage.setItem("ranking1", ranking1Data);
+//       localStorage.setItem("ranking2", ranking2Data);
+//       localStorage.setItem("ranking3", ranking3Data);
+//     }
+
+//     navigate("/");
+//     window.location.reload();
+//   };
+
+//   // 닉네임 변경 함수
+//   const changeNickname = async (newNickname) => {
+//     try {
+//       const userEmail = localStorage.getItem("userId");
+
+//       const response = await fetch(`${BASE_URL}/api/v1/user/update-name`, {
+//         method: "PATCH",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           memberEmail: userEmail,
+//           newName: newNickname,
+//         }),
+//       });
+
+//       if (!response.ok) {
+//         throw new Error("닉네임 변경 실패");
+//       }
+
+//       console.log("닉네임 변경 성공!");
+//     } catch (error) {
+//       console.error("닉네임 변경 중 에러:", error);
+//     }
+//   };
+
+//   return (
+//     <Overlay
+//       ref={overlayRef}
+//       top={windowSize.height}
+//       left={windowSize.width}
+//       width={windowSize.width}
+//       height={windowSize.height}
+//     >
+//       <DropdownContainer>
+//         <InfoBox>
+//           <UserInfo>
+//             <Nickname>{nickname}님 안녕하세요ᵔᴗᵔ</Nickname>
+//           </UserInfo>
+//           <Email>{email}</Email>
+//           <Options>
+//             <Option>
+//               <OptionItem onClick={() => getVideoList("최근 본 영상")}>
+//                 내 기록보기
+//               </OptionItem>
+//               <IconImg src={HistoryIconImg} alt="History" />
+//             </Option>
+//             <Option>
+//               <OptionItem onClick={() => setShowModal(true)}>
+//                 닉네임 변경
+//               </OptionItem>
+//               <IconImg src={SettingsIconImg} alt="Settings" />
+//             </Option>
+//             <Option>
+//               <OptionItem onClick={logout}>로그아웃</OptionItem>
+//               <IconImg src={LogoutIconImg} alt="Logout" />
+//             </Option>
+//           </Options>
+//         </InfoBox>
+//         <ProfileBox>
+//           <ProfileImage src={Profile} alt="Profile" />
+//         </ProfileBox>
+//       </DropdownContainer>
+
+//       {showModal && (
+//         <Modal ref={modalRef}>
+//           <h2>닉네임 변경</h2>
+//           <TextInput
+//             type="text"
+//             value={newNickname}
+//             onChange={handleNicknameChange}
+//             placeholder="새 닉네임을 입력하세요"
+//           />
+//           {showWarning && <p>닉네임은 3글자 이하로 입력해주세요.</p>}
+//           <Button onClick={handleNicknameSubmit}>저장</Button>
+//           <Button onClick={() => setShowModal(false)}>취소</Button>
+//         </Modal>
+//       )}
+//     </Overlay>
+//   );
+// };
+
+// export default UserProfileDropdown;
+
+//이거 안쓸거야 header에서 할거야
