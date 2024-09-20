@@ -141,28 +141,6 @@ function Header() {
     window.location.reload();
   };
 
-  const handleMypageClick = async () => {
-    try {
-      const memberEmail = localStorage.getItem("memberEmail");
-      const categoryName = localStorage.getItem("categoryName");
-      const response = await fetch(`${Config.baseURL}/api/v1/video/category-video`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ memberEmail, categoryName })
-      });
-      const data = await response.json();
-      
-      // Assuming you want to save the fetched data to local storage or some state
-      localStorage.setItem("videoList", JSON.stringify(data));
-      
-      navigate("/mypage");
-    } catch (error) {
-      console.error("Error fetching video data:", error);
-    }
-  };
-
   return (
     <HeaderContainer>
       <TopSection>
@@ -182,7 +160,7 @@ function Header() {
               onClick={handleProfileClick}
             />
             <DropdownMenu isOpen={isDropdownOpen}>
-              <DropdownItem to="#" onClick={handleMypageClick}>내 게시판</DropdownItem>
+              <DropdownItem to="/mypage">내 게시판</DropdownItem>
               <DropdownItem to="/savepage">저장 게시판</DropdownItem>
               <DropdownItem to="/memo">팀 정보</DropdownItem>
               <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
