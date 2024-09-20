@@ -220,19 +220,39 @@ const PDFSummary = () => {
           pdfTitle: 'SW서버프로그램_사용자인터페이스_보강_3강.pdf',  // 예시 데이터
         }),
       });
-
+  
       if (!response.ok) {
         throw new Error('PDF 파일 가져오기 오류: ' + response.statusText);
       }
-
+  
       const blob = await response.blob();
       const pdfUrl = window.URL.createObjectURL(blob);
       setPdfUrl(pdfUrl); // pdfUrl 상태 업데이트
-
+  
+      // /getpdfinfo POST 요청 추가
+      const infoResponse = await fetch(`${Config.baseURL}/api/v1/files/getpdfinfo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail: '44',  // 예시 데이터
+          pdfTitle: 'SW서버프로그램_사용자인터페이스_보강_3강.pdf',  // 예시 데이터
+        }),
+      });
+  
+      if (!infoResponse.ok) {
+        throw new Error('PDF 정보 가져오기 오류: ' + infoResponse.statusText);
+      }
+  
+      const pdfInfo = await infoResponse.json(); // JSON 형태로 응답 받기
+      console.log('PDF 정보:', pdfInfo); // 로그 찍기
+  
     } catch (error) {
       console.error('PDF 파일 가져오기 오류:', error);
     }
   };
+  
 
   // PDF가 로드된 후 스크롤을 최하단으로 이동
   useEffect(() => {
