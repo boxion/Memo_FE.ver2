@@ -160,9 +160,9 @@ function Header() {
               onClick={handleProfileClick}
             />
             <DropdownMenu isOpen={isDropdownOpen}>
-              <DropdownItem to="/mypage">내 게시판</DropdownItem>
-              <DropdownItem to="/savepage">저장 게시판</DropdownItem>
-              <DropdownItem to="/memo">팀 정보</DropdownItem>
+              <DropdownItem to="/mypage">내 게시물</DropdownItem>
+              <DropdownItem to="/savemypage">저장 게시물</DropdownItem>
+              <DropdownItem to="/team">팀 정보</DropdownItem>
               <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
             </DropdownMenu>
           </ProfileTitle>

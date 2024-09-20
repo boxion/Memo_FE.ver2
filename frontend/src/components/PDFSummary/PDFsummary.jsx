@@ -4,6 +4,8 @@ import Header from "../Header/Header";
 import CategoryDropdown from "../Community/CategoryDropdown";
 import Config from "../Config/config";
 import { PdfViewer } from '@naverpay/react-pdf'; // PdfViewer import
+import { useLocation } from "react-router-dom";
+import SaveFolderModal from "../VideoSummary/SaveFolderModal";
 
 const Container = styled.div`
   padding: 2vw;
@@ -33,13 +35,6 @@ const RightSection = styled.div`
   @media (min-width: 768px) {
     width: 50%;
   }
-`;
-
-const TabAndViewContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1vw;
 `;
 
 const TabButtonContainer = styled.div`
@@ -88,95 +83,6 @@ const PdfContainer = styled.div`
   overflow-y: auto; // 세로 스크롤 추가
 `;
 
-const ChatContainer = styled.div`
-  flex-grow: 1;
-  background-color: #000000;
-  border-radius: 1vw;
-  padding: 1vw;
-`;
-
-const ChatHeader = styled.div`
-  background-color: #000000;
-  color: white;
-  padding: 1vw;
-  border-radius: 1vw 1vw 0 0;
-  font-size: 1vw;
-`;
-
-const ChatBox = styled.div`
-  height: 20vw;
-  overflow-y: auto;
-  padding: 1vw;
-  background-color: white;
-  border-radius: 0 0 1vw 1vw;
-`;
-
-const ChatInputContainer = styled.div`
-  display: flex;
-  margin-top: 1vw;
-`;
-
-const ChatInput = styled.input`
-  flex: 1;
-  padding: 1vw;
-  border-radius: 0.5vw;
-  border: 1px solid #ccc;
-  font-size: 1vw;
-`;
-
-const SendButton = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 0.5vw;
-  padding: 1vw 2vw;
-  font-size: 1vw;
-  cursor: pointer;
-  margin-left: 1vw;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const MVCTheorySection = styled.section`
-  background-color: #fff;
-  border-radius: 1vw;
-  padding: 2vw;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-`;
-
-const MVCHeading = styled.h2`
-  font-size: 1.2vw;
-  color: #333;
-  margin-bottom: 1vw;
-`;
-
-const MVCList = styled.ol`
-  margin: 0;
-  padding-left: 1vw;
-`;
-
-const MVCListItem = styled.div`
-  margin-bottom: 1vw;
-  background-color: #f0f0f0;
-  border-radius: 1vw;        
-  padding: 1vw;         
-`;
-
-const MVCListTitle = styled.h3`
-  font-size: 1vw;
-  color: #555;
-  margin-bottom: 1vw;
-`;
-
-const MVCListText = styled.p`
-  font-size: 1vw;
-  color: #333;
-  margin: 0;
-`;
-
 const ActionButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -197,12 +103,163 @@ const ActionButton = styled.button`
   }
 `;
 
+const ListBox = styled.ol`
+  margin: 0;
+  padding-left: 1vw;
+  max-height: 80vh; 
+  overflow-y: auto;
+`;
+
+const ListItem = styled.div`
+  margin: 1vw 1vw 1vw 0;
+  background-color: #f0f0f0;
+  border-radius: 1vw;
+  padding: 1vw;
+`;
+
+const ListText = styled.p`
+  font-size: 1vw;
+  color: #333;
+  margin: 0;
+`;
+
+const ScriptContainer = styled.div`
+  max-height: 75vh; 
+  overflow-y: auto;
+  padding: 1vw;
+  margin: 1vw 0 0 0;
+  background-color: #f0f0f0;
+  border-radius: 1vw;
+`;
+const ScriptLine = styled.div`
+  display: flex;
+  margin-bottom: 0.5vw;
+`;
+const ScriptText = styled.span`
+  color: #333;
+  font-size: 1vw;
+`;
+
+const TheorySection = styled.section`
+  background-color: #fff;
+  border-radius: 1vw;
+  padding: 2vw;
+  //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  //width: 100%;
+`;
+
+const DropdownContainer = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const DropdownMenu = styled.div`
+  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 1vw;
+  font-size: 1vw;
+`;
+
+const DropdownItem = styled.button`
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1vw;
+  margin: 0.5vw;
+
+  &:hover {
+    background-color: #f1f1f1;
+  }
+
+  &.selected {
+    color: #582fff;
+  }
+`;
+
+const FilterButton = styled.button`
+  padding: 0.5vw 1vw;
+  font-size: 1vw;
+  cursor: pointer;
+  border-radius: 2vw;
+  margin-right: 0.5vw;
+  background-color: #ffffff;
+  border: 0.1vw solid #582fff;
+  color: #582fff;
+
+  width: auto;
+  white-space: nowrap; 
+  max-width: 15vw;
+
+  &:hover {
+    background-color: #d0d0d0;
+  }
+
+  &.active {
+    background-color: #ffffff;
+    border: 0.1vw solid #000000;
+  }
+`;
+const PlaceholderText = styled.span`
+  color: #888;
+`;
+
+const TimeText = styled.span`
+  font-weight: bold;
+  font-size: 1vw;
+  margin-right: 1vw;
+  color: #333;
+`;
+const Divider = styled.div`
+  height: 0.1vw;
+  background-color: #d9d9d9;
+`;
+
+const PdfTitle = styled.h2` 
+  font-size: 1.2vw;
+  color: #333;
+  margin-bottom: 1vw;
+`;
+
+const parseScript = (scriptArray) => {
+  return scriptArray
+    .map((line) => {
+      // "TS: 0:00 | TXT: 안녕하세요." 형식의 문자열에서 TS:와 TXT: 제거
+      const match = line.match(/TS: (\d+:\d+) \| TXT: (.+)/);
+      if (match) {
+        return { time: match[1], text: match[2] };
+      }
+      return null;
+    })
+    .filter(Boolean); // null 값 제거
+};
+
 const PDFSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
   const pdfContainerRef = useRef(null); // ref 생성
+  const [documentDate, setDocumentDate] = useState(new Date());
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [pdfTitle, setPdfTitle] = useState("");
+  const [summary, setSummary] = useState([]);
+  const [fullScript, setFullScript] = useState([]);
+  const dropdownRef = useRef(null);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const location = useLocation();
+
+  const categories = [
+    "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
+    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음"
+  ];
 
   useEffect(() => {
       fetchPdfFile();
@@ -261,40 +318,55 @@ const PDFSummary = () => {
     }
   }, [pdfUrl]); // pdfUrl이 업데이트될 때마다 실행
 
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setDropdownOpen(false); // 선택 후 드롭다운 닫기
+  };
+
+  const handleRegisterClick = () => {
+    if (!selectedCategory) {
+      // 필터가 선택되지 않았을 경우 경고창 띄우기
+      alert("필터를 선택해주세요.");
+    } else {
+      // 필터가 선택되었을 경우 모달 열기
+      setModalOpen(true);
+    }
+  };
+  
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+
   const renderContent = () => {
     if (activeTab === "summary") {
       return (
-        <MVCList>
-          <MVCListItem>
-            <MVCListTitle>1. MVC패턴이란 무엇인가?</MVCListTitle>
-            <MVCListText>
-              MVC패턴은 사용자 인터페이스와 비즈니스 로직을 분리하여 각각의 문제를 독립적으로 운영하여
-              유지보수를 용이하게 만들 수 있는 디자인 패턴입니다.
-            </MVCListText>
-          </MVCListItem>
-          <MVCListItem>
-            <MVCListTitle>2. 두 모델의 핵심적인 차이</MVCListTitle>
-            <MVCListText>
-              두 모델의 핵심적인 차이는 두 가지로 요약할 수 있습니다.
-            </MVCListText>
-          </MVCListItem>
-          <MVCListItem>
-            <MVCListTitle>3. Dispatcher Servlet</MVCListTitle>
-            <MVCListText>
-              요청을 처리할 컨트롤러를 찾아 위임하고 최종적인 결과를 반환하는 것.
-            </MVCListText>
-          </MVCListItem>
-        </MVCList>
+        <ListBox>
+        <PdfTitle>{pdfTitle || "비디오 제목 없음"}</PdfTitle>
+        {summary.map((paragraph, index) => (
+          <ListItem key={index}>
+            {/* title과 content를 분리하여 각각 렌더링 */}
+            <ListText>
+              <strong>{paragraph.title}</strong> {/* 소제목 */}
+            </ListText>
+            <ListText>{paragraph.content}</ListText> {/* 내용 */}
+          </ListItem>
+        ))}
+      </ListBox>
       );
     } else if (activeTab === "script") {
+      const parsedScript = parseScript(fullScript); // 스크립트 파싱
       return (
-        <div>
-          <p>여기에 전체 스크립트 내용을 추가하세요.</p>
-        </div>
-      );
-    } else if (activeTab === "filter") {
-      return (
-        <CategoryDropdown onSelectCategory={(category) => console.log(category)} />
+        <ScriptContainer>
+          {parsedScript.map((line, index) => (
+            <ScriptLine key={index}>
+              <TimeText>{line.time}</TimeText>
+              <ScriptText>{line.text}</ScriptText>
+            </ScriptLine>
+          ))}
+        </ScriptContainer>
       );
     }
   };
@@ -312,23 +384,12 @@ const PDFSummary = () => {
               />
             )}
           </PdfContainer>
-
-          <ChatContainer>
-            <ChatHeader>ChatGPT와 대화</ChatHeader>
-            <ChatBox>
-              {/*채팅 내용 */}
-            </ChatBox>
-            <ChatInputContainer>
-              <ChatInput type="text" placeholder="무엇이든 물어보세요..." />
-              <SendButton>전송</SendButton>
-            </ChatInputContainer>
-          </ChatContainer>
         </LeftSection>
 
         <RightSection>
-          <MVCTheorySection>
-            <TabAndViewContainer>
-              <TabButtonContainer>
+          <TheorySection>
+            <TabButtonContainer>
+              <div>
                 <TabButton
                   className={activeTab === "summary" ? "active" : ""}
                   onClick={() => setActiveTab("summary")}
@@ -341,27 +402,39 @@ const PDFSummary = () => {
                 >
                   전체 스크립트
                 </TabButton>
-                <TabButton
-                  className={activeTab === "filter" ? "active" : ""}
-                  onClick={() => setActiveTab("filter")}
-                >
-                  필터를 선택하세요
-                </TabButton>
-              </TabButtonContainer>
-
+                <DropdownContainer ref={dropdownRef}>
+                  <FilterButton
+                    onClick={() => setDropdownOpen(!isDropdownOpen)}
+                  >
+                    {selectedCategory || <PlaceholderText>필터를 선택해주세요</PlaceholderText>}
+                  </FilterButton>
+                  <DropdownMenu isOpen={isDropdownOpen}>
+                    {categories.map((category, index) => (
+                      <React.Fragment key={category}>
+                        <DropdownItem
+                          onClick={() => handleCategorySelect(category)}
+                          className={selectedCategory === category ? "selected" : ""}
+                        >
+                          {category}
+                        </DropdownItem>
+                        {index < categories.length - 1 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </DropdownMenu>
+                </DropdownContainer>
+              </div>
               <ViewEditButton onClick={() => setViewMode(!viewMode)}>
                 {viewMode ? "View" : "Edit"}
               </ViewEditButton>
-            </TabAndViewContainer>
+            </TabButtonContainer>
 
-            <MVCHeading>MVC 패턴 이론</MVCHeading>
-            
             {renderContent()}
 
             <ActionButtonContainer>
-              <ActionButton>등록하기</ActionButton>
+              <ActionButton onClick={handleRegisterClick}>등록하기</ActionButton>
             </ActionButtonContainer>
-          </MVCTheorySection>
+            <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
+          </TheorySection>
         </RightSection>
       </Container>
     </>

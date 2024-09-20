@@ -7,9 +7,11 @@ import MyPage from "./pages/Myhomepage";
 import AudioAI from "./pages/Audiopage";
 import Community from "./pages/Community";
 import PDFpage from "./pages/PDFpage";
+import Team from "./pages/Team";
 import PDFSummary from "./components/PDFSummary/PDFsummary";
 import VideoSummary from "./components/VideoSummary/VideoSummary";
 import AudioSummary from "./components/AudioSummary/AudioSummary";
+import SaveMypage from "./components/Mypage/SaveMypage"
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/Savemypage" element={<SaveMypage />} />
+            <Route path="/team" element={<Team />} />
           </Routes>
     </Router>
   );

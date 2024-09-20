@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/Header/Header";
 import Config from "../components/Config/config";
-import axios from 'axios'; // axios로 백엔드와 통신
+import axios from 'axios'; 
 
 const Container = styled.div`
   display: flex;
@@ -47,8 +49,7 @@ const PDFIcon = styled.div`
   justify-content: center;
   margin-right: 4vw;
   box-shadow: 0px 0.4vw 0.8vw rgba(0, 0, 0, 0.1);
-  cursor: pointer; /* 클릭 가능하게 변경 */
-
+  cursor: pointer;
 `;
 
 const PDFIconText = styled.span`
@@ -60,11 +61,10 @@ const PDFIconText = styled.span`
 const OptionsContainer = styled.div`
   display: flex;
   flex-direction: row;
+  align-items: flex-end;
 `;
 
-const SelectContainer = styled.div`
-
-`;
+const SelectContainer = styled.div``;
 
 const Label = styled.div`
   font-size: 1.3vw;
@@ -101,8 +101,11 @@ const SendButton = styled.button`
   border-radius: 1vw;
   cursor: pointer;
   margin-top: 1vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   &:hover {
-    background-color: #218838;
+    background-color: #111111;
   }
 `;
 
@@ -126,46 +129,44 @@ const FileName = styled.p`
 function PDFpage() {
   const [language, setLanguage] = useState('한국어');
   const [pdfFile, setPdfFile] = useState(null);
-  const [pdfTitle, setPdfTitle] = useState(''); // PDF 제목 상태 추가
-  const fileInputRef = useRef(null); // 파일 입력 참조
-  const navigate = useNavigate(); // 페이지 이동
+  const [pdfTitle, setPdfTitle] = useState(''); 
+  const [isLoading, setIsLoading] = useState(false); // 로딩 상태 추가
+  const fileInputRef = useRef(null); 
+  const navigate = useNavigate(); 
 
   const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
   };
 
-  // 파일 선택 핸들러
   const handlePdfUpload = (e) => {
-    setPdfFile(e.target.files[0]); // 파일 선택
+    setPdfFile(e.target.files[0]); 
   };
 
-  // 백엔드로 파일을 전송하는 함수
   const handleSendButtonClick = async () => {
     if (pdfFile) {
+      setIsLoading(true); // 로딩 시작
       try {
-        // FormData 생성
         const formData = new FormData();
         formData.append('file', pdfFile);
-        formData.append('memberEmail', localStorage.getItem('userId')); // 로컬스토리지에서 가져온 memberEmail
+        formData.append('memberEmail', localStorage.getItem('userId')); 
         formData.append('language', language);
 
-        // 백엔드로 파일 업로드 요청
         const response = await axios.post(`${Config.baseURL}/api/v1/files/pdfupload`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
 
-        // 서버 응답에서 PDF 제목 추출
         const { pdfTitle } = response.data;
         setPdfTitle(pdfTitle);
 
-        // 성공 메시지 또는 기타 처리
         alert('PDF 파일이 성공적으로 업로드되었습니다!');
         navigate('/PDF-Summary'); 
 
       } catch (error) {
         console.error('PDF 업로드 중 오류 발생:', error);
+      } finally {
+        setIsLoading(false); // 로딩 완료
       }
     }
   };
@@ -198,14 +199,22 @@ function PDFpage() {
                 type="file"
                 accept="application/pdf"
                 onChange={handlePdfUpload}
-                ref={fileInputRef} // 참조 연결
+                ref={fileInputRef}
               />
             </UploadButton>
           </OptionsContainer>
         </UploadContainer>
 
         {/* 파일이 선택된 경우에만 보내기 버튼 표시 */}
-        {pdfFile && <SendButton onClick={handleSendButtonClick}>보내기</SendButton>}
+        {pdfFile && (
+          <SendButton onClick={handleSendButtonClick}>
+            {isLoading ? (
+              <FontAwesomeIcon icon={faSpinner} spin />
+            ) : (
+              '보내기'
+            )}
+          </SendButton>
+        )}
 
         {pdfTitle && <FileName>{pdfTitle}</FileName>}
 
