@@ -191,7 +191,7 @@ const Mypage = () => {
   };
 
   const selectVideo = async (videoUrl) => {
-    const memberEmail = getEmailFromLocalStorage();
+    const memberEmail = localStorage.getItem("userId");
 
     try {
       const response = await fetch(`${Config.baseURL}/api/v1/video/select-video`, {
@@ -236,7 +236,7 @@ const Mypage = () => {
 
   const deleteVideo = async (videoUrl) => {
     try {
-      const memberEmail = getEmailFromLocalStorage();
+      const memberEmail = localStorage.getItem("userId");
       const videoList = JSON.parse(localStorage.getItem("videoList")) || [];
 
       const response = await fetch(`${Config.baseURL}/api/v1/video/delete-video`, {
