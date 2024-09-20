@@ -1,4 +1,5 @@
 import React, { useState,useEffect  } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Header from "../components/Header/Header";
 import CategoryDropdown from "../components/Community/CategoryDropdown";
@@ -6,7 +7,6 @@ import searchIconSrc from '../assets/images/searchicon.png'; // 이미지 경로
 import favoriteIcon from '../assets/images/favoriteIcon.png'; // 즐겨찾기 아이콘 이미지 경로
 import favoriteFilledIcon from '../assets/images/favoriteFilledIcon.png'; // 채워진 즐겨찾기 아이콘 이미지 경로
 import profile from '../assets/images/profile.png'; // 즐겨찾기 아이콘 이미지 경로
-
 const BASE_URL = "http://59.5.40.202:8082";
 
 const Container = styled.div`
@@ -168,8 +168,8 @@ const FavoriteButton = styled.button`
   background-color: transparent;
   padding: 0;
   cursor: pointer;
-  width: 1.15vw;
-  height: 1.15vw;
+  width: 1.5vw;
+  height: 1.5vw;
   position: relative;
   background-image: url(${props => props.favorited ? favoriteFilledIcon : favoriteIcon});
   background-size: cover;
@@ -216,6 +216,15 @@ const PageButton = styled.button`
   &:hover {
     text-decoration: underline;
   }
+    /* 현재 페이지일 경우 동그라미 */
+  ${({ isActive }) =>
+    isActive &&
+    `
+      border-radius: 20%;  // 동그라미 모양
+      border: 2px solid #4144E9;  // 동그라미 외곽선
+      background-color: #4144E9;
+      color: white;
+    `}
 `;
 // 제목 검색 통신 코드
 const searchVideos = async (videoTitle) => {
@@ -304,8 +313,34 @@ const fetchLatestVideos = async () => {
     console.error('There was a problem with the fetch operation:', error);
   }
 };
+// 클릭된 비디오 정보 전송 함수
+const sendVideoInfo = async (memberEmail, videoUrl) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/video`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        memberEmail: memberEmail,
+        videoUrl: videoUrl
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('sendVideoInfo 함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+    const data = await response.json();
+    console.log(data); // 받은 응답을 콘솔에 출력
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
+
 
 function Community() {
+  const navigate = useNavigate(); // useNavigate 훅을 사용하여 navigate 함수 정의
   const [videos, setVideos]= useState([]);// 비디오 데이터를 저장하는 상태
   const [displayedVideos, setDisplayedVideos] = useState([]); // 현재 화면에 표시할 비디오 데이터
   const [currentPage, setCurrentPage] = useState(1); // 현재 페이지를 저장하는 상태
@@ -343,7 +378,6 @@ function Community() {
     fetchVideos();
   }, []);
   
-  
   useEffect(() => {
     const applyFiltersAndSort = async () => {
       let filteredResults = [...videos];
@@ -365,8 +399,7 @@ function Community() {
     };
   
     applyFiltersAndSort();
-  }, [sortType]); // sortType을 의존성으로 설정 (카테고리 필터링은 handleCategorySelect에서 처리)
-  
+  }, [sortType]); 
   
   useEffect(() => {
     // 페이지에 맞는 비디오만 표시
@@ -376,8 +409,58 @@ function Community() {
     setDisplayedVideos(currentVideos);
   }, [currentPage, filteredVideos]);
   
+  useEffect(() => {
+    // Function to fetch liked videos from localStorage
+    const fetchLikedVideosFromLocalStorage = () => {
+      const likedVideos = JSON.parse(localStorage.getItem('likedVideos')) || {};
+      return likedVideos;
+    };
+      const initializeFavorites = () => {
+      const likedVideos = fetchLikedVideosFromLocalStorage();
+      const initialFavorites = displayedVideos.map(video => !!likedVideos[video.videoId]);
+      setFavorites(initialFavorites);
+    };
   
-  
+    initializeFavorites();
+  }, [displayedVideos]);
+ // 비디오 클릭 핸들러
+const handleVideoClick = async (video) => {
+  try {
+    // memberEmail과 videoUrl을 서버로 전송
+    const response = await fetch(`${BASE_URL}/api/v1/community/video`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        memberEmail: video.memberEmail,
+        videoUrl: video.videoUrl,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('비디오 정보를 불러오는데 실패했습니다.');
+    }
+
+    const videoAndQuestions = await response.json();
+    console.log('불러온 비디오 정보:', videoAndQuestions);
+
+    // 전송 성공 시 videoSummary 페이지로 이동 (로컬 저장된 정보가 아닌 클릭한 비디오 정보로 이동)
+    navigate(`/video-summary`, {
+      state: {
+        memberEmail: video.memberEmail,
+        videoUrl: video.videoUrl,
+        videoTitle: video.videoTitle,
+        summary: video.summary,
+        fullScript: video.fullScript
+      },
+    });
+  } catch (error) {
+    console.error('비디오 클릭 처리 중 오류 발생:', error);
+  }
+};
+
+
   const toggleCategoryDropdown = () => {
     setCategoryDropdownOpen(!categoryDropdownOpen);
   };
@@ -389,16 +472,20 @@ function Community() {
     setSelectedCategory(category);
     setSortType('정렬'); // 카테고리를 선택하면 정렬 타입을 '정렬'로 리셋
     setCategoryDropdownOpen(false);
-  
-    // 선택된 카테고리에 맞는 필터링 작업만 수행
-    const filteredResults = await fetchFilteredVideos(category);
-  
-    if (filteredResults) {
-      setFilteredVideos(filteredResults);
-      setCurrentPage(1); // 필터 적용 후 첫 페이지로 이동
+    if (category === '전체') {
+      setFilteredVideos(videos); // 전체 비디오를 필터링된 비디오로 설정
+    } else {
+      // 선택된 카테고리에 맞는 필터링 작업만 수행
+      const filteredResults = await fetchFilteredVideos(category);
+      if (filteredResults && filteredResults.length > 0) {
+        setFilteredVideos(filteredResults);
+      } else {
+        console.log("Video not found");
+        setFilteredVideos([]); // 비디오가 없을 때 빈 배열을 설정
+      }
     }
   };
-  
+
   const handleSearchSubmit = async () => {
     if (searchQuery) {
       // 검색어가 있을 경우 검색을 수행
@@ -414,13 +501,62 @@ function Community() {
   };
   
 
-  const toggleFavorite = (index) => {
+  const toggleFavorite = async (index) => {
     const newFavorites = [...favorites];
-    newFavorites[index] = !newFavorites[index];
+    const videoId = displayedVideos[index].videoId;
+    const isCurrentlyFavorited = newFavorites[index];
+    
+    // Toggle the favorite status
+    newFavorites[index] = !isCurrentlyFavorited;
     setFavorites(newFavorites);
-  };
+    
+    // Update localStorage with the new favorite status
+    const userId = localStorage.getItem('userId');
+    
+    if (userId) {
+      try {
+        const url = isCurrentlyFavorited
+          ? `${BASE_URL}/api/v1/video/unlike`
+          : `${BASE_URL}/api/v1/video/like`;
+    
+        const method = isCurrentlyFavorited ? 'DELETE' : 'POST';
+    
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            memberEmail: userId,
+            videoId: videoId,
+          }),
+        });
+    
+        if (!response.ok) {
+          throw new Error('Failed to update favorite status.');
+        }
+    
+        console.log('Favorite status updated successfully.');
+    
+        // Update local storage
+        const likedVideos = JSON.parse(localStorage.getItem('likedVideos')) || {};
+        if (isCurrentlyFavorited) {
+          delete likedVideos[videoId];
+        } else {
+          likedVideos[videoId] = true;
+        }
+        localStorage.setItem('likedVideos', JSON.stringify(likedVideos));
+    
+      } catch (error) {
+        console.error('Error updating favorite status:', error);
+      }
+    } else {
+      console.error('User ID not found in localStorage.');
+    }
+  };  
   const handleSortSelect = async (type) => {
     setSortType(type);
+    setSelectedCategory('전체'); // 카테고리를 '전체'로 설정
     setSortDropdownOpen(false);
   };
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -434,13 +570,6 @@ function Community() {
   const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
   const currentVideos = videos.slice(indexOfFirstVideo, indexOfLastVideo);
 
-  // // 페이지 변경 핸들러
-  // const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // const pageNumbers = [];
-  // for (let i = 1; i <= Math.ceil(videos.length / videosPerPage); i++) {
-  //   pageNumbers.push(i);
-  // }
   return (
     <>
       <Header />
@@ -480,8 +609,8 @@ function Community() {
         </FilterContainer>
         <GridContainer>
           {displayedVideos.map((video, index) => (
-            <Card key={video.videoId}>
-              <ImagePlaceholder style={{ backgroundImage: `url(${video.thumbnailUrl})`, backgroundSize: 'cover' }} />
+            <Card key={video.videoId} onClick={() => handleVideoClick(video)}>
+            <ImagePlaceholder style={{ backgroundImage: `url(${video.thumbnailUrl})`, backgroundSize: 'cover' }} />
               <CardTitle> {video.videoTitle.length > 60 ? video.videoTitle.slice(0, 60) + '...' : video.videoTitle}</CardTitle>
               <IconContainer>
                 <FavoriteButton 
@@ -497,7 +626,8 @@ function Community() {
         </GridContainer>
         <PageNavigation>
           {pageNumbers.map((number) => (
-            <PageButton key={number} onClick={() => paginate(number)}>
+            <PageButton key={number} onClick={() => paginate(number)}
+            isActive={currentPage === number}>
               {number}
             </PageButton>
           ))}

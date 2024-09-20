@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom"; // 영상 클릭 시 상태 전달을 받기 위함
 import styled from "styled-components";
 import Header from "../Header/Header";
 import YouTube from "react-youtube";
@@ -250,6 +251,7 @@ const VideoSummary = () => {
   const [fullScript, setFullScript] = useState([]);
   const dropdownRef = useRef(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const location = useLocation();
 
   const categories = [
     "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
@@ -257,48 +259,70 @@ const VideoSummary = () => {
   ];
 
   useEffect(() => {
-    const storedVideoTitle = localStorage.getItem("videoTitle");
-    const storedSummary = localStorage.getItem("summary");
-    const storedFullScript = localStorage.getItem("fullScript");
-    const storedVideoUrl = localStorage.getItem("videoUrl");
-
-    if (storedVideoTitle) {
-      setVideoTitle(storedVideoTitle);
-    }
-    if (storedSummary) {
-      // '###'로 분리한 뒤, 각 항목을 소제목과 내용으로 나눕니다.
-      const parsedSummary = storedSummary
-        .split("###")
-        .filter(item => item.trim()) // 빈 항목 제거
-        .map(item => {
-          const lines = item.split("\n"); // 줄바꿈 기준으로 나눔
-          const title = lines[0].trim(); // 첫 번째 줄을 소제목으로
-          const content = lines.slice(1).join("\n").trim(); // 나머지를 내용으로
-          return { title, content }; // 소제목과 내용을 객체로 반환
-        });
+    const videoData = location.state;
   
-      setSummary(parsedSummary);
-    }
-    if (storedFullScript) {
-      setFullScript(storedFullScript.split("\n"));
-    }
-    if (storedVideoUrl) {
-      const videoId = extractVideoId(storedVideoUrl);
+    console.log(videoData); // videoData 확인
+  
+    if (videoData) {
+      const { videoTitle, summary, fullScript, videoUrl, documentDate } = videoData;
+  
+      localStorage.setItem("videoTitle", videoTitle);
+      localStorage.setItem("summary", summary);
+      localStorage.setItem("fullScript", fullScript);
+      localStorage.setItem("videoUrl", videoUrl);
+      localStorage.setItem("documentDate", documentDate);
+  
+      const videoId = extractVideoId(videoUrl);
       setVideoId(videoId);
+      setVideoTitle(videoTitle);
+  
+      // summary와 fullScript가 정의되어 있는지 확인
+      if (summary) {
+        setSummary(summary.split("###").map(item => {
+          const lines = item.split("\n");
+          return { title: lines[0], content: lines.slice(1).join("\n").trim() };
+        }));
+      } else {
+        console.error("Summary is undefined or empty");
+      }
+  
+      if (fullScript) {
+        setFullScript(fullScript.split("\n"));
+      } else {
+        console.error("Full script is undefined or empty");
+      }
+    } else {
+      const storedVideoTitle = localStorage.getItem("videoTitle");
+      const storedSummary = localStorage.getItem("summary");
+      const storedFullScript = localStorage.getItem("fullScript");
+      const storedVideoUrl = localStorage.getItem("videoUrl");
+  
+      console.log(storedVideoTitle, storedSummary, storedFullScript); // 저장된 값 확인
+  
+      if (storedVideoTitle) setVideoTitle(storedVideoTitle);
+  
+      // localStorage에서 가져온 summary와 fullScript가 정의되어 있는지 확인
+      if (storedSummary && storedSummary.trim() !== "") {
+        setSummary(storedSummary.split("###").map(item => {
+          const lines = item.split("\n");
+          return { title: lines[0], content: lines.slice(1).join("\n").trim() };
+        }));
+      } else {
+        console.error("Stored summary is undefined or empty");
+      }
+  
+      if (storedFullScript) {
+        setFullScript(storedFullScript.split("\n"));
+      } else {
+        console.error("Stored full script is undefined or empty");
+      }
+  
+      if (storedVideoUrl) {
+        const videoId = extractVideoId(storedVideoUrl);
+        setVideoId(videoId);
+      }
     }
-    handleResize();
-
-    window.addEventListener("resize", handleResize);
-
-    const interval = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 1000);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      clearInterval(interval);
-    };
-  }, []);
+  }, [location.state]);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
