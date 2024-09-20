@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Config from "../Config/config";
 
@@ -109,14 +109,45 @@ const NextButton = styled.button`
 
 const itemsPerPage = 12;
 
-const getEmailFromLocalStorage = () => {
-  return localStorage.getItem("memberEmail");
-};
-
 const Mypage = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const videoList = JSON.parse(localStorage.getItem("videoList")) || [];
-  const categoryName = localStorage.getItem("categoryName");
+  const [videoList, setVideoList] = useState([]); // videoList 상태 추가
+  const [categoryName, setCategoryName] = useState(localStorage.getItem("categoryName") || "최근 본 영상");
+
+  useEffect(() => {
+    getVideoList(categoryName); // 컴포넌트가 처음 마운트될 때 호출
+  }, [categoryName]);
+
+  const getVideoList = async (categoryName) => {
+    try {
+      if (categoryName === "최근 본 영상") {
+        categoryName = null;
+      }
+
+      const memberEmail = localStorage.getItem("userId");
+
+      const response = await fetch(`${Config.baseURL}/api/v1/video/category-video`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ memberEmail, categoryName }),
+      });
+
+      if (!response.ok) {
+        console.log("네트워크 응답이 실패했습니다. 개발자에게 문의하세요.");
+        return;
+      }
+
+      let responseData = await response.json();
+      responseData.reverse(); // 비디오 리스트를 내림차순으로 정렬
+
+      setVideoList(responseData); // 받아온 데이터를 상태에 저장
+    } catch (error) {
+      console.error("에러 발생:", error);
+      console.log("해당 카테고리가 비어있습니다.");
+    }
+  };
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -254,16 +285,9 @@ const Mypage = () => {
         ))}
       </GridContainer>
       <PaginationContainer>
-        <PrevButton onClick={goToPrevPage} disabled={currentPage === 1}>
-          {"<"}
-        </PrevButton>
+        <PrevButton onClick={goToPrevPage}>{"<"}</PrevButton>
         {renderPageButtons()}
-        <NextButton
-          onClick={goToNextPage}
-          disabled={currentPage === Math.ceil(videoList.length / itemsPerPage)}
-        >
-          {">"}
-        </NextButton>
+        <NextButton onClick={goToNextPage}>{">"}</NextButton>
       </PaginationContainer>
     </>
   );
