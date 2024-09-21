@@ -100,7 +100,7 @@ function Audiopage() {
 
   const { listen, stop } = useSpeechRecognition({
     onResult: (result) => {
-      setTranscript(prev => prev + ' ' + result);
+      setTranscript(result); // 이전 텍스트 덮어쓰고 새로운 결과만 저장
     },
   });
 

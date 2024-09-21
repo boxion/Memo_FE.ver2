@@ -128,86 +128,6 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // 렌더링될 때 로컬스토리지의 isLoggedIn 값이 true인지 확인 후 요청
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-    if (isLoggedIn === "true") {
-      const memberEmail = localStorage.getItem("userId");
-
-      // 백엔드로 POST 요청 보내기
-      const sendToHome = async () => {
-        try {
-          const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              memberEmail, // userId를 memberEmail로 전달
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error("서버에서 오류가 발생했습니다.");
-          }
-
-          const responseData = await response.json();
-          console.log("백엔드 응답:", responseData);
-        } catch (error) {
-          console.error("POST 요청 중 에러 발생:", error);
-        }
-      };
-
-      sendToHome();
-    }
-  }, []);
-
-  const selectVideo = async (videoUrl) => {
-    const memberEmail = localStorage.getItem("memberEmail");
-
-    try {
-      const response = await fetch(`${Config.baseURL}/api/v1/video/select-video`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          memberEmail,
-          videoUrl
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("서버에서 오류를 반환했습니다.");
-      }
-
-      const responseData = await response.json();
-      console.log("[ 선택한 video의 데이터: ] ", responseData);
-
-      const { summary, document, videoUrl, documentDate, categoryName, videoTitle } = responseData.video;
-      const { questions } = responseData;
-      const document2 = document == null ? "" : document;
-      const extractedQuestions = questions.map((question) => question.question);
-      const extractedAnswers = questions.map((question) => question.answer);
-
-      localStorage.setItem("summary", summary);
-      localStorage.setItem("document", document2);
-      localStorage.setItem("videoUrl", videoUrl);
-      localStorage.setItem("videoTitle", videoTitle);
-      localStorage.setItem("documentDate", documentDate);
-      localStorage.setItem("categoryName", categoryName);
-      localStorage.setItem("questions", JSON.stringify(extractedQuestions));
-      localStorage.setItem("answers", JSON.stringify(extractedAnswers));
-
-      navigate("/memory");
-
-      return responseData;
-    } catch (error) {
-      console.error("에러 발생:", error);
-    }
-  };
-
   const GPTSummary = async (url) => {
     try {
       const userId = localStorage.getItem("userId"); // 로컬 스토리지에서 userId 가져오기
@@ -234,7 +154,6 @@ const Home = () => {
 
       const data = await response.json();
       console.log("받은 summary:", data);
-
 
       localStorage.setItem("summary", data.summary);
       localStorage.setItem("fullScript", data.fullScript);
@@ -317,7 +236,6 @@ const Home = () => {
     const match = url.match(regExp);
     return match && match[1] ? match[1] : null;
   };
-  //지금은 그냥 {} 유튜브만 유효하다고 판단되는데     {}쇼츠넣고 이렇게 생긴 쇼츠도 유효하다고 판단하게해줘
 
   const handleChange = (event) => {
     const url = event.target.value;
@@ -328,13 +246,6 @@ const Home = () => {
   const handleLoadVideo = () => {
     const id = extractVideoId(videoUrl);
     setVideoId(id);
-  };
-
-  const removeSurroundingQuotes = (str) => {
-    if (str.startsWith('"') && str.endsWith('"')) {
-      return str.slice(1, -1);
-    }
-    return str;
   };
 
   return (
