@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import Config from "../Config/config";
@@ -132,10 +132,47 @@ const AddButton = styled.button`
 
 
 const SaveFolderModal = ({ isOpen, onClose }) => {
-  const [folders, setFolders] = useState(foldersData);
+  const [folders, setFolders] = useState([]);
   const [content, setContent] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
   const navigate = useNavigate();
+
+  // 컴포넌트가 렌더링될 때 API 요청
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const memberEmail = localStorage.getItem("userId");  // 로컬스토리지에서 userId 가져오기
+
+        const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            memberEmail,  // memberEmail로 userId 사용
+          }),
+        });
+
+        const responseText = await response.text();
+        // console.log("응답 상태:", response.status);
+        // console.log("응답 본문:", responseText);  // 반환되는 데이터 로그 찍기
+
+        // 응답이 성공적일 경우
+        if (response.ok) {
+          const categories = JSON.parse(responseText);  // 응답 본문을 JSON으로 변환
+          const folderNames = categories.map(category => category.categoryName);  // categoryName만 추출
+          setFolders(folderNames);  // folders 상태 업데이트
+        }
+
+      } catch (error) {
+        console.error("에러 발생:", error);
+      }
+    };
+
+    if (isOpen) {  // 모달이 열릴 때만 요청
+      fetchData();
+    }
+  }, [isOpen]);  // isOpen 상태가 변경될 때마다 실행
 
   const handleInputChange = (e) => {
     setContent(e.target.value);
