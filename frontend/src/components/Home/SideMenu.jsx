@@ -175,21 +175,6 @@ const SideMenu = ({ isOpen, onClose }) => {
     setIsModalOpen(false);
   };
 
-  // 외부 클릭 감지 핸들러
-  const handleClickOutside = (e) => {
-    if (sideMenuRef.current && !sideMenuRef.current.contains(e.target)) {
-      onClose(); // 외부 클릭 시 사이드 메뉴 닫기
-    }
-  };
-
-  // 컴포넌트 마운트 시 이벤트 리스너 추가
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   return (
     <>
       <SideMenuWrapper>

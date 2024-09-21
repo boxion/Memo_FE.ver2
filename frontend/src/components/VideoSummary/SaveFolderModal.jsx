@@ -154,8 +154,6 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
         });
 
         const responseText = await response.text();
-        // console.log("응답 상태:", response.status);
-        // console.log("응답 본문:", responseText);  // 반환되는 데이터 로그 찍기
 
         // 응답이 성공적일 경우
         if (response.ok) {
@@ -180,8 +178,8 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
 
   const handleAddFolder = async () => {
     try {
+      // 내용이 비어있을 때 경고창 띄우기
       if (content.trim() === "") {
-        // 내용이 비어있을 때 경고창 띄우기
         alert("추가할 폴더명을 입력해주세요.");
         return;
       }
