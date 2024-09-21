@@ -609,8 +609,8 @@ const handleVideoClick = async (video) => {
         </FilterContainer>
         <GridContainer>
           {displayedVideos.map((video, index) => (
-            <Card key={video.videoId} onClick={() => handleVideoClick(video)}>
-            <ImagePlaceholder style={{ backgroundImage: `url(${video.thumbnailUrl})`, backgroundSize: 'cover' }} />
+            <Card key={video.videoId}>
+            <ImagePlaceholder style={{ backgroundImage: `url(${video.thumbnailUrl})`, backgroundSize: 'cover' }}  onClick={() => handleVideoClick(video)} />
               <CardTitle> {video.videoTitle.length > 60 ? video.videoTitle.slice(0, 60) + '...' : video.videoTitle}</CardTitle>
               <IconContainer>
                 <FavoriteButton 
