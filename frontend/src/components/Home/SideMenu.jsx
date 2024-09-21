@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import SaveModal from "../VideoSummary/SaveFolderModal";
 import folderIcon from "../../assets/images/macos_folder.png";
+import Config from "../Config/config";
 
 const SideMenuContainer = styled.div`
   position: fixed;
@@ -118,8 +119,48 @@ const EditButton = styled.div`
 
 const SideMenu = ({ isOpen, onClose }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const categoryList = JSON.parse(localStorage.getItem("categoryList")) || [];
+  const [categoryList, setCategoryList] = useState([]); // 백엔드에서 받아온 카테고리 데이터를 저장할 상태
   const sideMenuRef = useRef(null); // 사이드 메뉴 참조 생성
+
+  // 렌더링될 때 로컬스토리지의 isLoggedIn 값이 true인지 확인 후 요청
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+    if (isLoggedIn === "true") {
+      const memberEmail = localStorage.getItem("userId");
+
+      // 백엔드로 POST 요청 보내기
+      const sendToHome = async () => {
+        try {
+          const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              memberEmail, // userId를 memberEmail로 전달
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("서버에서 오류가 발생했습니다.");
+          }
+
+          const responseData = await response.json();
+          console.log("백엔드 응답:", responseData);
+
+          // 백엔드에서 받은 categoryName 데이터를 setCategoryList로 저장
+          const categories = responseData.map((category) => category.categoryName);
+          setCategoryList(categories); // 상태에 카테고리 목록 저장
+
+        } catch (error) {
+          console.error("POST 요청 중 에러 발생:", error);
+        }
+      };
+
+      sendToHome();
+    }
+  }, []);
 
   const handleMenuItemClick = (category) => {
     onClose();
@@ -142,7 +183,7 @@ const SideMenu = ({ isOpen, onClose }) => {
   };
 
   // 컴포넌트 마운트 시 이벤트 리스너 추가
-  React.useEffect(() => {
+  useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -160,8 +201,7 @@ const SideMenu = ({ isOpen, onClose }) => {
                 key={index}
                 onClick={() => handleMenuItemClick(category)}
               >
-                <Icon src={folderIcon} alt="Folder Icon" />
-                <Text>{category}</Text>
+                <Text>📁{category}</Text>
               </StyledMenuItem>
             ))}
           </CategoryContainer>

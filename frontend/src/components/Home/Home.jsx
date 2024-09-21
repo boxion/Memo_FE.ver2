@@ -128,40 +128,40 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
-  // 렌더링될 때 로컬스토리지의 isLoggedIn 값이 true인지 확인 후 요청
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
+  // // 렌더링될 때 로컬스토리지의 isLoggedIn 값이 true인지 확인 후 요청
+  // useEffect(() => {
+  //   const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-    if (isLoggedIn === "true") {
-      const memberEmail = localStorage.getItem("userId");
+  //   if (isLoggedIn === "true") {
+  //     const memberEmail = localStorage.getItem("userId");
 
-      // 백엔드로 POST 요청 보내기
-      const sendToHome = async () => {
-        try {
-          const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              memberEmail, // userId를 memberEmail로 전달
-            }),
-          });
+  //     // 백엔드로 POST 요청 보내기
+  //     const sendToHome = async () => {
+  //       try {
+  //         const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify({
+  //             memberEmail, // userId를 memberEmail로 전달
+  //           }),
+  //         });
 
-          if (!response.ok) {
-            throw new Error("서버에서 오류가 발생했습니다.");
-          }
+  //         if (!response.ok) {
+  //           throw new Error("서버에서 오류가 발생했습니다.");
+  //         }
 
-          const responseData = await response.json();
-          console.log("백엔드 응답:", responseData);
-        } catch (error) {
-          console.error("POST 요청 중 에러 발생:", error);
-        }
-      };
+  //         const responseData = await response.json();
+  //         console.log("백엔드 응답:", responseData);
+  //       } catch (error) {
+  //         console.error("POST 요청 중 에러 발생:", error);
+  //       }
+  //     };
 
-      sendToHome();
-    }
-  }, []);
+  //     sendToHome();
+  //   }
+  // }, []);
 
   const selectVideo = async (videoUrl) => {
     const memberEmail = localStorage.getItem("memberEmail");
