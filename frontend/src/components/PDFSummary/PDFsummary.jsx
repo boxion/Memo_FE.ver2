@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
 import Config from "../Config/config";
-import { PdfViewer } from '@naverpay/react-pdf'; // PdfViewer import
-import { useLocation } from "react-router-dom";
+import { PdfViewer } from '@naverpay/react-pdf';
 import SaveFolderModal from "../VideoSummary/SaveFolderModal";
+import Chat from "../VideoSummary/Chatgpt";
+import gptIcon from "../../assets/images/GPTIcon.png";
 
 const Container = styled.div`
   padding: 1vw;
@@ -13,7 +14,7 @@ const Container = styled.div`
   justify-content: center;
   font-family: Arial, sans-serif;
 
-   @media (max-width: 768px) { 
+  @media (max-width: 768px) { 
     flex-direction: column;
   }
 `;
@@ -32,7 +33,6 @@ const RightSection = styled.div`
   padding-left: 2vw;
   position: relative;
 `;
-
 
 const PdfContainer = styled.div`
   height: 70vh;
@@ -62,7 +62,7 @@ const ActionButton = styled.button`
 const ListBox = styled.ol`
   margin: 0;
   padding-left: 1vw;
-  max-height: 64vh; 
+  max-height: 63vh; 
   overflow-y: auto;
 `;
 
@@ -96,6 +96,39 @@ const PdfTitle = styled.div`
   font-weight: bold;
   color: #333;
   margin-top: 0.5vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const GptIcon = styled.img`
+  margin-right: 2vw;
+  width: 2vw;
+  height: 2vw;
+  cursor: pointer;
+`;
+
+const ChatOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+`;
+
+const ChatContainer = styled.div`
+  border-radius: 1vw;
+  padding: 1vw;
+  width: 50%;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: white;
 `;
 
 const DateText = styled.div`
@@ -104,37 +137,29 @@ const DateText = styled.div`
   color: #838383;
 `;
 
-//요약본 처리해주는 함수
+// 요약본 처리해주는 함수
 const parseSummary = (summary) => {
-  const paragraphs = summary.split("\n\n").filter(p => p.trim()); // '•'를 기준으로 분리
+  const paragraphs = summary.split("\n\n").filter(p => p.trim());
   return paragraphs.map((paragraph, index) => {
-    const [title, ...content] = paragraph.split(": "); // ':'로 제목과 내용 분리
+    const [title, ...content] = paragraph.split(": ");
     return {
-      title: title.trim() || `Section ${index + 1}`, // 제목이 없으면 'Section'으로 대체
-      content: content.join(": ").trim(), // 내용이 ':' 이후로 나올 수 있으므로 다시 합침
+      title: title.trim() || `Section ${index + 1}`,
+      content: content.join(": ").trim(),
     };
   });
 };
 
 const PDFSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
-  const [viewMode, setViewMode] = useState(true);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const pdfContainerRef = useRef(null); 
-  const [documentDate, setDocumentDate] = useState(new Date());
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [pdfTitle, setPdfTitle] = useState("");
   const [summary, setSummary] = useState([]);
-  const [fullScript, setFullScript] = useState([]);
-  const dropdownRef = useRef(null);
   const [isModalOpen, setModalOpen] = useState(false);
-  const location = useLocation();
-
+  const [isGptModalOpen, setGptModalOpen] = useState(false);
 
   useEffect(() => {
-    // PDF가 변경될 때마다 초기화 처리
     if (pdfContainerRef.current) {
       pdfContainerRef.current.innerHTML = ''; // 기존의 canvas 삭제
     }
@@ -145,7 +170,7 @@ const PDFSummary = () => {
   }, []);
 
   const fetchPdfFile = async () => {
-    setIsLoading(true); // 로딩 시작
+    setIsLoading(true);
     try {
       let memberEmail = localStorage.getItem("userId");
       let pdfTitle = localStorage.getItem("PDFFileName");
@@ -167,9 +192,8 @@ const PDFSummary = () => {
   
       const blob = await response.blob();
       const pdfUrl = window.URL.createObjectURL(blob);
-      setPdfUrl(pdfUrl); // pdfUrl 상태 업데이트
+      setPdfUrl(pdfUrl);
   
-      // /getpdfinfo POST 요청 추가
       const infoResponse = await fetch(`${Config.baseURL}/api/v1/files/getpdfinfo`, {
         method: 'POST',
         headers: {
@@ -185,21 +209,14 @@ const PDFSummary = () => {
         throw new Error('PDF 정보 가져오기 오류: ' + infoResponse.statusText);
       }
   
-      const pdfInfo = await infoResponse.json(); // JSON 형태로 응답 받기
-      console.log('PDF 정보:', pdfInfo); // 로그 찍기
-      
-      // 상태 업데이트
+      const pdfInfo = await infoResponse.json();
       setPdfTitle(pdfTitle);
-      console.log('pdfInfo.fullScript :', pdfInfo.fullScript);
-      setSummary(parseSummary(pdfInfo.summary)); // 요약본을 파싱하여 상태로 설정
-      // setFullScript(pdfInfo.fullScript); // 전체 스크립트를 그대로 설정
-      setDocumentDate(pdfInfo.documentDate); // 문서 날짜 설정
-      // setSelectedCategory(pdfInfo.categoryName || ""); // 카테고리 설정
+      setSummary(parseSummary(pdfInfo.summary));
   
     } catch (error) {
       console.error('PDF 파일 가져오기 오류:', error);
     } finally {
-      setIsLoading(false); // 로딩 끝
+      setIsLoading(false);
     }
   };
 
@@ -219,11 +236,23 @@ const PDFSummary = () => {
     setModalOpen(false);
   };
 
+  const handleGptIconClick = () => {
+    setGptModalOpen(true);
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleCloseGptModal();
+    }
+  };
+  
+  const handleCloseGptModal = () => {
+    setGptModalOpen(false);
+  };
+
   const renderContent = () => {
     if (activeTab === "summary") {
       return (
-        <>
-        <PdfTitle>🖍️ {pdfTitle || "제목 없음"}</PdfTitle>
         <ListBox>
           {summary.map((paragraph, index) => (
             <ListItem key={index}>
@@ -234,23 +263,22 @@ const PDFSummary = () => {
             </ListItem>
           ))}
         </ListBox>
-        </>
       );
     } else if (activeTab === "script") {
       return (
         <ScriptContainer>
-         {fullScript}
+          {/* 필요한 경우 fullScript를 추가 */}
         </ScriptContainer>
       );
     }
   };
-  
+
   return (
     <>
       <Header />
       <Container>
         <LeftSection>
-        <DateText>{localStorage.getItem("documentDate")}</DateText>
+          <DateText>{localStorage.getItem("documentDate")}</DateText>
           <PdfContainer ref={pdfContainerRef}>
             {pdfUrl && !isLoading && (
               <PdfViewer
@@ -264,11 +292,23 @@ const PDFSummary = () => {
         </LeftSection>
         <RightSection>
           <TheorySection>
+            <PdfTitle>
+              🖍️ {pdfTitle || "제목 없음"}
+              <GptIcon src={gptIcon} alt="GPT Icon" onClick={handleGptIconClick} />
+            </PdfTitle>
             {renderContent()}
             <ActionButtonContainer>
               <ActionButton onClick={handleRegisterClick}>등록하기</ActionButton>
             </ActionButtonContainer>
             <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
+            {isGptModalOpen && (
+              <>
+                <ChatOverlay onClick={handleOverlayClick} />
+                <ChatContainer>
+                  <Chat visible={isGptModalOpen} onClose={handleCloseGptModal} isModal={true} />
+                </ChatContainer>
+              </>
+            )}
           </TheorySection>
         </RightSection>
       </Container>
