@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
-import SaveModal from "../Mypage/SaveModal";
+import SaveModal from "../VideoSummary/SaveFolderModal";
 import folderIcon from "../../assets/images/macos_folder.png";
 
 const SideMenuContainer = styled.div`
@@ -117,26 +117,42 @@ const EditButton = styled.div`
 `;
 
 const SideMenu = ({ isOpen, onClose }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
-  const categoryList = JSON.parse(localStorage.getItem("categoryList")) || []; // 로컬스토리지에서 카테고리 목록 가져오기
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const categoryList = JSON.parse(localStorage.getItem("categoryList")) || [];
+  const sideMenuRef = useRef(null); // 사이드 메뉴 참조 생성
 
   const handleMenuItemClick = (category) => {
-    onClose(); // 메뉴 항목 클릭 시 사이드 메뉴 닫기
+    onClose();
   };
 
   const handleEditCategories = () => {
-    setIsModalOpen(true); // 모달을 엽니다
+    setIsModalOpen(true);
     console.log("카테고리 수정 버튼 클릭됨");
   };
 
   const closeModal = () => {
-    setIsModalOpen(false); // 모달을 닫습니다
+    setIsModalOpen(false);
   };
+
+  // 외부 클릭 감지 핸들러
+  const handleClickOutside = (e) => {
+    if (sideMenuRef.current && !sideMenuRef.current.contains(e.target)) {
+      onClose(); // 외부 클릭 시 사이드 메뉴 닫기
+    }
+  };
+
+  // 컴포넌트 마운트 시 이벤트 리스너 추가
+  React.useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
       <SideMenuWrapper>
-        <SideMenuContainer isOpen={isOpen}>
+        <SideMenuContainer ref={sideMenuRef} isOpen={isOpen}>
           <CloseButton onClick={onClose}>×</CloseButton>
           <CategoryContainer>
             {categoryList.map((category, index) => (
@@ -151,13 +167,12 @@ const SideMenu = ({ isOpen, onClose }) => {
           </CategoryContainer>
           <EditButtonWrapper>
             <EditButton onClick={handleEditCategories}>
-              + 카테고리 수정
+              + 카테고리 추가
             </EditButton>
           </EditButtonWrapper>
         </SideMenuContainer>
       </SideMenuWrapper>
-      {isModalOpen && <SaveModal closeModal={closeModal} />}{" "}
-      {/* 모달을 조건부로 렌더링 */}
+      {isModalOpen && <SaveModal isOpen={isModalOpen} onClose={closeModal} />}
     </>
   );
 };
