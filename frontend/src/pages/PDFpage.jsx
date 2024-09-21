@@ -33,8 +33,7 @@ const UploadContainer = styled.div`
   align-items: center;
   background-color: #e0e0e0;
   border-radius: 2vw;
-  padding: 3vw;
-  width: 50vw;
+  padding: 2vw;
   max-width: 1200px;
   box-shadow: 0px 0.8vw 1.2vw rgba(0, 0, 0, 0.1);
 `;
@@ -47,7 +46,7 @@ const PDFIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 4vw;
+  margin-right: 2vw;
   box-shadow: 0px 0.4vw 0.8vw rgba(0, 0, 0, 0.1);
   cursor: pointer;
 `;
@@ -60,33 +59,39 @@ const PDFIconText = styled.span`
 
 const OptionsContainer = styled.div`
   display: flex;
-  flex-direction: row;
-  align-items: flex-end;
+  flex-direction: column;
+  width: 40vw;
 `;
 
-const SelectContainer = styled.div``;
+const SelectContainer = styled.div` 
+  display: flex;
+  flex-direction: column;
+  width: 12vw;
+`;
 
 const Label = styled.div`
-  font-size: 1.3vw;
-  margin-bottom: 1vw;
+  font-size: 1vw;
+  margin-bottom: 0.5vw;
 `;
 
 const SelectBox = styled.select`
-  padding: 0.5vw 1vw;
-  font-size: 1.2vw;
-  border: 0.2vw solid #ccc;
+  padding: 0.5vw;
+  font-size: 1vw;
+  border: 0.1vw solid #ccc;
   border-radius: 1vw;
   background-color: #fff;
 `;
 
 const UploadButton = styled.button`
   padding: 1vw 2vw;
+  margin: 1vw 0;
   font-size: 1.3vw;
   border: none;
   border-radius: 1vw;
   cursor: pointer;
   display: flex;
   align-items: center;
+  text-align: center;
   &:hover {
     background-color: #999999;
   }
@@ -199,7 +204,7 @@ function PDFpage() {
               </SelectBox>
             </SelectContainer>
             <UploadButton onClick={() => fileInputRef.current.click()}>
-              {pdfFile ? pdfFile.name : '파일 선택'}
+              {pdfFile ? pdfFile.name : '업로드할 파일을 선택하세요.'}
               <UploadFile
                 type="file"
                 accept="application/pdf"

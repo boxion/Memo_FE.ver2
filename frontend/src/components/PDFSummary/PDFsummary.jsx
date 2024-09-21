@@ -1,17 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
-import CategoryDropdown from "../Community/CategoryDropdown";
 import Config from "../Config/config";
-import { PdfViewer } from '@naverpay/react-pdf'; // PdfViewer import
-import { useLocation } from "react-router-dom";
+import { PdfViewer } from '@naverpay/react-pdf';
 import SaveFolderModal from "../VideoSummary/SaveFolderModal";
+import Chat from "../VideoSummary/Chatgpt";
+import gptIcon from "../../assets/images/GPTIcon.png";
 
 const Container = styled.div`
-  padding: 2vw;
-  display: flex;
+  padding: 1vw;
+  display: flex; 
+  flex-direction: row;
   justify-content: center;
   font-family: Arial, sans-serif;
+
+  @media (max-width: 768px) { 
+    flex-direction: column;
+  }
 `;
 
 const LeftSection = styled.div`
@@ -20,10 +25,6 @@ const LeftSection = styled.div`
   padding-right: 2vw;
   display: flex;
   flex-direction: column;
-
-  @media (min-width: 768px) {
-    width: 50%;
-  }
 `;
 
 const RightSection = styled.div`
@@ -31,62 +32,17 @@ const RightSection = styled.div`
   max-width: 600px;
   padding-left: 2vw;
   position: relative;
-
-  @media (min-width: 768px) {
-    width: 50%;
-  }
-`;
-
-const TabButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-start;
-`;
-
-const TabButton = styled.button`
-  padding: 0.5vw 1vw;
-  font-size: 1vw;
-  cursor: pointer;
-  border-radius: 1vw;
-  margin-right: 0.5vw;
-  background-color: #ffffff;
-  border: 0.1vw solid #582FFF;
-  color: #582FFF;
-
-  &:hover {
-    background-color: #d0d0d0;
-  }
-
-  &.active {
-    background-color: #ffffff;
-    border: 0.1vw solid #000000;
-  }
-`;
-
-const ViewEditButton = styled.button`
-  background-color: #4144E9;
-  color: white;
-  border: none;
-  border-radius: 1vw;
-  padding: 0.5vw 1vw;
-  font-size: 0.8vw;
-  cursor: pointer;
-  margin-right: 1vw;
-
-  &:hover {
-    background-color: #0056b3;
-  }
 `;
 
 const PdfContainer = styled.div`
-  margin-bottom: 2vw;
-  height: 60vh; // 원하는 높이로 조절
-  overflow-y: auto; // 세로 스크롤 추가
+  height: 70vh;
+  overflow-y: auto;
 `;
 
 const ActionButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-top: 2vw;
+  margin-top: 1vw;
 `;
 
 const ActionButton = styled.button`
@@ -106,12 +62,12 @@ const ActionButton = styled.button`
 const ListBox = styled.ol`
   margin: 0;
   padding-left: 1vw;
-  max-height: 80vh; 
+  max-height: 63vh; 
   overflow-y: auto;
 `;
 
 const ListItem = styled.div`
-  margin: 1vw 1vw 1vw 0;
+  margin: 1vw 1vw 0 0;
   background-color: #f0f0f0;
   border-radius: 1vw;
   padding: 1vw;
@@ -124,167 +80,97 @@ const ListText = styled.p`
 `;
 
 const ScriptContainer = styled.div`
-  max-height: 75vh; 
-  overflow-y: auto;
   padding: 1vw;
   margin: 1vw 0 0 0;
   background-color: #f0f0f0;
   border-radius: 1vw;
 `;
-const ScriptLine = styled.div`
-  display: flex;
-  margin-bottom: 0.5vw;
-`;
-const ScriptText = styled.span`
-  color: #333;
-  font-size: 1vw;
-`;
 
 const TheorySection = styled.section`
   background-color: #fff;
   border-radius: 1vw;
-  padding: 2vw;
-  //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  //width: 100%;
 `;
 
-const DropdownContainer = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const DropdownMenu = styled.div`
-  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background-color: #fff;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  z-index: 1;
-  border-radius: 1vw;
-  font-size: 1vw;
-`;
-
-const DropdownItem = styled.button`
-  background-color: #fff;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  font-size: 1vw;
-  margin: 0.5vw;
-
-  &:hover {
-    background-color: #f1f1f1;
-  }
-
-  &.selected {
-    color: #582fff;
-  }
-`;
-
-const FilterButton = styled.button`
-  padding: 0.5vw 1vw;
-  font-size: 1vw;
-  cursor: pointer;
-  border-radius: 2vw;
-  margin-right: 0.5vw;
-  background-color: #ffffff;
-  border: 0.1vw solid #582fff;
-  color: #582fff;
-
-  width: auto;
-  white-space: nowrap; 
-  max-width: 15vw;
-
-  &:hover {
-    background-color: #d0d0d0;
-  }
-
-  &.active {
-    background-color: #ffffff;
-    border: 0.1vw solid #000000;
-  }
-`;
-const PlaceholderText = styled.span`
-  color: #888;
-`;
-
-const TimeText = styled.span`
+const PdfTitle = styled.div` 
+  font-size: 1.3vw;
   font-weight: bold;
+  color: #333;
+  margin-top: 0.5vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const GptIcon = styled.img`
+  margin-right: 2vw;
+  width: 2vw;
+  height: 2vw;
+  cursor: pointer;
+`;
+
+const ChatOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+`;
+
+const ChatContainer = styled.div`
+  border-radius: 1vw;
+  padding: 1vw;
+  width: 50%;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background-color: white;
+`;
+
+const DateText = styled.div`
   font-size: 1vw;
-  margin-right: 1vw;
-  color: #333;
-`;
-const Divider = styled.div`
-  height: 0.1vw;
-  background-color: #d9d9d9;
+  margin-bottom: 0.5vw;
+  color: #838383;
 `;
 
-const PdfTitle = styled.h2` 
-  font-size: 1.2vw;
-  color: #333;
-  margin-bottom: 1vw;
-`;
-
-const parseScript = (scriptArray) => {
-  return scriptArray
-    .map((line) => {
-      // "TS: 0:00 | TXT: 안녕하세요." 형식의 문자열에서 TS:와 TXT: 제거
-      const match = line.match(/TS: (\d+:\d+) \| TXT: (.+)/);
-      if (match) {
-        return { time: match[1], text: match[2] };
-      }
-      return null;
-    })
-    .filter(Boolean); // null 값 제거
-};
-
+// 요약본 처리해주는 함수
 const parseSummary = (summary) => {
-  const paragraphs = summary.split("\n\n").filter(p => p.trim()); // '•'를 기준으로 분리
+  const paragraphs = summary.split("\n\n").filter(p => p.trim());
   return paragraphs.map((paragraph, index) => {
-    const [title, ...content] = paragraph.split(": "); // ':'로 제목과 내용 분리
+    const [title, ...content] = paragraph.split(": ");
     return {
-      title: title.trim() || `Section ${index + 1}`, // 제목이 없으면 'Section'으로 대체
-      content: content.join(": ").trim(), // 내용이 ':' 이후로 나올 수 있으므로 다시 합침
+      title: title.trim() || `Section ${index + 1}`,
+      content: content.join(": ").trim(),
     };
   });
 };
 
 const PDFSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
-  const [viewMode, setViewMode] = useState(true);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const pdfContainerRef = useRef(null); 
-  const [documentDate, setDocumentDate] = useState(new Date());
-  const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
   const [pdfTitle, setPdfTitle] = useState("");
   const [summary, setSummary] = useState([]);
-  const [fullScript, setFullScript] = useState([]);
-  const dropdownRef = useRef(null);
   const [isModalOpen, setModalOpen] = useState(false);
-  const location = useLocation();
-
-  const categories = [
-    "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
-    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음"
-  ];
+  const [isGptModalOpen, setGptModalOpen] = useState(false);
 
   useEffect(() => {
-    // PDF가 변경될 때마다 초기화 처리
     if (pdfContainerRef.current) {
       pdfContainerRef.current.innerHTML = ''; // 기존의 canvas 삭제
     }
-  }, [pdfUrl]); // pdfUrl이 변경될 때마다 초기화
+  }, [pdfUrl]);
 
   useEffect(() => {
-      fetchPdfFile();
+    fetchPdfFile();
   }, []);
-  
+
   const fetchPdfFile = async () => {
-    setIsLoading(true); // 로딩 시작
+    setIsLoading(true);
     try {
       let memberEmail = localStorage.getItem("userId");
       let pdfTitle = localStorage.getItem("PDFFileName");
@@ -306,9 +192,8 @@ const PDFSummary = () => {
   
       const blob = await response.blob();
       const pdfUrl = window.URL.createObjectURL(blob);
-      setPdfUrl(pdfUrl); // pdfUrl 상태 업데이트
+      setPdfUrl(pdfUrl);
   
-      // /getpdfinfo POST 요청 추가
       const infoResponse = await fetch(`${Config.baseURL}/api/v1/files/getpdfinfo`, {
         method: 'POST',
         headers: {
@@ -324,31 +209,16 @@ const PDFSummary = () => {
         throw new Error('PDF 정보 가져오기 오류: ' + infoResponse.statusText);
       }
   
-      const pdfInfo = await infoResponse.json(); // JSON 형태로 응답 받기
-      console.log('PDF 정보:', pdfInfo); // 로그 찍기
-      
-      // 상태 업데이트
+      const pdfInfo = await infoResponse.json();
       setPdfTitle(pdfTitle);
-      // console.log('pdfInfo.summary :',  pdfInfo.summary);
-      // console.log('pdfInfo.fullScript :', pdfInfo.fullScript);
-      console.log(':', );
-      console.log(':', );
-      console.log(':', );
-      setSummary(parseSummary(pdfInfo.summary)); // 요약본을 파싱하여 상태로 설정
-      // setFullScript(pdfInfo.fullScript); // 전체 스크립트를 줄바꿈 기준으로 나눠서 설정
-      setDocumentDate(pdfInfo.documentDate); // 문서 날짜 설정
-      setSelectedCategory(pdfInfo.categoryName || ""); // 카테고리 설정
+      setSummary(parseSummary(pdfInfo.summary));
   
     } catch (error) {
       console.error('PDF 파일 가져오기 오류:', error);
     } finally {
-      setIsLoading(false); // 로딩 끝
+      setIsLoading(false);
     }
   };
-  
-
-  
-
 
   const handleLoadSuccess = () => {
     console.log("PDF 렌더링 성공");
@@ -358,54 +228,46 @@ const PDFSummary = () => {
     console.error("PDF 렌더링 오류:", error);
   };
 
-
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setDropdownOpen(false); // 선택 후 드롭다운 닫기
-  };
-
   const handleRegisterClick = () => {
-    if (!selectedCategory) {
-      // 필터가 선택되지 않았을 경우 경고창 띄우기
-      alert("필터를 선택해주세요.");
-    } else {
-      // 필터가 선택되었을 경우 모달 열기
-      setModalOpen(true);
-    }
+    setModalOpen(true);
   };
   
-
   const handleCloseModal = () => {
     setModalOpen(false);
   };
 
+  const handleGptIconClick = () => {
+    setGptModalOpen(true);
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleCloseGptModal();
+    }
+  };
+  
+  const handleCloseGptModal = () => {
+    setGptModalOpen(false);
+  };
 
   const renderContent = () => {
     if (activeTab === "summary") {
       return (
         <ListBox>
-        <PdfTitle>{pdfTitle || "비디오 제목 없음"}</PdfTitle>
-        {summary.map((paragraph, index) => (
-          <ListItem key={index}>
-            {/* title과 content를 분리하여 각각 렌더링 */}
-            <ListText>
-              <strong>{paragraph.title}</strong> {/* 소제목 */}
-            </ListText>
-            <ListText>{paragraph.content}</ListText> {/* 내용 */}
-          </ListItem>
-        ))}
-      </ListBox>
+          {summary.map((paragraph, index) => (
+            <ListItem key={index}>
+              <ListText>
+                <strong>{paragraph.title}</strong>
+              </ListText>
+              <ListText>{paragraph.content}</ListText>
+            </ListItem>
+          ))}
+        </ListBox>
       );
     } else if (activeTab === "script") {
-      const parsedScript = parseScript(fullScript); // 스크립트 파싱
       return (
         <ScriptContainer>
-          {parsedScript.map((line, index) => (
-            <ScriptLine key={index}>
-              <TimeText>{line.time}</TimeText>
-              <ScriptText>{line.text}</ScriptText>
-            </ScriptLine>
-          ))}
+          {/* 필요한 경우 fullScript를 추가 */}
         </ScriptContainer>
       );
     }
@@ -416,66 +278,37 @@ const PDFSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-          <PdfContainer ref={pdfContainerRef}> {/* ref를 PdfContainer에 추가 */}
+          <DateText>{localStorage.getItem("documentDate")}</DateText>
+          <PdfContainer ref={pdfContainerRef}>
             {pdfUrl && !isLoading && (
               <PdfViewer
-                key={Math.random()} // 매번 랜덤한 key 값으로 새로운 컴포넌트 생성
-                pdfUrl={pdfUrl} 
+                key={Math.random()}
+                pdfUrl={pdfUrl}
                 onErrorPDFRender={handleLoadError}
                 onLoadSuccess={handleLoadSuccess}
               />
             )}
           </PdfContainer>
         </LeftSection>
-
         <RightSection>
           <TheorySection>
-            <TabButtonContainer>
-              <div>
-                <TabButton
-                  className={activeTab === "summary" ? "active" : ""}
-                  onClick={() => setActiveTab("summary")}
-                >
-                  요약본
-                </TabButton>
-                <TabButton
-                  className={activeTab === "script" ? "active" : ""}
-                  onClick={() => setActiveTab("script")}
-                >
-                  전체 스크립트
-                </TabButton>
-                <DropdownContainer ref={dropdownRef}>
-                  <FilterButton
-                    onClick={() => setDropdownOpen(!isDropdownOpen)}
-                  >
-                    {selectedCategory || <PlaceholderText>필터를 선택해주세요</PlaceholderText>}
-                  </FilterButton>
-                  <DropdownMenu isOpen={isDropdownOpen}>
-                    {categories.map((category, index) => (
-                      <React.Fragment key={category}>
-                        <DropdownItem
-                          onClick={() => handleCategorySelect(category)}
-                          className={selectedCategory === category ? "selected" : ""}
-                        >
-                          {category}
-                        </DropdownItem>
-                        {index < categories.length - 1 && <Divider />}
-                      </React.Fragment>
-                    ))}
-                  </DropdownMenu>
-                </DropdownContainer>
-              </div>
-              <ViewEditButton onClick={() => setViewMode(!viewMode)}>
-                {viewMode ? "View" : "Edit"}
-              </ViewEditButton>
-            </TabButtonContainer>
-
+            <PdfTitle>
+              🖍️ {pdfTitle || "제목 없음"}
+              <GptIcon src={gptIcon} alt="GPT Icon" onClick={handleGptIconClick} />
+            </PdfTitle>
             {renderContent()}
-
             <ActionButtonContainer>
               <ActionButton onClick={handleRegisterClick}>등록하기</ActionButton>
             </ActionButtonContainer>
             <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
+            {isGptModalOpen && (
+              <>
+                <ChatOverlay onClick={handleOverlayClick} />
+                <ChatContainer>
+                  <Chat visible={isGptModalOpen} onClose={handleCloseGptModal} isModal={true} />
+                </ChatContainer>
+              </>
+            )}
           </TheorySection>
         </RightSection>
       </Container>
