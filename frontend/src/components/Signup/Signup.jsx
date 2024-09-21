@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router-dom";  // useNavigate 추가
-// import { toast } from "react-toastify";  // toast 메시지용 라이브러리 추가
-// import 'react-toastify/dist/ReactToastify.css';  // toast 스타일 추가
+import { Link, useNavigate } from "react-router-dom";  
 import Config from "../Config/config";
 
 const Container = styled.div`
@@ -118,18 +116,6 @@ const HomeLink = styled(Link)`
 const signup = async (memberEmail, memberPassword, memberName, navigate) => {
   try {
     console.log("회원가입 시도 중...");
-    console.log(
-      "  -user 정보- " +
-        "\n { 사용자이메일: " +
-        memberEmail +
-        "\n   비밀번호: " +
-        memberPassword +
-        "\n   닉네임:" +
-        memberName +
-        " }"
-    );
-    console.log("보낼 서버 주소 : " + `${Config.baseURL}/api/v1/auth/sign-up`);
-    // 서버에 회원가입 정보를 전송하고 응답을 기다림
     const response = await fetch(`${Config.baseURL}/api/v1/auth/sign-up`, {
       method: "POST",
       headers: {
@@ -141,20 +127,79 @@ const signup = async (memberEmail, memberPassword, memberName, navigate) => {
         memberName,
       }),
     });
+
     if (response.ok) {
       console.log("회원가입 성공!");
-      // toast.success("회원가입 성공!");
+      localStorage.setItem("userId", memberEmail);
 
-      // 회원가입 후 로그인 처리 또는 메인 페이지로 이동
-      navigate("/");
+      // 기본 폴더 생성
+      const defaultFolders = ["일반", "공부", "pdf", "오디오"];
+      for (const folderName of defaultFolders) {
+        await handleAddFolder(folderName);
+      }
 
+      // 회원가입 후 로그인 처리
+      await login(memberEmail, memberPassword, navigate);
     } else {
       console.error("회원가입 실패:", response.statusText);
-      // toast.error("회원가입에 실패했습니다. 다시 시도해주세요.");
     }
   } catch (error) {
     console.error("에러 발생:", error);
-    // toast.error("회원가입에 실패했습니다. 다시 시도해주세요.");
+  }
+};
+
+const handleAddFolder = async (folderName) => {
+  try {
+    const memberEmail = localStorage.getItem("userId");
+    const requestData = {
+      memberEmail,
+      categoryName: folderName,
+    };
+    const response = await fetch(`${Config.baseURL}/api/v1/category/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    if (!response.ok) {
+      console.error("네트워크 응답이 실패했습니다.");
+      return;
+    }
+  } catch (error) {
+    console.error("카테고리 생성 중 오류가 발생했습니다:", error);
+  }
+};
+
+const login = async (memberEmail, memberPassword, navigate) => {
+  try {
+    console.log("로그인 시도 중...");
+    const response = await fetch(`${Config.baseURL}/api/v1/auth/sign-in`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        memberEmail,
+        memberPassword
+      })
+    });
+
+    if (response.ok) {
+      console.log("로그인 성공!");
+      const responseData = await response.json();
+      const jwtToken = responseData.token;
+
+      localStorage.setItem("token", jwtToken);
+      localStorage.setItem("isLoggedIn", true);
+      navigate("/");
+      window.location.reload();
+    } else {
+      console.error("로그인 실패:", response.statusText);
+    }
+  } catch (error) {
+    console.error("에러 발생:", error);
   }
 };
 
@@ -164,7 +209,7 @@ const Signup = () => {
   const [usernickname, setUserNickname] = useState("");
   const [userpassword, setUserPassword] = useState("");
 
-  const navigate = useNavigate();  // useNavigate 훅 사용
+  const navigate = useNavigate();
 
   const toggleShowPassword = () => {
     setShowPass(!showPass);
