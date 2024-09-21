@@ -133,7 +133,7 @@ const signup = async (memberEmail, memberPassword, memberName, navigate) => {
       localStorage.setItem("userId", memberEmail);
 
       // 기본 폴더 생성
-      const defaultFolders = ["일반", "공부", "pdf", "오디오"];
+      const defaultFolders = ["일반", "공부", "PDF 자료", "오디오 파일"];
       for (const folderName of defaultFolders) {
         await handleAddFolder(folderName);
       }

@@ -1,7 +1,7 @@
-//오디오 ai
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import Header from "../components/Header/Header";
+import { useSpeechRecognition } from 'react-speech-kit';
 
 const Container = styled.div`
   display: flex;
@@ -92,8 +92,17 @@ const InfoText = styled.p`
 function Audiopage() {
   const [recordingLanguage, setRecordingLanguage] = useState('한국어');
   const [scriptLanguage, setScriptLanguage] = useState('한국어');
-  const [audioFile, setAudioFile] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [audioFile, setAudioFile] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const { listen, stop } = useSpeechRecognition({
+    onResult: (result) => {
+      setTranscript(prev => prev + ' ' + result);
+    },
+  });
 
   const handleRecordingLanguageChange = (e) => {
     setRecordingLanguage(e.target.value);
@@ -103,62 +112,87 @@ function Audiopage() {
     setScriptLanguage(e.target.value);
   };
 
-  const handleAudioUpload = (e) => {
-    setAudioFile(e.target.files[0]);
-  };
-
-  const startRecording = () => {
+  const startRecording = async () => {
     setIsRecording(true);
-    // 녹음 시작 로직 구현 필요
+    setTranscript(''); // 텍스트 초기화
+
+    // 사용자의 음성 입력을 위한 스트림 생성
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorderRef.current = new MediaRecorder(stream);
+
+    mediaRecorderRef.current.ondataavailable = (event) => {
+      audioChunksRef.current.push(event.data);
+    };
+
+    mediaRecorderRef.current.onstop = () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      setAudioFile(audioUrl); // 오디오 파일 URL 설정
+      audioChunksRef.current = []; // 청크 초기화
+    };
+
+    mediaRecorderRef.current.start();
+    listen(); // 음성 인식 시작
   };
 
   const stopRecording = () => {
     setIsRecording(false);
-    // 녹음 종료 로직 구현 필요
+    mediaRecorderRef.current.stop(); // 녹음 종료
+    stop(); // 음성 인식 종료
   };
 
   return (
     <>
-    <Header />
-    <Container>
-      <Title>오디오를 요약하고 스크립트로 만들어 보세요!</Title>
-      <Subtitle>녹음하거나 음성파일을 업로드 할 수 있습니다</Subtitle>
-      
-      <SelectContainer>
-        <div>
-          <Label>녹음 언어 선택</Label>
-          <SelectBox value={recordingLanguage} onChange={handleRecordingLanguageChange}>
-            <option value="한국어">한국어</option>
-            <option value="영어">영어</option>
-            <option value="중국어">중국어</option>
-            <option value="일본어">일본어</option>
-          </SelectBox>
-        </div>
-        <div>
-          <Label>스크립트 언어 선택</Label>
-          <SelectBox value={scriptLanguage} onChange={handleScriptLanguageChange}>
-            <option value="한국어">한국어</option>
-            <option value="영어">영어</option>
-            <option value="중국어">중국어</option>
-            <option value="일본어">일본어</option>
-          </SelectBox>
-        </div>
-      </SelectContainer>
+      <Header />
+      <Container>
+        <Title>오디오를 요약하고 스크립트로 만들어 보세요!</Title>
+        <Subtitle>녹음하거나 음성파일을 업로드 할 수 있습니다</Subtitle>
+        
+        <SelectContainer>
+          <div>
+            <Label>녹음 언어 선택</Label>
+            <SelectBox value={recordingLanguage} onChange={handleRecordingLanguageChange}>
+              <option value="한국어">한국어</option>
+              <option value="영어">영어</option>
+              <option value="중국어">중국어</option>
+              <option value="일본어">일본어</option>
+            </SelectBox>
+          </div>
+          <div>
+            <Label>스크립트 언어 선택</Label>
+            <SelectBox value={scriptLanguage} onChange={handleScriptLanguageChange}>
+              <option value="한국어">한국어</option>
+              <option value="영어">영어</option>
+              <option value="중국어">중국어</option>
+              <option value="일본어">일본어</option>
+            </SelectBox>
+          </div>
+        </SelectContainer>
 
-      <UploadContainer>
-        <UploadLabel htmlFor="audio-upload">오디오 파일 업로드</UploadLabel>
-        <UploadInput id="audio-upload" type="file" accept="audio/*" onChange={handleAudioUpload} />
-      </UploadContainer>
+        <UploadContainer>
+          <UploadLabel htmlFor="audio-upload">오디오 파일 업로드</UploadLabel>
+          <UploadInput id="audio-upload" type="file" accept="audio/*" onChange={(e) => setAudioFile(URL.createObjectURL(e.target.files[0]))} />
+        </UploadContainer>
+        
+        <ButtonContainer>
+          <RecordButton onClick={startRecording} disabled={isRecording}>
+            {isRecording ? '녹음 중...' : '음성녹음 시작'}
+          </RecordButton>
+          {isRecording && <RecordButton onClick={stopRecording}>녹음 종료</RecordButton>}
+        </ButtonContainer>
 
-      <ButtonContainer>
-        <RecordButton onClick={startRecording} disabled={isRecording}>
-          {isRecording ? '녹음 중...' : '음성녹음 시작'}
-        </RecordButton>
-        {isRecording && <RecordButton onClick={stopRecording}>녹음 종료</RecordButton>}
-      </ButtonContainer>
+        {/* 음성 인식 결과 출력 */}
+        <InfoText>음성 인식 결과: {transcript}</InfoText>
+        <InfoText>ⓘ 녹음본은 외부로 공개되지 않아요!</InfoText>
 
-      <InfoText>ⓘ 녹음본은 외부로 공개되지 않아요!</InfoText>
-    </Container>
+        {/* 녹음된 오디오 플레이어 */}
+        {audioFile && (
+          <audio controls>
+            <source src={audioFile} type="audio/wav" />
+            Your browser does not support the audio tag.
+          </audio>
+        )}
+      </Container>
     </>
   );
 }
