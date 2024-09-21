@@ -50,16 +50,16 @@ const FolderButton = styled.button`
   align-items: center;
   justify-content: start;
   background-color: #f0f0f0;
-  border: 0.2vw solid ${props => (props.selected ? "#202D94" : "#ccc")};
+  border: 0.2vw solid ${(props) => (props.selected ? "#202D94" : "#ccc")};
   border-radius: 1vw;
   padding: 1vw 2vw;
   margin: 0.5vw;
   cursor: pointer;
   font-size: 1vw;
-  color: ${props => (props.selected ? "#202D94" : "#000")};
+  color: ${(props) => (props.selected ? "#202D94" : "#000")};
 
   &:hover {
-    border-color: #202D94;
+    border-color: #202d94;
   }
 `;
 
@@ -130,47 +130,69 @@ const AddButton = styled.button`
   }
 `;
 
+const DeleteButton = styled.button`
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 1vw;
+  padding: 0.5vw 1vw;
+  font-size: 1vw;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #c9302c;
+  }
+`;
+
+const DeleteMenuContainer = styled.div`
+  position: absolute;
+  top: ${(props) => props.top}px;
+  left: ${(props) => props.left}px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0.5vw;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+`;
+
 
 const SaveFolderModal = ({ isOpen, onClose }) => {
   const [folders, setFolders] = useState([]);
   const [content, setContent] = useState("");
   const [selectedFolder, setSelectedFolder] = useState(null);
-  const navigate = useNavigate();
+  const [showDeleteMenu, setShowDeleteMenu] = useState({ visible: false, folder: null });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  // 컴포넌트가 렌더링될 때 API 요청
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const memberEmail = localStorage.getItem("userId");  // 로컬스토리지에서 userId 가져오기
-
+        const memberEmail = localStorage.getItem("userId");
         const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            memberEmail,  // memberEmail로 userId 사용
+            memberEmail,
           }),
         });
 
         const responseText = await response.text();
 
-        // 응답이 성공적일 경우
         if (response.ok) {
-          const categories = JSON.parse(responseText);  // 응답 본문을 JSON으로 변환
-          const folderNames = categories.map(category => category.categoryName);  // categoryName만 추출
-          setFolders(folderNames);  // folders 상태 업데이트
+          const categories = JSON.parse(responseText);
+          const folderNames = categories.map((category) => category.categoryName);
+          setFolders(folderNames);
         }
-
       } catch (error) {
         console.error("에러 발생:", error);
       }
     };
 
-    if (isOpen) {  // 모달이 열릴 때만 요청
+    if (isOpen) {
       fetchData();
     }
-  }, [isOpen]);  // isOpen 상태가 변경될 때마다 실행
+  }, [isOpen]);
 
   const handleInputChange = (e) => {
     setContent(e.target.value);
@@ -178,22 +200,17 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
 
   const handleAddFolder = async () => {
     try {
-      // 내용이 비어있을 때 경고창 띄우기
       if (content.trim() === "") {
         alert("추가할 폴더명을 입력해주세요.");
         return;
       }
-  
-      // 로컬스토리지에서 userId를 가져옴
+
       const memberEmail = localStorage.getItem("userId");
-  
-      // 보내려는 데이터 구성
       const requestData = {
-        memberEmail: memberEmail, // 로컬스토리지에서 가져온 값
-        categoryName: content.trim(), // 입력된 폴더명
+        memberEmail: memberEmail,
+        categoryName: content.trim(),
       };
-  
-      // POST 요청 보내기
+
       const response = await fetch(`${Config.baseURL}/api/v1/category/create`, {
         method: "POST",
         headers: {
@@ -201,39 +218,29 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
         },
         body: JSON.stringify(requestData),
       });
-  
-      // 응답 본문을 텍스트로 출력
+
       const responseText = await response.text();
-      console.log("응답 상태:", response.status);
-      console.log("응답 본문:", responseText); // 응답 본문을 출력하여 확인
-  
-      // 응답이 성공인지 확인
       if (!response.ok) {
         console.error("네트워크 응답이 실패했습니다. 개발자에게 문의하세요.");
         return;
       }
-  
-      // 201 상태일 경우 응답 본문이 비어있지 않으면 JSON 파싱
+
       if (response.status === 201 && responseText) {
         try {
-          const responseData = JSON.parse(responseText); // JSON으로 변환
+          const responseData = JSON.parse(responseText);
           console.log("카테고리가 성공적으로 생성되었습니다:", responseData);
         } catch (jsonError) {
           console.error("응답 본문을 JSON으로 변환하는 중 오류가 발생했습니다:", jsonError);
         }
       }
-  
-      // 필요한 작업 수행 (예: 성공 메시지 표시, 상태 업데이트 등)
-      setFolders([...folders, content.trim()]); // 새로운 폴더 추가
-      setContent(""); // 입력 필드 초기화
-  
+
+      setFolders([...folders, content.trim()]);
+      setContent("");
     } catch (error) {
       console.error("카테고리 생성 중 오류가 발생했습니다:", error);
     }
   };
-  
-  
-  
+
   const handleSelectFolder = (folder) => {
     setSelectedFolder(folder);
   };
@@ -244,13 +251,80 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleConfirmClick = () => {
+  const handleConfirmClick = async () => {
     if (selectedFolder) {
-      alert("저장되었습니다");
-      navigate("/");
+      try {
+        const memberEmail = localStorage.getItem("userId");
+        const videoUrl = localStorage.getItem("videoUrl");
+        const requestData = {
+          memberEmail: memberEmail,
+          categoryName: selectedFolder,
+          videoUrl: videoUrl,
+        };
+
+        const response = await fetch(`${Config.baseURL}/api/v1/category/add-video`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+
+        if (!response.ok) {
+          console.error("네트워크 응답이 실패했습니다. 개발자에게 문의하세요.");
+          return;
+        }
+
+        if (response.status === 200 || response.status === 201) {
+          alert("비디오가 성공적으로 폴더에 저장되었습니다.");
+        }
+      } catch (error) {
+        console.error("비디오 저장 중 오류가 발생했습니다:", error);
+      }
     } else {
       alert("폴더를 선택해주세요.");
     }
+  };
+
+  const handleContextMenu = (e, folder) => {
+    e.preventDefault(); // 기본 컨텍스트 메뉴 방지
+    const confirmed = window.confirm(`${folder} 폴더를 삭제하시겠습니까?`);
+    if (confirmed) {
+      handleDelete(folder); // 삭제 함수 호출
+    }
+  };
+
+  const handleDelete = async (folderToDelete) => {
+    try {
+      const memberEmail = localStorage.getItem("userId"); // 로컬스토리지에서 memberEmail 가져오기
+    
+      // 삭제 요청 보내기
+      const response = await fetch(`${Config.baseURL}/api/v1/category/delete-category`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          memberEmail,
+          categoryName: folderToDelete, // 삭제할 폴더 이름
+        }),
+      });
+    
+      if (!response.ok) {
+        console.error("삭제 요청이 실패했습니다. 개발자에게 문의하세요.");
+        return;
+      }
+    
+      const updatedFolders = folders.filter((folder) => folder !== folderToDelete); // 폴더 목록에서 삭제
+      setFolders(updatedFolders);
+      alert("폴더가 삭제되었습니다.");
+    } catch (error) {
+      console.error("폴더 삭제 중 오류가 발생했습니다:", error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteMenu({ visible: false, folder: null });
   };
 
   if (!isOpen) return null;
@@ -266,6 +340,7 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
               key={index}
               selected={folder === selectedFolder}
               onClick={() => handleSelectFolder(folder)}
+              onContextMenu={(e) => handleContextMenu(e, folder)} // 우클릭 이벤트 핸들러 추가
             >
               📁 {folder}
             </FolderButton>
@@ -284,6 +359,13 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
           <ConfirmButton onClick={handleConfirmClick}>확인</ConfirmButton>
           <CancelButton onClick={onClose}>취소</CancelButton>
         </ActionButtons>
+
+        {showDeleteMenu.visible && (
+          <DeleteMenuContainer top={mousePosition.y} left={mousePosition.x}>
+            <DeleteButton onClick={handleDelete}>삭제</DeleteButton>
+            <CancelButton onClick={handleCancelDelete}>취소</CancelButton>
+          </DeleteMenuContainer>
+        )}
       </ModalContainer>
     </ModalOverlay>
   );
