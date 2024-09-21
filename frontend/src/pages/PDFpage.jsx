@@ -160,6 +160,11 @@ function PDFpage() {
         const { pdfTitle } = response.data;
         setPdfTitle(pdfTitle);
 
+
+        localStorage.setItem("PDFFileName",pdfFile.name);
+
+        // 성공 메시지 또는 기타 처리
+
         alert('PDF 파일이 성공적으로 업로드되었습니다!');
         navigate('/PDF-Summary'); 
 
