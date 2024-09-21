@@ -191,11 +191,6 @@ const Home = () => {
       const extractedQuestions = questions.map((question) => question.question);
       const extractedAnswers = questions.map((question) => question.answer);
 
-      // YouTube Shorts 주소라면 watch 주소로 변환
-      if (videoUrl.includes("youtube.com/shorts/")) {
-        videoUrl = videoUrl.replace("youtube.com/shorts/", "youtube.com/watch?v=");
-      }
-
       localStorage.setItem("summary", summary);
       localStorage.setItem("document", document2);
       localStorage.setItem("videoUrl", videoUrl);
@@ -256,13 +251,6 @@ const Home = () => {
   const handleUpload = async () => {
     setIsLoading(true);
     try {
-      let processedUrl = videoUrl;
-
-      // YouTube Shorts 주소라면 watch 주소로 변환
-      if (processedUrl.includes("youtube.com/shorts/")) {
-        processedUrl = processedUrl.replace("youtube.com/shorts/", "youtube.com/watch?v=");
-      }
-
       console.log("영상 링크:", videoUrl);
       localStorage.setItem("videoUrl", videoUrl);
       await GPTSummary(videoUrl); // GPTSummary 함수 호출

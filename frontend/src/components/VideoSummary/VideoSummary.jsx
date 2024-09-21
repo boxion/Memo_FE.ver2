@@ -5,6 +5,8 @@ import Header from "../Header/Header";
 import YouTube from "react-youtube";
 import Chat from "./Chatgpt";
 import SaveFolderModal from "./SaveFolderModal";
+import axios from "axios"; // axios로 PUT 요청 보내기 위함
+import Config from "../Config/config";
 
 const Container = styled.div`
   padding: 2vw;
@@ -244,7 +246,7 @@ const VideoSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedFilter, setSelectedFilter] = useState("");
   const [showChat, setShowChat] = useState(true);
   const [videoTitle, setVideoTitle] = useState("");
   const [summary, setSummary] = useState([]);
@@ -259,86 +261,93 @@ const VideoSummary = () => {
   ];
 
   useEffect(() => {
-    const videoData = location.state;
-  
-    console.log(videoData); // videoData 확인
-  
-    if (videoData) {
-      const { videoTitle, summary, fullScript, videoUrl, documentDate } = videoData;
-  
-      localStorage.setItem("videoTitle", videoTitle);
-      localStorage.setItem("summary", summary);
-      localStorage.setItem("fullScript", fullScript);
-      localStorage.setItem("videoUrl", videoUrl);
-      localStorage.setItem("documentDate", documentDate);
-  
-      const videoId = extractVideoId(videoUrl);
-      setVideoId(videoId);
-      setVideoTitle(videoTitle);
-  
-      // summary와 fullScript가 정의되어 있는지 확인
-      if (summary) {
-        setSummary(
-          summary.split("###")
-            .map(item => {
-              const lines = item.split("\n");
-              return { title: lines[0], content: lines.slice(1).join("\n").trim() };
-            })
-            .filter(item => item.title.trim() !== "" || item.content.trim() !== "") // 공백이나 빈 문자열 필터링
-        );
-      } else {
-        console.error("Summary is undefined or empty");
-      }
-  
-      if (fullScript) {
-        setFullScript(fullScript.split("\n"));
-      } else {
-        console.error("Full script is undefined or empty");
-      }
+    const storedVideoTitle = localStorage.getItem("videoTitle");
+    const storedSummary = localStorage.getItem("summary");
+    const storedFullScript = localStorage.getItem("fullScript");
+    const storedVideoUrl = localStorage.getItem("videoUrl");
+
+    console.log(storedVideoTitle, storedSummary, storedFullScript); // 저장된 값 확인
+
+    if (storedVideoTitle) setVideoTitle(storedVideoTitle);
+
+    // localStorage에서 가져온 summary와 fullScript가 정의되어 있는지 확인
+    if (storedSummary && storedSummary.trim() !== "") {
+      setSummary(
+        storedSummary.split("###")
+          .map(item => {
+            const lines = item.split("\n");
+            return { title: lines[0], content: lines.slice(1).join("\n").trim() };
+          })
+          .filter(item => item.title.trim() !== "" || item.content.trim() !== "") // 공백이나 빈 문자열 필터링
+      );
     } else {
-      const storedVideoTitle = localStorage.getItem("videoTitle");
-      const storedSummary = localStorage.getItem("summary");
-      const storedFullScript = localStorage.getItem("fullScript");
-      const storedVideoUrl = localStorage.getItem("videoUrl");
-  
-      console.log(storedVideoTitle, storedSummary, storedFullScript); // 저장된 값 확인
-  
-      if (storedVideoTitle) setVideoTitle(storedVideoTitle);
-  
-      // localStorage에서 가져온 summary와 fullScript가 정의되어 있는지 확인
-      if (storedSummary && storedSummary.trim() !== "") {
-        setSummary(
-          storedSummary.split("###")
-            .map(item => {
-              const lines = item.split("\n");
-              return { title: lines[0], content: lines.slice(1).join("\n").trim() };
-            })
-            .filter(item => item.title.trim() !== "" || item.content.trim() !== "") // 공백이나 빈 문자열 필터링
-        );
-      } else {
-        console.error("Stored summary is undefined or empty");
-      }
-  
-      if (storedFullScript) {
-        setFullScript(storedFullScript.split("\n"));
-      } else {
-        console.error("Stored full script is undefined or empty");
-      }
-  
-      if (storedVideoUrl) {
-        const videoId = extractVideoId(storedVideoUrl);
-        setVideoId(videoId);
-      }
+      console.error("Stored summary is undefined or empty");
     }
-  }, [location.state]);
+
+    if (storedFullScript) {
+      setFullScript(storedFullScript.split("\n"));
+    } else {
+      console.error("Stored full script is undefined or empty");
+    }
+
+    if (storedVideoUrl) {
+      const videoId = extractVideoId(storedVideoUrl);
+      setVideoId(videoId);
+    }
+    
+  },[]);
+
+  // selectedFilter가 변경될 때마다 백엔드로 PUT 요청을 보낸다.
+  useEffect(() => {
+    if (selectedFilter) {
+      console.log("필터가 변경되었습니다:", selectedFilter);
+
+      // 로컬 스토리지에서 memberEmail과 videoUrl을 가져옴
+      const memberEmail = localStorage.getItem("userId"); // 'userId' 대신 실제 로컬스토리지 키 사용
+      let videoUrl = localStorage.getItem("videoUrl");  // 'videoUrl' 대신 실제 로컬스토리지 키 사용
+
+      // 보내려는 주소
+      const requestURL = `${Config.baseURL}/api/v1/video/update-filter`;
+
+      // 보내려는 데이터
+      const requestData = {
+        memberEmail: memberEmail,  // 로컬스토리지에서 가져온 값
+        videoUrl: videoUrl,        // 로컬스토리지에서 가져온 값
+        filter: selectedFilter     // 현재 선택된 필터 값
+      };
+
+      // 로그 출력 (보낼 주소와 데이터)
+      console.log("보낼 주소:", requestURL);
+      console.log("보낼 데이터:", requestData);
+
+      // PUT 요청 보내기
+      fetch(requestURL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      })
+      .then((response) => response.text())  // 응답을 텍스트로 받음
+      .then((data) => {
+        console.log("필터 업데이트 성공:", data);
+      })
+      .catch((error) => {
+        console.error("필터 업데이트 실패:", error);
+      });
+    }
+  }, [selectedFilter]);
+
+
+  
 
   const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
+    setSelectedFilter(category);
     setDropdownOpen(false); // 선택 후 드롭다운 닫기
   };
 
   const handleRegisterClick = () => {
-    if (!selectedCategory) {
+    if (!setSelectedFilter) {
       // 필터가 선택되지 않았을 경우 경고창 띄우기
       alert("필터를 선택해주세요.");
     } else {
@@ -455,14 +464,14 @@ const VideoSummary = () => {
                   <FilterButton
                     onClick={() => setDropdownOpen(!isDropdownOpen)}
                   >
-                    {selectedCategory || <PlaceholderText>필터를 선택해주세요</PlaceholderText>}
+                    {selectedFilter || <PlaceholderText>필터를 선택해주세요</PlaceholderText>}
                   </FilterButton>
                   <DropdownMenu isOpen={isDropdownOpen}>
                     {categories.map((category, index) => (
                       <React.Fragment key={category}>
                         <DropdownItem
                           onClick={() => handleCategorySelect(category)}
-                          className={selectedCategory === category ? "selected" : ""}
+                          className={selectedFilter === category ? "selected" : ""}
                         >
                           {category}
                         </DropdownItem>

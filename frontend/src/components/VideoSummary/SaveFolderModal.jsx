@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import Config from "../Config/config";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -129,7 +130,6 @@ const AddButton = styled.button`
   }
 `;
 
-const foldersData = ["개발지식", "뉴스지식", "자기계발", "주식공부", "토익공부"];
 
 const SaveFolderModal = ({ isOpen, onClose }) => {
   const [folders, setFolders] = useState(foldersData);
@@ -141,13 +141,64 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
     setContent(e.target.value);
   };
 
-  const handleAddFolder = () => {
-    if (content.trim() !== "") {
-      setFolders([...folders, content.trim()]);
-      setContent("");
+  const handleAddFolder = async () => {
+    try {
+      if (content.trim() === "") {
+        // 내용이 비어있을 때 경고창 띄우기
+        alert("추가할 폴더명을 입력해주세요.");
+        return;
+      }
+  
+      // 로컬스토리지에서 userId를 가져옴
+      const memberEmail = localStorage.getItem("userId");
+  
+      // 보내려는 데이터 구성
+      const requestData = {
+        memberEmail: memberEmail, // 로컬스토리지에서 가져온 값
+        categoryName: content.trim(), // 입력된 폴더명
+      };
+  
+      // POST 요청 보내기
+      const response = await fetch(`${Config.baseURL}/api/v1/category/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+  
+      // 응답 본문을 텍스트로 출력
+      const responseText = await response.text();
+      console.log("응답 상태:", response.status);
+      console.log("응답 본문:", responseText); // 응답 본문을 출력하여 확인
+  
+      // 응답이 성공인지 확인
+      if (!response.ok) {
+        console.error("네트워크 응답이 실패했습니다. 개발자에게 문의하세요.");
+        return;
+      }
+  
+      // 201 상태일 경우 응답 본문이 비어있지 않으면 JSON 파싱
+      if (response.status === 201 && responseText) {
+        try {
+          const responseData = JSON.parse(responseText); // JSON으로 변환
+          console.log("카테고리가 성공적으로 생성되었습니다:", responseData);
+        } catch (jsonError) {
+          console.error("응답 본문을 JSON으로 변환하는 중 오류가 발생했습니다:", jsonError);
+        }
+      }
+  
+      // 필요한 작업 수행 (예: 성공 메시지 표시, 상태 업데이트 등)
+      setFolders([...folders, content.trim()]); // 새로운 폴더 추가
+      setContent(""); // 입력 필드 초기화
+  
+    } catch (error) {
+      console.error("카테고리 생성 중 오류가 발생했습니다:", error);
     }
   };
-
+  
+  
+  
   const handleSelectFolder = (folder) => {
     setSelectedFolder(folder);
   };
