@@ -491,5 +491,3 @@ const VideoSummary = () => {
 };
 
 export default VideoSummary;
-//필터를 선택해주세요 경고창 띄우기
-//저장이 되었습니다 모달창 띄우기
