@@ -240,12 +240,23 @@ const parseScript = (scriptArray) => {
     .filter(Boolean); // null 값 제거
 };
 
+const parseSummary = (summary) => {
+  const paragraphs = summary.split("\n\n").filter(p => p.trim()); // '•'를 기준으로 분리
+  return paragraphs.map((paragraph, index) => {
+    const [title, ...content] = paragraph.split(": "); // ':'로 제목과 내용 분리
+    return {
+      title: title.trim() || `Section ${index + 1}`, // 제목이 없으면 'Section'으로 대체
+      content: content.join(": ").trim(), // 내용이 ':' 이후로 나올 수 있으므로 다시 합침
+    };
+  });
+};
+
 const PDFSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const pdfContainerRef = useRef(null); // ref 생성
+  const pdfContainerRef = useRef(null); 
   const [documentDate, setDocumentDate] = useState(new Date());
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -262,6 +273,13 @@ const PDFSummary = () => {
   ];
 
   useEffect(() => {
+    // PDF가 변경될 때마다 초기화 처리
+    if (pdfContainerRef.current) {
+      pdfContainerRef.current.innerHTML = ''; // 기존의 canvas 삭제
+    }
+  }, [pdfUrl]); // pdfUrl이 변경될 때마다 초기화
+
+  useEffect(() => {
       fetchPdfFile();
   }, []);
   
@@ -270,14 +288,15 @@ const PDFSummary = () => {
     try {
       let memberEmail = localStorage.getItem("userId");
       let pdfTitle = localStorage.getItem("PDFFileName");
+      
       const response = await fetch(`${Config.baseURL}/api/v1/files/getpdffile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          memberEmail: memberEmail,  // 예시 데이터
-          pdfTitle: pdfTitle,  // 예시 데이터
+          memberEmail: memberEmail, 
+          pdfTitle: pdfTitle,  
         }),
       });
   
@@ -296,8 +315,8 @@ const PDFSummary = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          memberEmail: memberEmail,  // 예시 데이터
-          pdfTitle: pdfTitle,  // 예시 데이터
+          memberEmail: memberEmail,
+          pdfTitle: pdfTitle,
         }),
       });
   
@@ -307,6 +326,18 @@ const PDFSummary = () => {
   
       const pdfInfo = await infoResponse.json(); // JSON 형태로 응답 받기
       console.log('PDF 정보:', pdfInfo); // 로그 찍기
+      
+      // 상태 업데이트
+      setPdfTitle(pdfTitle);
+      // console.log('pdfInfo.summary :',  pdfInfo.summary);
+      // console.log('pdfInfo.fullScript :', pdfInfo.fullScript);
+      console.log(':', );
+      console.log(':', );
+      console.log(':', );
+      setSummary(parseSummary(pdfInfo.summary)); // 요약본을 파싱하여 상태로 설정
+      // setFullScript(pdfInfo.fullScript); // 전체 스크립트를 줄바꿈 기준으로 나눠서 설정
+      setDocumentDate(pdfInfo.documentDate); // 문서 날짜 설정
+      setSelectedCategory(pdfInfo.categoryName || ""); // 카테고리 설정
   
     } catch (error) {
       console.error('PDF 파일 가져오기 오류:', error);
@@ -316,17 +347,11 @@ const PDFSummary = () => {
   };
   
 
-  useEffect(() => {
-    // PDF가 변경될 때마다 초기화 처리
-    if (pdfContainerRef.current) {
-      pdfContainerRef.current.innerHTML = ''; // 기존의 canvas 삭제
-    }
-  }, [pdfUrl]); // pdfUrl이 변경될 때마다 초기화
+  
 
 
   const handleLoadSuccess = () => {
     console.log("PDF 렌더링 성공");
-    // 추가적인 작업을 여기서 수행할 수 있습니다.
   };
   
   const handleLoadError = (error) => {
@@ -394,7 +419,7 @@ const PDFSummary = () => {
           <PdfContainer ref={pdfContainerRef}> {/* ref를 PdfContainer에 추가 */}
             {pdfUrl && !isLoading && (
               <PdfViewer
-                key={pdfUrl} // key 속성 추가
+                key={Math.random()} // 매번 랜덤한 key 값으로 새로운 컴포넌트 생성
                 pdfUrl={pdfUrl} 
                 onErrorPDFRender={handleLoadError}
                 onLoadSuccess={handleLoadSuccess}
