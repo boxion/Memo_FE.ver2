@@ -175,8 +175,13 @@ const Mypage = () => {
       }
 
       let responseData = await response.json();
-      responseData = responseData.map((video) => ({ ...video, isLocked: false })); // isLocked 속성 추가
-      responseData.reverse(); //내림차순으로 비디오 정렬
+      responseData = responseData.map((video) => ({
+        ...video,
+        isLocked: video.isPublished === false, // isPublished가 false면 잠금
+      }));
+  
+      
+      responseData.reverse(); // 내림차순으로 비디오 정렬
 
       setVideoList(responseData); // 받아온 데이터를 상태에 저장
     } catch (error) {
