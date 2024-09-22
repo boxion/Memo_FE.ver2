@@ -297,6 +297,7 @@ const VideoSummary = () => {
   const [filter, setFilter] = useState("");
   const [isPublished, setIsPublished] = useState(false);
   const [viewCount, setViewCount] = useState(0);
+  const [parsedScript, setParsedScript] = useState([]);
 
   const filters = [ "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음" ];
 
@@ -347,7 +348,9 @@ const VideoSummary = () => {
         if (categoryName) setCategoryName(categoryName);
         // filter가 null이 아닐 때만 setSelectedFilter 호출
         if (filter !== null) setSelectedFilter(filter);
-        if (fullScript) setFullScript(fullScript.split("\n"));
+        if (fullScript) {
+          setFullScript(fullScript.split("\n"));
+        }
         if (isPublished !== undefined) setIsPublished(isPublished);
         if (viewCount !== undefined) setViewCount(viewCount);
         if (videoUrl) {
@@ -470,6 +473,10 @@ const handleSetSummary = (newSummary) => {
     };
   }, [dropdownRef]);
   
+  useEffect(() => {
+    const parsed = parseScript(fullScript); // 스크립트 파싱
+    setParsedScript(parsed);
+  }, [fullScript]); // fullScript가 변경될 때마다 실행
 
   // summary 수정 핸들러
   const handleSummaryChange = (index, field, value) => {
@@ -516,9 +523,54 @@ const handleSetSummary = (newSummary) => {
     } catch (error) {
       console.error('요약 저장 실패:', error);
     }
+    handleSaveFullScript();
     handleRegisterClick();
   };
 
+
+  // 스크립트 수정 처리 함수
+  const handleScriptChange = (index, newText) => {
+    const updatedScript = [...parsedScript];
+    updatedScript[index].text = newText; // 텍스트 업데이트
+    setParsedScript(updatedScript); // 상태 업데이트
+  };
+
+  // 저장하기 버튼 클릭 시 fullScript 생성
+  const handleSaveFullScript = async () => {
+    const memberEmail = localStorage.getItem('userId');
+    const videoUrl = localStorage.getItem('videoUrl');
+
+    // parsedScript를 원래 형태로 변환
+    const fullScript = parsedScript.map((line) => `TS: ${line.time} | TXT: ${line.text}`).join('\n');
+
+    // PUT 요청
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/update-fullscript`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail: memberEmail,
+          videoUrl: videoUrl,
+          fullScript: fullScript,
+        }),
+      });
+
+      // 응답 로그
+      const responseText = await response.text();
+      console.log('응답 내용:', responseText);
+
+      if (!response.ok) {
+        throw new Error('요청에 문제가 발생했습니다.');
+      }
+
+      const data = JSON.parse(responseText); // JSON으로 파싱
+      console.log('스크립트 저장 성공:', data);
+    } catch (error) {
+      console.error('스크립트 저장 실패:', error);
+    }
+  };
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -554,6 +606,7 @@ const handleSetSummary = (newSummary) => {
               <ScriptText
                 contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
                 suppressContentEditableWarning={true} // 경고 메시지 숨김
+                onBlur={(e) => handleScriptChange(index, e.target.innerText)}
               >{line.text}</ScriptText>
             </ScriptLine>
           ))}
