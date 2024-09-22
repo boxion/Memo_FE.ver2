@@ -162,7 +162,7 @@ function Header() {
             <DropdownMenu isOpen={isDropdownOpen}>
               <DropdownItem to="/mypage">내 게시물</DropdownItem>
               <DropdownItem to="/savemypage">저장 게시물</DropdownItem>
-              <DropdownItem to="/team">팀 정보</DropdownItem>
+              <DropdownItem to="/team">개발자 정보</DropdownItem>
               <DropdownItem onClick={handleLogout}>로그아웃</DropdownItem>
             </DropdownMenu>
           </ProfileTitle>
