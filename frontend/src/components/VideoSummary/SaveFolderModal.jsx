@@ -195,7 +195,12 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const handleInputChange = (e) => {
-    setContent(e.target.value);
+    const value = e.target.value;
+    if (value.length <= 8) { 
+      setContent(value);
+    } else {
+      alert("폴더명은 8글자 이하로 입력해주세요.");
+    }
   };
 
   const handleAddFolder = async () => {

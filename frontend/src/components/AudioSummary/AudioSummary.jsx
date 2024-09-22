@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
-import YouTube from "react-youtube";
 import CategoryDropdown from "../Community/CategoryDropdown";
+import audioData from "../../util/audioData";
 
 const Container = styled.div`
   padding: 2vw;
@@ -14,24 +14,14 @@ const Container = styled.div`
 const LeftSection = styled.div`
   width: 100%;
   max-width: 600px;
-  padding-right: 2vw;
   display: flex;
   flex-direction: column;
-
-  @media (min-width: 768px) {
-    width: 50%;
-  }
 `;
 
 const RightSection = styled.div`
   width: 100%;
   max-width: 600px;
-  padding-left: 2vw;
   position: relative;
-
-  @media (min-width: 768px) {
-    width: 50%;
-  }
 `;
 
 const TabAndViewContainer = styled.div`
@@ -79,10 +69,6 @@ const ViewEditButton = styled.button`
   &:hover {
     background-color: #0056b3;
   }
-`;
-
-const VideoContainer = styled.div`
-  margin-bottom: 2vw;
 `;
 
 const ChatContainer = styled.div`
@@ -139,9 +125,7 @@ const SendButton = styled.button`
 const MVCTheorySection = styled.section`
   background-color: #fff;
   border-radius: 1vw;
-  padding: 2vw;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  padding: 0 2vw;
 `;
 
 const MVCHeading = styled.h2`
@@ -153,6 +137,8 @@ const MVCHeading = styled.h2`
 const MVCList = styled.ol`
   margin: 0;
   padding-left: 1vw;
+  height: 55vh; 
+  overflow-y: auto;
 `;
 
 const MVCListItem = styled.div`
@@ -162,13 +148,13 @@ const MVCListItem = styled.div`
   padding: 1vw;         
 `;
 
-const MVCListTitle = styled.h3`
+const MVCListTitle = styled.div`
   font-size: 1vw;
+  font-weight: bold;
   color: #555;
-  margin-bottom: 1vw;
 `;
 
-const MVCListText = styled.p`
+const MVCListText = styled.div`
   font-size: 1vw;
   color: #333;
   margin: 0;
@@ -194,6 +180,11 @@ const ActionButton = styled.button`
   }
 `;
 
+const AudioPlayer = styled.audio`
+  width: 100%;
+  margin-bottom: 2vw;
+`;
+
 const AudioSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true); 
@@ -202,25 +193,14 @@ const AudioSummary = () => {
     if (activeTab === "summary") {
       return (
         <MVCList>
-          <MVCListItem>
-            <MVCListTitle>1. MVC패턴이란 무엇인가?</MVCListTitle>
-            <MVCListText>
-              MVC패턴은 사용자 인터페이스와 비즈니스 로직을 분리하여 각각의 문제를 독립적으로 운영하여
-              유지보수를 용이하게 만들 수 있는 디자인 패턴입니다.
-            </MVCListText>
-          </MVCListItem>
-          <MVCListItem>
-            <MVCListTitle>2. 두 모델의 핵심적인 차이</MVCListTitle>
-            <MVCListText>
-              두 모델의 핵심적인 차이는 두 가지로 요약할 수 있습니다.
-            </MVCListText>
-          </MVCListItem>
-          <MVCListItem>
-            <MVCListTitle>3. Dispatcher Servlet</MVCListTitle>
-            <MVCListText>
-              요청을 처리할 컨트롤러를 찾아 위임하고 최종적인 결과를 반환하는 것.
-            </MVCListText>
-          </MVCListItem>
+          {audioData.content.map((item, index) => (
+            <MVCListItem key={index}>
+              <MVCListTitle>{item.title}</MVCListTitle>
+              {item.text.map((sentence, sentenceIndex) => (
+                <MVCListText key={sentenceIndex}>{sentence}.</MVCListText>
+              ))}
+            </MVCListItem>
+          ))}
         </MVCList>
       );
     } else if (activeTab === "script") {
@@ -241,10 +221,10 @@ const AudioSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-          <VideoContainer>
-            <YouTube videoId="your-video-id-here" opts={{ width: "100%", height: "300px" }} />
-          </VideoContainer>
-
+          <AudioPlayer controls>
+            <source src="your-audio-file-url.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </AudioPlayer>
           <ChatContainer>
             <ChatHeader>ChatGPT와 대화</ChatHeader>
             <ChatBox>
@@ -287,7 +267,7 @@ const AudioSummary = () => {
               </ViewEditButton>
             </TabAndViewContainer>
 
-            <MVCHeading>MVC 패턴 이론</MVCHeading>
+            <MVCHeading>[10분 테코톡] 🧀 제리의 MVC 패턴</MVCHeading>
             
             {renderContent()}
 
