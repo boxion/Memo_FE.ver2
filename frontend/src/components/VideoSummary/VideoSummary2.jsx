@@ -1,3 +1,4 @@
+//커뮤니티-> 남의 영상 보기 -> 전달해주는 userId가 다름
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom"; // 영상 클릭 시 상태 전달을 받기 위함
 import styled from "styled-components";
