@@ -120,18 +120,35 @@ const EditButton = styled.div`
 
 const SideMenu = ({ isOpen, onClose }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [categoryList, setCategoryList] = useState([]); // 백엔드에서 받아온 카테고리 데이터를 저장할 상태
-  const sideMenuRef = useRef(null); // 사이드 메뉴 참조 생성
+  const [categoryList, setCategoryList] = useState([]);
+  const sideMenuRef = useRef(null);
   const navigate = useNavigate();
-  
-  // 렌더링될 때 로컬스토리지의 isLoggedIn 값이 true인지 확인 후 요청
+
+  // 외부 클릭 시 사이드 메뉴 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sideMenuRef.current && !sideMenuRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
 
     if (isLoggedIn === "true") {
       const memberEmail = localStorage.getItem("userId");
 
-      // 백엔드로 POST 요청 보내기
       const sendToHome = async () => {
         try {
           const response = await fetch(`${Config.baseURL}/api/v1/home/send-to-home`, {
@@ -140,7 +157,7 @@ const SideMenu = ({ isOpen, onClose }) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              memberEmail, // userId를 memberEmail로 전달
+              memberEmail,
             }),
           });
 
@@ -151,10 +168,8 @@ const SideMenu = ({ isOpen, onClose }) => {
           const responseData = await response.json();
           console.log("백엔드 응답:", responseData);
 
-          // 백엔드에서 받은 categoryName 데이터를 setCategoryList로 저장
           const categories = responseData.map((category) => category.categoryName);
-          setCategoryList(categories); // 상태에 카테고리 목록 저장
-
+          setCategoryList(categories);
         } catch (error) {
           console.error("POST 요청 중 에러 발생:", error);
         }
@@ -165,7 +180,7 @@ const SideMenu = ({ isOpen, onClose }) => {
   }, []);
 
   const handleMenuItemClick = (category) => {
-    localStorage.setItem("categoryName",category);
+    localStorage.setItem("categoryName", category);
     onClose();
     navigate("/mypage");
     window.location.reload();
