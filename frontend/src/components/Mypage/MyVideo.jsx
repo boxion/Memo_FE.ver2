@@ -2,47 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Config from "../Config/config";
-import audioIcon from "../../assets/images/audio.png";
-import pdfIcon from "../../assets/images/pdf.png";
-import videoIcon from "../../assets/images/video.png";
 
-const MypageHeader = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 1vw 15vw 1vw 15vw;
-`;
 const MypageText = styled.div`
   font-size: 1.5vw;
   margin-top: 1vw;
   font-weight: bold;
   text-align: center;
   color: #202020;
-  margin-left: 18.5vw; /* MypageText를 오른쪽으로 이동 */
-`;
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 1vw;
-  gap: 1vw; /* 버튼 간격 */
-  margin-left: 1.5vw; /* MypageText를 오른쪽으로 이동 */
-`;
-const CircleButton = styled.button`
-  width: 2.5vw;
-  height: 2.5vw;
-  border-radius: 50%;
-  background-color: #202D94;
-  background-size: cover; /* 이미지 크기를 버튼에 맞게 */
-  background-position: center; /* 이미지 중앙 정렬 */
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #4144E9;
-  }
-
-  &:active {
-    background-color: #202D94;
-  }
 `;
 
 const GridContainer = styled.div`
@@ -164,7 +130,7 @@ const NextButton = styled.button`
 
 const itemsPerPage = 6;
 
-const Mypage = () => {
+const Mypage2 = () => {
   const [reset, setReset] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [videoList, setVideoList] = useState([]);
@@ -349,24 +315,11 @@ const Mypage = () => {
 
   return (
     <>
-      <MypageHeader>
-      <ButtonContainer>
-      <CircleButton
-          style={{ backgroundImage: `url(${videoIcon})` }}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${pdfIcon})` }}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${audioIcon})` }}
-        />
-      </ButtonContainer>
       <MypageText>
         {categoryName === "최근 본 영상" || categoryName === "null"
           ? "최근 본 영상"
           : categoryName + " 카테고리 영상"}
       </MypageText>
-    </MypageHeader>
       <GridContainer>
         {currentData.map((video, index) => (
           <VideoCard
@@ -397,4 +350,4 @@ const Mypage = () => {
   );
 };
 
-export default Mypage;
+export default Mypage2;
