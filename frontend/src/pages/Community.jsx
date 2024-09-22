@@ -207,24 +207,39 @@ const PageNavigation = styled.div`
   margin-top: 2vw;
   `;
 
-const PageButton = styled.button`
+  const PageButton = styled.button`
+  padding: 1vw;
+  margin: 0 0.2vw;
   border: none;
-  background-color: transparent;
-  font-size: 1.2vw;
-  margin: 0 0.5vw;
+  font-size: 1vw;
+  background-color: ${({ isActive }) => (isActive ? "#4144E9" : "transparent")};
+  border-radius: 0.5vw;
   cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-  }
-    /* 현재 페이지일 경우 동그라미 */
-  ${({ isActive }) =>
-    isActive &&
-    `
-      border-radius: 20%;  // 동그라미 모양
-      border: 2px solid #4144E9;  // 동그라미 외곽선
-      background-color: #4144E9;
-      color: white;
-    `}
+  color: ${({ isActive }) => (isActive ? "#ffffff" : "#000000")}; /* isActive에 따라 색상 변경 */
+  border: 0.1vw solid #4144E9;
+`;
+const PrevButton = styled.button`
+  padding: 1vw;
+  margin: 0 0.2vw;
+  border: none;
+  border-radius: 0.5vw;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 1vw;
+  font-weight: bold;
+  background-color: #D9D9D9;
+`;
+
+const NextButton = styled.button`
+  padding: 1vw;
+  margin: 0 0.2vw;
+  border: none;
+  border-radius: 0.5vw;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 1vw;
+  font-weight: bold;
+  background-color: #D9D9D9;
 `;
 // 제목 검색 통신 코드
 const searchVideos = async (videoTitle) => {
