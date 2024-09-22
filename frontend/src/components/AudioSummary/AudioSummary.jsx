@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
-import YouTube from "react-youtube";
 import CategoryDropdown from "../Community/CategoryDropdown";
 import audioData from "../../util/audioData";
 
@@ -72,10 +71,6 @@ const ViewEditButton = styled.button`
   }
 `;
 
-const VideoContainer = styled.div`
-  margin-bottom: 2vw;
-`;
-
 const ChatContainer = styled.div`
   flex-grow: 1;
   background-color: #000000;
@@ -130,7 +125,7 @@ const SendButton = styled.button`
 const MVCTheorySection = styled.section`
   background-color: #fff;
   border-radius: 1vw;
-  padding: 2vw;
+  padding: 0 2vw;
 `;
 
 const MVCHeading = styled.h2`
@@ -142,8 +137,8 @@ const MVCHeading = styled.h2`
 const MVCList = styled.ol`
   margin: 0;
   padding-left: 1vw;
-  height: 20vw; /* 원하는 높이 설정 */
-  overflow-y: auto; /* 스크롤 가능 */
+  height: 55vh; 
+  overflow-y: auto;
 `;
 
 const MVCListItem = styled.div`
@@ -185,6 +180,11 @@ const ActionButton = styled.button`
   }
 `;
 
+const AudioPlayer = styled.audio`
+  width: 100%;
+  margin-bottom: 2vw;
+`;
+
 const AudioSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true); 
@@ -193,15 +193,15 @@ const AudioSummary = () => {
     if (activeTab === "summary") {
       return (
         <MVCList>
-        {audioData.content.map((item, index) => (
-          <MVCListItem key={index}>
-            <MVCListTitle>{item.title}</MVCListTitle>
-            {item.text.map((sentence, sentenceIndex) => (
-              <MVCListText key={sentenceIndex}>{sentence}.</MVCListText>
-            ))}
-          </MVCListItem>
-        ))}
-      </MVCList>
+          {audioData.content.map((item, index) => (
+            <MVCListItem key={index}>
+              <MVCListTitle>{item.title}</MVCListTitle>
+              {item.text.map((sentence, sentenceIndex) => (
+                <MVCListText key={sentenceIndex}>{sentence}.</MVCListText>
+              ))}
+            </MVCListItem>
+          ))}
+        </MVCList>
       );
     } else if (activeTab === "script") {
       return (
@@ -221,10 +221,10 @@ const AudioSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-          <VideoContainer>
-            <YouTube videoId="your-video-id-here" opts={{ width: "100%", height: "300px" }} />
-          </VideoContainer>
-
+          <AudioPlayer controls>
+            <source src="your-audio-file-url.mp3" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </AudioPlayer>
           <ChatContainer>
             <ChatHeader>ChatGPT와 대화</ChatHeader>
             <ChatBox>
