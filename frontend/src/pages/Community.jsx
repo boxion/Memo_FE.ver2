@@ -353,31 +353,66 @@ function Community() {
   const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태 추가
   const [filteredVideos, setFilteredVideos] = useState([]); // 필터링된 비디오
   useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        const response = await fetch(`${BASE_URL}/api/v1/community`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-  
-        if (!response.ok) {
-          throw new Error('데이터 가져오기에 실패했습니다.');
-        }
-        const data = await response.json();
-        console.log("서버에서 받아온 데이터: ", data);
-  
-        // 전체 비디오를 로드하고 이를 필터링된 비디오로도 초기화
-        setVideos([...data]);
-        setFilteredVideos([...data]); // 초기에는 전체 비디오가 필터링된 비디오로 설정됨
-      } catch (error) {
-        console.error('비디오 데이터를 가져오는 중 오류 발생:', error);
-      }
-    };
-    fetchVideos();
+    // 페이지가 렌더링될 때마다 화면을 최상단으로 스크롤
+    window.scrollTo(0, 0);
   }, []);
-  
+  useEffect(() => {
+  const fetchVideos = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/v1/community`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('데이터 가져오기에 실패했습니다.');
+      }
+      const data = await response.json();
+      console.log("서버에서 받아온 데이터: ", data);
+
+      // 전체 비디오를 로드하고 이를 필터링된 비디오로도 초기화
+      setVideos([...data]);
+      setFilteredVideos([...data]); // 초기에는 전체 비디오가 필터링된 비디오로 설정
+
+      // 비디오를 가져온 후 좋아요 비디오 상태 초기화
+      fetchLikedVideos(data);
+    } catch (error) {
+      console.error('비디오 데이터를 가져오는 중 오류 발생:', error);
+    }
+  };
+
+  const fetchLikedVideos = async (videos) => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/v1/video/saved-videos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memberEmail: userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('좋아요 비디오를 가져오는 중 오류 발생.');
+      }
+
+      const savedVideos = await response.json();
+      const likedVideoIds = new Set(savedVideos.map(video => video.videoId));
+      const initialFavorites = videos.map(video => likedVideoIds.has(video.videoId));
+
+      setFavorites(initialFavorites); // 좋아요 상태 업데이트
+    } catch (error) {
+      console.error('좋아요 비디오를 가져오는 중 오류 발생:', error);
+    }
+  };
+
+  fetchVideos();
+}, []); // 비어 있는 배열은 컴포넌트 마운트 시 한 번만 실행됨
+
   useEffect(() => {
     const applyFiltersAndSort = async () => {
       let filteredResults = [...videos];
@@ -408,21 +443,37 @@ function Community() {
     const currentVideos = filteredVideos.slice(indexOfFirstVideo, indexOfLastVideo);
     setDisplayedVideos(currentVideos);
   }, [currentPage, filteredVideos]);
-  
+
   useEffect(() => {
-    // Function to fetch liked videos from localStorage
-    const fetchLikedVideosFromLocalStorage = () => {
-      const likedVideos = JSON.parse(localStorage.getItem('likedVideos')) || {};
-      return likedVideos;
-    };
-      const initializeFavorites = () => {
-      const likedVideos = fetchLikedVideosFromLocalStorage();
-      const initialFavorites = displayedVideos.map(video => !!likedVideos[video.videoId]);
-      setFavorites(initialFavorites);
+    const fetchLikedVideosFromAPI = async () => {
+      const userId = localStorage.getItem('userId');
+      try {
+        const response = await fetch(`${BASE_URL}/api/v1/video/saved-videos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ memberEmail: userId }), // userId는 localStorage에서 가져올 수 있음
+        });
+  
+        if (!response.ok) {
+          throw new Error('좋아요 비디오 가져오기 실패');
+        }
+  
+        const likedVideos = await response.json();
+        const likedVideoIds = new Set(likedVideos.map(video => video.videoId));
+  
+        // displayedVideos에 따라 좋아요 상태 초기화
+        const initialFavorites = displayedVideos.map(video => likedVideoIds.has(video.videoId));
+        setFavorites(initialFavorites);
+      } catch (error) {
+        console.error('좋아요 비디오 가져오는 중 오류 발생:', error);
+      }
     };
   
-    initializeFavorites();
+    fetchLikedVideosFromAPI();
   }, [displayedVideos]);
+  
  // 비디오 클릭 핸들러
 const handleVideoClick = async (video) => {
   try {
@@ -446,7 +497,7 @@ const handleVideoClick = async (video) => {
     console.log('불러온 비디오 정보:', videoAndQuestions);
 
     // 전송 성공 시 videoSummary 페이지로 이동 (로컬 저장된 정보가 아닌 클릭한 비디오 정보로 이동)
-    navigate(`/video-summary`, {
+    navigate(`/video-summary2`, {
       state: {
         memberEmail: video.memberEmail,
         videoUrl: video.videoUrl,
@@ -459,8 +510,6 @@ const handleVideoClick = async (video) => {
     console.error('비디오 클릭 처리 중 오류 발생:', error);
   }
 };
-
-
   const toggleCategoryDropdown = () => {
     setCategoryDropdownOpen(!categoryDropdownOpen);
   };
@@ -499,7 +548,6 @@ const handleVideoClick = async (video) => {
     }
     setCurrentPage(1); // 검색 후 또는 전체 비디오로 돌아올 때 첫 페이지로 리셋
   };
-  
 
   const toggleFavorite = async (index) => {
     const newFavorites = [...favorites];
@@ -614,8 +662,8 @@ const handleVideoClick = async (video) => {
               <CardTitle> {video.videoTitle.length > 60 ? video.videoTitle.slice(0, 60) + '...' : video.videoTitle}</CardTitle>
               <IconContainer>
                 <FavoriteButton 
-                  favorited={favorites[indexOfFirstVideo + index]} 
-                  onClick={() => toggleFavorite(indexOfFirstVideo + index)}
+                  favorited={favorites[index]} 
+                  onClick={() => toggleFavorite(index)}
                 />
                 <MemberEmail>{video.memberEmail}</MemberEmail>
                 <DocumentDate>{video.documentDate}</DocumentDate>

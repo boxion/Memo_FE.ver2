@@ -175,8 +175,13 @@ const Mypage = () => {
       }
 
       let responseData = await response.json();
-      responseData = responseData.map((video) => ({ ...video, isLocked: false })); // isLocked 속성 추가
-      responseData.reverse(); //내림차순으로 비디오 정렬
+      responseData = responseData.map((video) => ({
+        ...video,
+        isLocked: video.isPublished === false, // isPublished가 false면 잠금
+      }));
+  
+      
+      responseData.reverse(); // 내림차순으로 비디오 정렬
 
       setVideoList(responseData); // 받아온 데이터를 상태에 저장
     } catch (error) {
@@ -186,14 +191,40 @@ const Mypage = () => {
   };
 
   // 잠금장치 기능
-  const toggleLock = (videoUrl) => {
-    setVideoList((prevVideoList) =>
-      prevVideoList.map((video) =>
-        video.videoUrl === videoUrl
-          ? { ...video, isLocked: !video.isLocked }
-          : video
-      )
-    );
+  const toggleLock = async (videoUrl, currentStatus) => {
+    const memberEmail = localStorage.getItem("userId");
+    const newStatus = currentStatus ? "public" : "private"; // 현재 상태에 따라 새 상태 설정
+  
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/update-publication-status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          memberEmail,
+          videoUrl,
+          status: newStatus,
+        }),
+      });
+  
+      if (response.ok) {
+        console.log("잠금 상태 업데이트 성공");
+  
+        // 서버에서 응답이 성공적일 경우, 로컬 상태도 업데이트
+        setVideoList((prevVideoList) =>
+          prevVideoList.map((video) =>
+            video.videoUrl === videoUrl
+              ? { ...video, isLocked: newStatus === "private" } // 새로운 상태에 따라 잠금 상태 변경
+              : video
+          )
+        );
+      } else {
+        console.error("잠금 상태 업데이트 실패", await response.text()); // 서버의 오류 메시지 출력
+      }
+    } catch (error) {
+      console.error("잠금 상태 업데이트 중 에러 발생:", error);
+    }
   };
 
   // 페이지네이션 = 6 이상일시 화면 전환 기능
@@ -302,7 +333,7 @@ const Mypage = () => {
               isLocked={video.isLocked}
               onClick={(e) => {
                 e.stopPropagation();
-                toggleLock(video.videoUrl);
+                toggleLock(video.videoUrl, video.isLocked);
               }}
             >
               {video.isLocked ? "🔒" : "🔓"}
