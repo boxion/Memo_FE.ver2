@@ -12,7 +12,9 @@ import PDFSummary from "./components/PDFSummary/PDFsummary";
 import VideoSummary from "./components/VideoSummary/VideoSummary";
 import VideoSummary2 from "./components/VideoSummary/VideoSummary2";
 import AudioSummary from "./components/AudioSummary/AudioSummary";
-import SaveMypage from "./components/Mypage/SaveMypage"
+import SaveMypage from "./components/Mypage/SaveMypage";
+import MyPDF from "./components/Mypage/MyPDF";
+import MyAudio from "./components/Mypage/MyAudio";
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/mypage" element={<MyPage />} />
+            <Route path="/mypdf" element={<MyPDF />} />
+            <Route path="/myaudio" element={<MyAudio />} />
             <Route path="/Savemypage" element={<SaveMypage />} />
             <Route path="/team" element={<Team />} />
           </Routes>
