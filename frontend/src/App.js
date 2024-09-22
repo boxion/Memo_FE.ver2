@@ -10,6 +10,7 @@ import PDFpage from "./pages/PDFpage";
 import Team from "./pages/Team";
 import PDFSummary from "./components/PDFSummary/PDFsummary";
 import VideoSummary from "./components/VideoSummary/VideoSummary";
+import VideoSummary2 from "./components/VideoSummary/VideoSummary2";
 import AudioSummary from "./components/AudioSummary/AudioSummary";
 import SaveMypage from "./components/Mypage/SaveMypage"
 
@@ -19,6 +20,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/video-summary" element={<VideoSummary />} />
+            <Route path="/video-summary2" element={<VideoSummary2 />} />
             <Route path="/audio-ai" element={<AudioAI />} />
             <Route path="/audio-summary" element={<AudioSummary />} />
             <Route path="/PDFpage" element={<PDFpage />} />

@@ -19,6 +19,15 @@ const ChatBox = styled.div`
   border-radius: 0 0 1vw 1vw;
 `;
 
+const EmptyMessage = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 1.2vw;
+  color: gray;
+`;
+
 const ChatInputContainer = styled.div`
   display: flex;
   margin-top: 1vw;
@@ -155,18 +164,22 @@ const Chat = ({ visible }) => {
     visible && (
       <ChatContainer>
         <ChatBox>
-          {messages.map((msg, index) => (
-            <>
-              {msg.type === "user" ? (
-                <UserMessage key={index}>{msg.content}</UserMessage>
-              ) : (
-                <BotMessage key={index}>
-                  <GptIcon src={gptIcon} alt="GPT Icon" />
-                  <div dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
-                </BotMessage>
-              )}
-            </>
-          ))}
+          {messages.length === 0 ? (
+            <EmptyMessage>AI에게 궁금한걸 물어보세요</EmptyMessage>
+          ) : (
+            messages.map((msg, index) => (
+              <React.Fragment key={index}>
+                {msg.type === "user" ? (
+                  <UserMessage>{msg.content}</UserMessage>
+                ) : (
+                  <BotMessage>
+                    <GptIcon src={gptIcon} alt="GPT Icon" />
+                    <div dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
+                  </BotMessage>
+                )}
+              </React.Fragment>
+            ))
+          )}
           <div ref={messagesEndRef} />
         </ChatBox>
         <ChatInputContainer>

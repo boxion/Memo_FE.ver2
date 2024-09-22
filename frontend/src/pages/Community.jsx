@@ -352,7 +352,11 @@ function Community() {
   const [favorites, setFavorites] = useState(Array(6).fill(false)); // 초기값 false로 설정
   const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태 추가
   const [filteredVideos, setFilteredVideos] = useState([]); // 필터링된 비디오
-useEffect(() => {
+  useEffect(() => {
+    // 페이지가 렌더링될 때마다 화면을 최상단으로 스크롤
+    window.scrollTo(0, 0);
+  }, []);
+  useEffect(() => {
   const fetchVideos = async () => {
     try {
       const response = await fetch(`${BASE_URL}/api/v1/community`, {
@@ -493,7 +497,7 @@ const handleVideoClick = async (video) => {
     console.log('불러온 비디오 정보:', videoAndQuestions);
 
     // 전송 성공 시 videoSummary 페이지로 이동 (로컬 저장된 정보가 아닌 클릭한 비디오 정보로 이동)
-    navigate(`/video-summary`, {
+    navigate(`/video-summary2`, {
       state: {
         memberEmail: video.memberEmail,
         videoUrl: video.videoUrl,
