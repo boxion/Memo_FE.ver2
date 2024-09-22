@@ -48,7 +48,7 @@ const SendButton = styled.button`
 `;
 
 const RefreshButton = styled.button`
-  background-color: #0004eb;
+  background-color: #0004EB;
   color: white;
   border: none;
   border-radius: 1vw;
@@ -90,26 +90,10 @@ const GptIcon = styled.img`
   height: 2.5vw;
 `;
 
-const Chat = ({ visible }) => {
+const PDFChat = ({ visible }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
-
-  // 컴포넌트가 마운트될 때 로컬 스토리지에서 질문 목록을 가져오는 함수
-  useEffect(() => {
-    const loadQuestions = () => {
-      const videoQuestions = JSON.parse(localStorage.getItem("videoQuestions")) || [];
-      const initialMessages = videoQuestions.map(q => [
-        { type: "user", content: q.question },
-        { type: "bot", content: q.answer }
-      ]).flat(); // 사용자 질문과 봇 답변을 평탄화하여 배열로 만듭니다.
-
-      setMessages(initialMessages);
-    };
-
-    loadQuestions();
-    scrollToBottom();
-  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -118,6 +102,46 @@ const Chat = ({ visible }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // 컴포넌트가 렌더링될 때 API 요청을 자동으로 수행
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      const userId = localStorage.getItem("userId");
+      const pdfTitle = localStorage.getItem("PDFFileName");
+
+      try {
+        const response = await fetch(`${Config.baseURL}/api/v1/questions/pdf-questions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            memberEmail: userId,
+            pdfTitle: pdfTitle,
+          }),
+        });
+
+        if (!response.ok) {
+          console.error("서버에서 오류가 발생했습니다.");
+          return;
+        }
+
+        const data = await response.json();
+        console.log("질문/답변 데이터를 가져옴:", data);
+
+        // 질문을 사용자 메시지로, 답변을 봇 메시지로 추가
+        const newMessages = data.flatMap((item) => [
+          { type: "user", content: item.question }, // 질문을 사용자 메시지로
+          { type: "bot", content: item.answer },    // 답변을 봇 메시지로
+        ]);
+        setMessages(newMessages);
+      } catch (error) {
+        console.error("데이터를 가져오는 중 오류 발생:", error);
+      }
+    };
+
+    fetchQuestions();
+  }, []); // 컴포넌트가 처음 렌더링될 때 한 번만 실행
 
   const handleMessageChange = (e) => {
     setMessage(e.target.value);
@@ -156,16 +180,16 @@ const Chat = ({ visible }) => {
       <ChatContainer>
         <ChatBox>
           {messages.map((msg, index) => (
-            <>
+            <div key={index}>
               {msg.type === "user" ? (
-                <UserMessage key={index}>{msg.content}</UserMessage>
+                <UserMessage>{msg.content}</UserMessage>
               ) : (
-                <BotMessage key={index}>
+                <BotMessage>
                   <GptIcon src={gptIcon} alt="GPT Icon" />
                   <div dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
                 </BotMessage>
               )}
-            </>
+            </div>
           ))}
           <div ref={messagesEndRef} />
         </ChatBox>
@@ -189,23 +213,23 @@ const Chat = ({ visible }) => {
 const GPTQuery = async (query) => {
   try {
     const userId = localStorage.getItem("userId");
-    const videoUrl = localStorage.getItem("videoUrl");
+    const pdfTitle = localStorage.getItem("PDFFileName");
 
     console.log("GPT 모델에 쿼리를 전송하는 중...");
     console.log("[ 쿼리 ] : ", query);
     console.log("[ userId ] : ", userId);
-    console.log("[ videoUrl ] : ", videoUrl);
+    console.log("[ pdfTitle ] : ", pdfTitle);
 
-    const response = await fetch(`${Config.baseURL}/api/v1/questions/ask`, {
+    const response = await fetch(`${Config.baseURL}/api/v1/questions/askPDF`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         question: query,
         memberEmail: userId,
-        videoUrl: videoUrl
-      })
+        pdfTitle: pdfTitle,
+      }),
     });
 
     if (!response.ok) {
@@ -223,4 +247,4 @@ const GPTQuery = async (query) => {
   }
 };
 
-export default Chat;
+export default PDFChat;

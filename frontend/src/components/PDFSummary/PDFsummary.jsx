@@ -4,7 +4,7 @@ import Header from "../Header/Header";
 import Config from "../Config/config";
 import { PdfViewer } from '@naverpay/react-pdf';
 import SaveFolderModal from "../VideoSummary/SaveFolderModal";
-import Chat from "../VideoSummary/Chatgpt";
+import PDFChat from "./PDFChat";
 import gptIcon from "../../assets/images/GPTIcon.png";
 
 const Container = styled.div`
@@ -305,7 +305,7 @@ const PDFSummary = () => {
               <>
                 <ChatOverlay onClick={handleOverlayClick} />
                 <ChatContainer>
-                  <Chat visible={isGptModalOpen} onClose={handleCloseGptModal} isModal={true} />
+                  <PDFChat visible={isGptModalOpen} onClose={handleCloseGptModal} isModal={true} />
                 </ChatContainer>
               </>
             )}
