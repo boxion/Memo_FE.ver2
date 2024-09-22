@@ -252,12 +252,10 @@ const VideoSummary = () => {
   const dropdownRef = useRef(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const location = useLocation();
-
-  const categories = [
-    "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
-    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음"
-  ];
-
+  useEffect(() => {
+    // 페이지가 렌더링될 때마다 화면을 최상단으로 스크롤
+    window.scrollTo(0, 0);
+  }, []);
   useEffect(() => {
     const videoData = location.state;
   
@@ -339,7 +337,6 @@ const VideoSummary = () => {
     }
   };
   
-
   const handleCloseModal = () => {
     setModalOpen(false);
   };
@@ -444,12 +441,7 @@ const VideoSummary = () => {
                 </TabButton>
               </div>
             </TabButtonContainer>
-
             {renderContent()}
-
-            <ActionButtonContainer>
-              <ActionButton onClick={handleRegisterClick}>등록하기</ActionButton>
-            </ActionButtonContainer>
             <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
           </TheorySection>
         </RightSection>
