@@ -4,6 +4,7 @@ import Header from "../Header/Header";
 import CategoryDropdown from "../Community/CategoryDropdown";
 import audioData from "../../util/audioData";
 
+
 const Container = styled.div`
   padding: 2vw;
   display: flex;
@@ -187,7 +188,11 @@ const AudioPlayer = styled.audio`
 
 const AudioSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
-  const [viewMode, setViewMode] = useState(true); 
+  const [viewMode, setViewMode] = useState(true);
+  
+  // 오디오 파일 경로
+  const audioFilePath = `${process.env.PUBLIC_URL}/audio/jerry_mvc_pattern.m4a`;
+
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -221,20 +226,19 @@ const AudioSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-          <AudioPlayer controls>
-            <source src="your-audio-file-url.mp3" type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </AudioPlayer>
-          <ChatContainer>
+        <AudioPlayer controls>
+          <source src={audioFilePath} type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </AudioPlayer>
+          {/* <ChatContainer>
             <ChatHeader>ChatGPT와 대화</ChatHeader>
             <ChatBox>
-              {/*채팅 내용 */}
             </ChatBox>
             <ChatInputContainer>
               <ChatInput type="text" placeholder="무엇이든 물어보세요..." />
               <SendButton>전송</SendButton>
             </ChatInputContainer>
-          </ChatContainer>
+          </ChatContainer> */}
         </LeftSection>
 
         <RightSection>
@@ -280,5 +284,6 @@ const AudioSummary = () => {
     </>
   );
 };
+
 
 export default AudioSummary;
