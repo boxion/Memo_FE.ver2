@@ -16,7 +16,7 @@ const TopSection = styled.div`
   display: flex;
   justify-content: space-between;
   width: 94%;
-  padding: 1vw;
+  padding: 0 0 1vw 0;
 `;
 
 const BottomSection = styled.div`
