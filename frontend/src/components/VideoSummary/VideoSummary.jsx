@@ -109,19 +109,60 @@ const DropdownItem = styled.button`
   }
 `;
 
-const ViewEditButton = styled.button`
-  background-color: #4144e9;
-  color: white;
-  border: none;
-  border-radius: 1vw;
-  padding: 0.5vw 1vw;
-  font-size: 0.8vw;
+// ToggleContainer 수정
+const ToggleContainer = styled.div`
+  position: relative;
+  margin-top: 1rem; /* 여백 조정 */
   cursor: pointer;
-  margin-right: 1vw;
 
-  &:hover {
-    background-color: #0056b3;
+  > .toggle-container {
+    width: 70px;
+    height: 24px;
+    border-radius: 30px;
+    background-color: #afafaf;
+    transition: background-color 0.5s;
+    
+    // toggle--checked 클래스가 적용되었을 때
+    &.toggle--checked {
+      background-color: rgb(0, 200, 102);
+    }
   }
+`;
+
+// ToggleCircle 컴포넌트 생성
+const ToggleCircle = styled.div`
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #e9e9ea;
+  transition: left 0.5s;
+
+  // toggle--checked 클래스가 적용되었을 때
+  &.toggle--checked {
+    left: 47px; // 체크된 상태에서의 위치
+  }
+`;
+
+// ToggleText 컴포넌트
+const ToggleText = styled.span`
+  position: absolute;
+  left: ${({ isEdit }) => (isEdit ? "0" : "30px")}; /* EDIT일 때 위치 조정 */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #000000;
+`;
+
+const ToggleText2 = styled.span`
+  position: absolute;
+  left: ${({ isEdit }) => (isEdit ? "0" : "10px")}; /* EDIT일 때 위치 조정 */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #000000;
 `;
 
 const VideoContainer = styled.div`
@@ -436,6 +477,10 @@ const VideoSummary = () => {
     });
   };
 
+  const toggleHandler = () => {
+    setViewMode(!viewMode);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -457,10 +502,16 @@ const VideoSummary = () => {
           {summary.map((paragraph, index) => (
             <ListItem key={index}>
               {/* title과 content를 분리하여 각각 렌더링 */}
-              <ListText>
+              <ListText
+                contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
+                suppressContentEditableWarning={true} // 경고 메시지 숨김
+              >
                 <strong>{paragraph.title}</strong> {/* 소제목 */}
               </ListText>
-              <ListText>{paragraph.content}</ListText> {/* 내용 */}
+              <ListText
+                contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
+                suppressContentEditableWarning={true} // 경고 메시지 숨김
+              >{paragraph.content}</ListText> {/* 내용 */}
             </ListItem>
           ))}
         </ListBox>
@@ -473,7 +524,10 @@ const VideoSummary = () => {
           {parsedScript.map((line, index) => (
             <ScriptLine key={index}>
               <TimeText>{line.time}</TimeText>
-              <ScriptText>{line.text}</ScriptText>
+              <ScriptText
+                contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
+                suppressContentEditableWarning={true} // 경고 메시지 숨김
+              >{line.text}</ScriptText>
             </ScriptLine>
           ))}
         </ScriptContainer>
@@ -547,9 +601,13 @@ const VideoSummary = () => {
                   </DropdownMenu>
                 </DropdownContainer>
               </div>
-              <ViewEditButton onClick={() => setViewMode(!viewMode)}>
-                {viewMode ? "View" : "Edit"}
-              </ViewEditButton>
+              <ToggleContainer onClick={toggleHandler}>
+                <div className={`toggle-container ${viewMode ? "" : "toggle--checked"}`}>
+                  <ToggleText>{viewMode ? "VIEW" : ""}</ToggleText>
+                  <ToggleCircle className={viewMode ? "" : "toggle--checked"} />
+                  <ToggleText2>{viewMode ? "" : "EDIT"}</ToggleText2>
+                </div>
+              </ToggleContainer>
             </TabButtonContainer>
 
             {renderContent()}
