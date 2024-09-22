@@ -337,22 +337,19 @@ const VideoSummary = () => {
         const { questions } = responseData;
 
         // 로컬 스토리지에 질문 데이터 저장
-        if (questions) {
-          localStorage.setItem("videoQuestions", JSON.stringify(questions));
-        }
+        if (questions) localStorage.setItem("videoQuestions", JSON.stringify(questions));
+
 
         // 상태 업데이트
         if (videoTitle) setVideoTitle(videoTitle);
         if (summary) handleSetSummary(summary); // 변경된 부분
         if (documentDate) setDocumentDate(documentDate);
         if (categoryName) setCategoryName(categoryName);
-
         // filter가 null이 아닐 때만 setSelectedFilter 호출
         if (filter !== null) setSelectedFilter(filter);
         if (fullScript) setFullScript(fullScript.split("\n"));
         if (isPublished !== undefined) setIsPublished(isPublished);
         if (viewCount !== undefined) setViewCount(viewCount);
-
         if (videoUrl) {
           const videoId = extractVideoId(videoUrl);
           setVideoId(videoId);
@@ -402,89 +399,25 @@ const VideoSummary = () => {
     }
   }, [selectedFilter]);
 
-  // summary가 변경될 때마다 통신
-  useEffect(() => {
-    const updateSummary = async () => {
-      const memberEmail = localStorage.getItem("userId");
-      const videoUrl = localStorage.getItem("videoUrl");
-
-      // summary를 문자열로 변환
-      const summaryString = summary
-        .map((item) => `${item.title}\n${item.content}`)
-        .join("###");
-
-      console.log(
-        "memberEmail, videoUrl, summaryString",
-        memberEmail,
-        videoUrl,
-        summaryString
+// summary 설정 로직
+const handleSetSummary = (newSummary) => {
+  if (newSummary) {
+    const formattedSummary = newSummary
+      .split("###")
+      .map((item) => {
+        const lines = item.split("\n");
+        return {
+          title: lines[0],
+          content: lines.slice(1).join("\n").trim()
+        };
+      })
+      .filter(
+        (item) => item.title.trim() !== "" || item.content.trim() !== ""
       );
 
-      // PUT 요청
-      try {
-        const response = await fetch(
-          `${Config.baseURL}/api/v1/video/update-summary`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              memberEmail,
-              videoUrl,
-              summary: summaryString
-            })
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to update summary");
-        }
-
-        const data = await response.json();
-        console.log("Update response:", data);
-      } catch (error) {
-        console.error("Failed to update summary:", error);
-      }
-    };
-
-    if (summary.length > 0) {
-      updateSummary();
-    }
-  }, [summary]); // summary가 변경될 때마다 실행
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
-
-  // summary 설정 로직
-  const handleSetSummary = (newSummary) => {
-    if (newSummary) {
-      const formattedSummary = newSummary
-        .split("###")
-        .map((item) => {
-          const lines = item.split("\n");
-          return {
-            title: lines[0],
-            content: lines.slice(1).join("\n").trim()
-          };
-        })
-        .filter(
-          (item) => item.title.trim() !== "" || item.content.trim() !== ""
-        );
-
-      setSummary(formattedSummary);
-    }
-  };
+    setSummary(formattedSummary);
+  }
+};
 
   const handleCategorySelect = (category) => {
     setSelectedFilter(category);
@@ -520,27 +453,72 @@ const VideoSummary = () => {
     });
   };
 
-  const handleTitleChange = (e, index) => {
-    const newTitle = e.target.textContent; // 입력된 텍스트 가져오기
-    setSummary((prevSummary) =>
-      prevSummary.map((item, i) =>
-        i === index ? { ...item, title: newTitle } : item
-      )
-    );
-  };
-
-  const handleContentChange = (e, index) => {
-    const newContent = e.target.textContent; // 입력된 텍스트 가져오기
-    setSummary((prevSummary) =>
-      prevSummary.map((item, i) =>
-        i === index ? { ...item, content: newContent } : item
-      )
-    );
-  };
-
   const toggleHandler = () => {
     setViewMode(!viewMode);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+  
+
+  // summary 수정 핸들러
+  const handleSummaryChange = (index, field, value) => {
+    setSummary((prevSummary) => {
+      const newSummary = [...prevSummary];
+      newSummary[index] = { ...newSummary[index], [field]: value };
+      return newSummary;
+    });
+  };
+
+  const handleSave = async () => {
+    const memberEmail = localStorage.getItem('userId');
+    const videoUrl = localStorage.getItem('videoUrl');
+    
+    // summary를 문자열로 변환
+    const summaryString = summary
+      .map((item) => `${item.title}\n${item.content}`) // 백틱 사용
+      .join("###");
+
+    // PUT 요청
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/update-summary`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail:memberEmail,
+          videoUrl:videoUrl,
+          summary: summaryString,
+        }),
+      });
+  
+      // 응답 로그
+      const responseText = await response.text();
+      console.log('응답 내용:', responseText);
+
+      if (!response.ok) {
+        throw new Error('요청에 문제가 발생했습니다.');
+      }
+
+      const data = JSON.parse(responseText); // JSON으로 파싱
+      console.log('요약 저장 성공:', data);
+    } catch (error) {
+      console.error('요약 저장 실패:', error);
+    }
+    handleRegisterClick();
+  };
+
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -552,19 +530,15 @@ const VideoSummary = () => {
               {/* title과 content를 분리하여 각각 렌더링 */}
               <ListText
                 contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
-                suppressContentEditableWarning={true} // 경고 메시지 숨김
-                onInput={(e) => handleTitleChange(e, index)} // 타이틀이 변경되었을 때 핸들러
-              >
+                suppressContentEditableWarning={true} 
+                onBlur={(e) => handleSummaryChange(index, 'title', e.target.innerText)} >
                 <strong>{paragraph.title}</strong> {/* 소제목 */}
               </ListText>
               <ListText
                 contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
                 suppressContentEditableWarning={true} // 경고 메시지 숨김
-                onInput={(e) => handleContentChange(e, index)} // 내용이 변경되었을 때 핸들러
-              >
-                {paragraph.content}
-              </ListText>{" "}
-              {/* 내용 */}
+                onBlur={(e) => handleSummaryChange(index, 'content', e.target.innerText)}
+              >{paragraph.content}</ListText> {/* 내용 */}
             </ListItem>
           ))}
         </ListBox>
@@ -580,9 +554,7 @@ const VideoSummary = () => {
               <ScriptText
                 contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
                 suppressContentEditableWarning={true} // 경고 메시지 숨김
-              >
-                {line.text}
-              </ScriptText>
+              >{line.text}</ScriptText>
             </ScriptLine>
           ))}
         </ScriptContainer>
@@ -657,11 +629,7 @@ const VideoSummary = () => {
                 </DropdownContainer>
               </div>
               <ToggleContainer onClick={toggleHandler}>
-                <div
-                  className={`toggle-container ${
-                    viewMode ? "" : "toggle--checked"
-                  }`}
-                >
+              <div className={`toggle-container ${viewMode ? "" : "toggle--checked"}`}>
                   <ToggleText>{viewMode ? "VIEW" : ""}</ToggleText>
                   <ToggleCircle className={viewMode ? "" : "toggle--checked"} />
                   <ToggleText2>{viewMode ? "" : "EDIT"}</ToggleText2>
@@ -672,8 +640,8 @@ const VideoSummary = () => {
             {renderContent()}
 
             <ActionButtonContainer>
-              <ActionButton onClick={handleRegisterClick}>
-                등록하기
+              <ActionButton onClick={handleSave}>
+                저장하기
               </ActionButton>
             </ActionButtonContainer>
             <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
