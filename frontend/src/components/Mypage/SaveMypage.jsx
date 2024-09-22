@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import styled from "styled-components";
 import Config from "../Config/config";
 import Header from "../Header/Header";
@@ -77,17 +78,30 @@ const LikeButton = styled.button`
 `;
 
 const SaveMypage = () => {
+  const navigate = useNavigate(); // useNavigate 훅을 사용하여 navigate 함수 정의
   const [videoList, setVideoList] = useState([]);
   const [likedVideos, setLikedVideos] = useState([]);
-
+  const [currentVideoId, setCurrentVideoId] = useState(null); // 현재 처리중인 videoId 저장
   useEffect(() => {
     const storedLikes = JSON.parse(localStorage.getItem("likedVideos")) || [];
-    // likedVideos가 배열인지 확인
     setLikedVideos(Array.isArray(storedLikes) ? storedLikes : []);
-    // 저장한 비디오 서버에서 불러오기
     getSavedVideos();
   }, []);
-
+  
+  useEffect(() => {
+    // 비디오 목록을 가져온 후 좋아요 상태를 설정
+    if (videoList.length > 0) {
+      const likedVideosWithDefaults = videoList.map(video => video.videoUrl);
+      setLikedVideos(likedVideosWithDefaults);
+    }
+  }, [videoList]);
+  useEffect(() => {
+    // likedVideos가 업데이트된 후 실행
+    if (currentVideoId) {
+      setVideoList((prev) => prev.filter((video) => video.videoId !== currentVideoId));
+      setCurrentVideoId(null); // 상태 초기화
+    }
+  }, [likedVideos, currentVideoId]);
   // 저장한 비디오를 서버에서 가져오는 함수
   const getSavedVideos = async () => {
     const memberEmail = localStorage.getItem("userId");
@@ -141,13 +155,12 @@ const SaveMypage = () => {
       return null;
     }
   };
-  const toggleLike = async (videoId) => {
+  const toggleLike = async (videoUrl, videoId) => {
     const memberEmail = localStorage.getItem("userId");
-    const isLiked = likedVideos.includes(videoId);
+    const isCurrentlyLiked = likedVideos.includes(videoUrl);
   
     try {
-      if (isLiked) {
-        // 언라이크 API 호출
+      if (isCurrentlyLiked) {
         const response = await fetch(`${Config.baseURL}/api/v1/video/unlike`, {
           method: "DELETE",
           headers: {
@@ -164,32 +177,61 @@ const SaveMypage = () => {
   
         console.log("Successfully unliked the video:", videoId);
   
-        // 좋아요 목록에서 제거
-        const updatedLikes = likedVideos.filter((id) => id !== videoId);
-        console.log("Before update:", likedVideos);
+        // 좋아요 목록에서 즉시 제거
+        const updatedLikes = likedVideos.filter((url) => url !== videoUrl);
         setLikedVideos(updatedLikes);
         localStorage.setItem("likedVideos", JSON.stringify(updatedLikes));
-        console.log("After update:", updatedLikes);
   
-        // 비디오 리스트에서 제거
-        setVideoList((prev) => {
-          const updatedList = prev.filter((video) => video.videoId !== videoId);
-          console.log("Updated video list:", updatedList);
-          return updatedList;
-        });
+        // 비디오 리스트에서도 즉시 제거
+        setVideoList((prev) => prev.filter((video) => video.videoId !== videoId));
       } else {
-        // 좋아요 추가
-        const updatedLikes = [...likedVideos, videoId];
-        console.log("Before adding like:", likedVideos);
+        const updatedLikes = [...likedVideos, videoUrl];
         setLikedVideos(updatedLikes);
         localStorage.setItem("likedVideos", JSON.stringify(updatedLikes));
-        console.log("After adding like:", updatedLikes);
       }
     } catch (error) {
       console.error("Error while toggling like:", error);
     }
   };
+  
+// 비디오 클릭 핸들러
+const handleVideoClick = async (video) => {
+  try {
+    // memberEmail과 videoUrl을 서버로 전송
+    const response = await fetch(`${Config.baseURL}/api/v1/community/video`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        memberEmail: video.memberEmail,
+        videoUrl: video.videoUrl,
+      }),
+    });
 
+    if (!response.ok) {
+      throw new Error('비디오 정보를 불러오는데 실패했습니다.');
+    }
+
+    const videoAndQuestions = await response.json();
+    console.log('불러온 비디오 정보:', videoAndQuestions);
+
+    // 전송 성공 시 videoSummary 페이지로 이동 (로컬 저장된 정보가 아닌 클릭한 비디오 정보로 이동)
+    navigate(`/video-summary2`, {
+      state: {
+        memberEmail: video.memberEmail,
+        videoUrl: video.videoUrl,
+        videoTitle: video.videoTitle,
+        summary: video.summary,
+        fullScript: video.fullScript
+      },
+    });
+        window.scrollTo(0, 0);
+
+  } catch (error) {
+    console.error('비디오 클릭 처리 중 오류 발생:', error);
+  }
+};
   
   return (
     <>
@@ -198,11 +240,11 @@ const SaveMypage = () => {
       <GridContainer>
         {videoList.map((video) => (
           <VideoCard key={video.videoUrl}>
-            <VideoCardImage src={video.thumbnailUrl} alt="Video Thumbnail" />
+            <VideoCardImage src={video.thumbnailUrl} alt="Video Thumbnail" onClick={() => handleVideoClick(video)} />
             <VideoCardContent>{video.videoTitle}</VideoCardContent>
             <LikeButton
-              isLiked={likedVideos.includes(video.videoUrl)}
-              onClick={() => toggleLike(video.videoId)}
+              isLiked={likedVideos.includes(video.videoUrl)} // 비디오 별로 좋아요 상태 확인
+              onClick={() => toggleLike(video.videoUrl, video.videoId)}
             >
               ♥
             </LikeButton>
