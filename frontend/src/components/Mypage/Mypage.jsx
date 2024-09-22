@@ -99,7 +99,7 @@ const PageButton = styled.button`
   background-color: ${({ isActive }) => (isActive ? "#4144E9" : "transparent")};
   border-radius: 0.5vw;
   cursor: pointer;
-  color: #000000;
+  color: ${({ isActive }) => (isActive ? "#ffffff" : "#000000")}; /* isActive에 따라 색상 변경 */
   border: 0.1vw solid #4144E9;
 `;
 

@@ -48,7 +48,7 @@ const SendButton = styled.button`
 `;
 
 const RefreshButton = styled.button`
-  background-color: #0004EB;
+  background-color: #0004eb;
   color: white;
   border: none;
   border-radius: 1vw;
@@ -94,6 +94,22 @@ const Chat = ({ visible }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
+
+  // 컴포넌트가 마운트될 때 로컬 스토리지에서 질문 목록을 가져오는 함수
+  useEffect(() => {
+    const loadQuestions = () => {
+      const videoQuestions = JSON.parse(localStorage.getItem("videoQuestions")) || [];
+      const initialMessages = videoQuestions.map(q => [
+        { type: "user", content: q.question },
+        { type: "bot", content: q.answer }
+      ]).flat(); // 사용자 질문과 봇 답변을 평탄화하여 배열로 만듭니다.
+
+      setMessages(initialMessages);
+    };
+
+    loadQuestions();
+    scrollToBottom();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -141,15 +157,14 @@ const Chat = ({ visible }) => {
         <ChatBox>
           {messages.map((msg, index) => (
             <>
-            {msg.type === "user" ? (
-  <UserMessage key={index}>{msg.content}</UserMessage>
-) : (
-  <BotMessage key={index}>
-    <GptIcon src={gptIcon} alt="GPT Icon" />
-    <div dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
-  </BotMessage>
-)}
-
+              {msg.type === "user" ? (
+                <UserMessage key={index}>{msg.content}</UserMessage>
+              ) : (
+                <BotMessage key={index}>
+                  <GptIcon src={gptIcon} alt="GPT Icon" />
+                  <div dangerouslySetInnerHTML={{ __html: marked(msg.content) }} />
+                </BotMessage>
+              )}
             </>
           ))}
           <div ref={messagesEndRef} />

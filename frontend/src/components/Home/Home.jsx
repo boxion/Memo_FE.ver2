@@ -153,12 +153,13 @@ const Home = () => {
       }
 
       const data = await response.json();
-      console.log("받은 summary:", data);
+      // console.log("받은 summary:", data);
 
-      localStorage.setItem("summary", data.summary);
-      localStorage.setItem("fullScript", data.fullScript);
-      localStorage.setItem("videoTitle", data.videoTitle);
-      localStorage.setItem("documentDate", data.date);
+      localStorage.setItem("videoUrl", url);
+      // localStorage.setItem("summary", data.summary);
+      // localStorage.setItem("fullScript", data.fullScript);
+      // localStorage.setItem("videoTitle", data.videoTitle);
+      // localStorage.setItem("documentDate", data.date);
 
       return data;
     
