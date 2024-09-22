@@ -61,7 +61,7 @@ const FilterButton = styled.button`
   color: #582fff;
 
   width: auto;
-  white-space: nowrap; 
+  white-space: nowrap;
   max-width: 15vw;
 
   &:hover {
@@ -148,7 +148,7 @@ const VideoTitle = styled.h2`
 const ListBox = styled.ol`
   margin: 0;
   padding-left: 1vw;
-  max-height: 80vh; 
+  max-height: 80vh;
   overflow-y: auto;
 `;
 
@@ -200,7 +200,7 @@ const ScriptLine = styled.div`
 `;
 
 const ScriptContainer = styled.div`
-  max-height: 75vh; 
+  max-height: 75vh;
   overflow-y: auto;
   padding: 1vw;
   margin: 1vw 0 0 0;
@@ -253,49 +253,113 @@ const VideoSummary = () => {
   const [fullScript, setFullScript] = useState([]);
   const dropdownRef = useRef(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [documentDate, setDocumentDate] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [filter, setFilter] = useState("");
+  const [isPublished, setIsPublished] = useState(false);
+  const [viewCount, setViewCount] = useState(0);
   const location = useLocation();
 
-  const categories = [
-    "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", 
-    "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음"
+  const filters = [
+    "경제/뉴스",
+    "IT/프로그래밍",
+    "공부",
+    "스포츠",
+    "정보",
+    "언어",
+    "자격증",
+    "취업/이직",
+    "주식/투자",
+    "라이프",
+    "진로",
+    "기타",
+    "필터없음"
   ];
 
   useEffect(() => {
-    const storedVideoTitle = localStorage.getItem("videoTitle");
-    const storedSummary = localStorage.getItem("summary");
-    const storedFullScript = localStorage.getItem("fullScript");
-    const storedVideoUrl = localStorage.getItem("videoUrl");
+    const fetchVideoData = async () => {
+      // 로컬 스토리지에서 userId와 videoUrl을 가져옴
+      const memberEmail = localStorage.getItem("userId");
+      const videoUrl = localStorage.getItem("videoUrl");
 
-    console.log(storedVideoTitle, storedSummary, storedFullScript); // 저장된 값 확인
+      // POST 요청 보내기
+      const requestURL = `${Config.baseURL}/api/v1/video/select-video`;
+      const requestData = {
+        memberEmail: memberEmail,
+        videoUrl: videoUrl
+      };
 
-    if (storedVideoTitle) setVideoTitle(storedVideoTitle);
+      try {
+        const response = await fetch(requestURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(requestData)
+        });
 
-    // localStorage에서 가져온 summary와 fullScript가 정의되어 있는지 확인
-    if (storedSummary && storedSummary.trim() !== "") {
-      setSummary(
-        storedSummary.split("###")
-          .map(item => {
-            const lines = item.split("\n");
-            return { title: lines[0], content: lines.slice(1).join("\n").trim() };
-          })
-          .filter(item => item.title.trim() !== "" || item.content.trim() !== "") // 공백이나 빈 문자열 필터링
-      );
-    } else {
-      console.error("Stored summary is undefined or empty");
-    }
+        // 응답 상태 체크
+        if (!response.ok) {
+          throw new Error("네트워크 응답에 문제가 있습니다.");
+        }
 
-    if (storedFullScript) {
-      setFullScript(storedFullScript.split("\n"));
-    } else {
-      console.error("Stored full script is undefined or empty");
-    }
+        // 응답 데이터를 JSON으로 파싱
+        const responseData = await response.json();
+        console.log("[ 선택한 video의 데이터: ] ", responseData);
 
-    if (storedVideoUrl) {
-      const videoId = extractVideoId(storedVideoUrl);
-      setVideoId(videoId);
-    }
-    
-  },[]);
+        // 받은 데이터에서 필요한 정보를 추출합니다.
+        const { video } = responseData;
+        const { videoTitle, summary, documentDate, categoryName, filter, fullScript, isPublished, viewCount } = video;
+        const { questions } = responseData;
+
+        // 로컬 스토리지에 질문 데이터 저장
+        if (questions) {
+          localStorage.setItem("videoQuestions", JSON.stringify(questions));
+        }
+
+        // 상태 업데이트
+        if (videoTitle) setVideoTitle(videoTitle);
+        if (summary) {
+          setSummary(
+            summary
+              .split("###")
+              .map((item) => {
+                const lines = item.split("\n");
+                return {
+                  title: lines[0],
+                  content: lines.slice(1).join("\n").trim()
+                };
+              })
+              .filter(
+                (item) => item.title.trim() !== "" || item.content.trim() !== ""
+              )
+          );
+        }
+        if (documentDate) setDocumentDate(documentDate);
+        if (categoryName) {setCategoryName(categoryName);
+          // localStorage.setItem("categoryName",categoryName);
+        }
+        // filter가 null이 아닐 때만 setSelectedFilter 호출
+        if (filter !== null) {
+          setSelectedFilter(filter);
+        }
+        if (fullScript) {
+          setFullScript(fullScript.split("\n"));
+        }
+        if (isPublished !== undefined) setIsPublished(isPublished);
+        if (viewCount !== undefined) setViewCount(viewCount);
+
+        if (videoUrl) {
+          const videoId = extractVideoId(videoUrl);
+          setVideoId(videoId);
+        }
+      } catch (error) {
+        console.error("비디오 데이터 가져오기 실패:", error);
+      }
+    };
+
+    fetchVideoData();
+  }, []);
 
   // selectedFilter가 변경될 때마다 백엔드로 PUT 요청을 보낸다.
   useEffect(() => {
@@ -304,16 +368,16 @@ const VideoSummary = () => {
 
       // 로컬 스토리지에서 memberEmail과 videoUrl을 가져옴
       const memberEmail = localStorage.getItem("userId"); // 'userId' 대신 실제 로컬스토리지 키 사용
-      let videoUrl = localStorage.getItem("videoUrl");  // 'videoUrl' 대신 실제 로컬스토리지 키 사용
+      let videoUrl = localStorage.getItem("videoUrl"); // 'videoUrl' 대신 실제 로컬스토리지 키 사용
 
       // 보내려는 주소
       const requestURL = `${Config.baseURL}/api/v1/video/update-filter`;
 
       // 보내려는 데이터
       const requestData = {
-        memberEmail: memberEmail,  // 로컬스토리지에서 가져온 값
-        videoUrl: videoUrl,        // 로컬스토리지에서 가져온 값
-        filter: selectedFilter     // 현재 선택된 필터 값
+        memberEmail: memberEmail, // 로컬스토리지에서 가져온 값
+        videoUrl: videoUrl, // 로컬스토리지에서 가져온 값
+        filter: selectedFilter // 현재 선택된 필터 값
       };
 
       // 로그 출력 (보낼 주소와 데이터)
@@ -324,22 +388,19 @@ const VideoSummary = () => {
       fetch(requestURL, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(requestData)
       })
-      .then((response) => response.text())  // 응답을 텍스트로 받음
-      .then((data) => {
-        console.log("필터 업데이트 성공:", data);
-      })
-      .catch((error) => {
-        console.error("필터 업데이트 실패:", error);
-      });
+        .then((response) => response.text()) // 응답을 텍스트로 받음
+        .then((data) => {
+          console.log("필터 업데이트 성공:", data);
+        })
+        .catch((error) => {
+          console.error("필터 업데이트 실패:", error);
+        });
     }
   }, [selectedFilter]);
-
-
-  
 
   const handleCategorySelect = (category) => {
     setSelectedFilter(category);
@@ -355,7 +416,6 @@ const VideoSummary = () => {
       setModalOpen(true);
     }
   };
-  
 
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -363,7 +423,8 @@ const VideoSummary = () => {
 
   const extractVideoId = (url) => {
     // 숏츠 URL을 포함한 유튜브 URL에서 videoId를 추출합니다.
-    const regExp = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const regExp =
+      /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return match && match[1] ? match[1] : null;
   };
@@ -371,7 +432,7 @@ const VideoSummary = () => {
   const handleResize = () => {
     setPlayerSize({
       width: window.innerWidth * 0.4,
-      height: (window.innerWidth * 0.35 * 9) / 16,
+      height: (window.innerWidth * 0.35 * 9) / 16
     });
   };
 
@@ -392,22 +453,23 @@ const VideoSummary = () => {
     if (activeTab === "summary") {
       return (
         <ListBox>
-        <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
-        {summary.map((paragraph, index) => (
-          <ListItem key={index}>
-            {/* title과 content를 분리하여 각각 렌더링 */}
-            <ListText>
-              <strong>{paragraph.title}</strong> {/* 소제목 */}
-            </ListText>
-            <ListText>{paragraph.content}</ListText> {/* 내용 */}
-          </ListItem>
-        ))}
-      </ListBox>
+          <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
+          {summary.map((paragraph, index) => (
+            <ListItem key={index}>
+              {/* title과 content를 분리하여 각각 렌더링 */}
+              <ListText>
+                <strong>{paragraph.title}</strong> {/* 소제목 */}
+              </ListText>
+              <ListText>{paragraph.content}</ListText> {/* 내용 */}
+            </ListItem>
+          ))}
+        </ListBox>
       );
     } else if (activeTab === "script") {
       const parsedScript = parseScript(fullScript); // 스크립트 파싱
       return (
         <ScriptContainer>
+          <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
           {parsedScript.map((line, index) => (
             <ScriptLine key={index}>
               <TimeText>{line.time}</TimeText>
@@ -425,7 +487,7 @@ const VideoSummary = () => {
       <Container>
         <LeftSection>
           <VideoContainer>
-          <DateText>{localStorage.getItem("documentDate")}</DateText>
+            <DateText>{documentDate}</DateText>
             {videoId && (
               <YouTube
                 videoId={videoId}
@@ -435,8 +497,8 @@ const VideoSummary = () => {
                   playerVars: {
                     autoplay: 1,
                     rel: 0,
-                    modestbranding: 1,
-                  },
+                    modestbranding: 1
+                  }
                 }}
               />
             )}
@@ -464,18 +526,22 @@ const VideoSummary = () => {
                   <FilterButton
                     onClick={() => setDropdownOpen(!isDropdownOpen)}
                   >
-                    {selectedFilter || <PlaceholderText>필터를 선택해주세요</PlaceholderText>}
+                    {selectedFilter || (
+                      <PlaceholderText>필터를 선택해주세요</PlaceholderText>
+                    )}
                   </FilterButton>
                   <DropdownMenu isOpen={isDropdownOpen}>
-                    {categories.map((category, index) => (
+                    {filters.map((category, index) => (
                       <React.Fragment key={category}>
                         <DropdownItem
                           onClick={() => handleCategorySelect(category)}
-                          className={selectedFilter === category ? "selected" : ""}
+                          className={
+                            selectedFilter === category ? "selected" : ""
+                          }
                         >
                           {category}
                         </DropdownItem>
-                        {index < categories.length - 1 && <Divider />}
+                        {index < filters.length - 1 && <Divider />}
                       </React.Fragment>
                     ))}
                   </DropdownMenu>
@@ -489,7 +555,9 @@ const VideoSummary = () => {
             {renderContent()}
 
             <ActionButtonContainer>
-              <ActionButton onClick={handleRegisterClick}>등록하기</ActionButton>
+              <ActionButton onClick={handleRegisterClick}>
+                등록하기
+              </ActionButton>
             </ActionButtonContainer>
             <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
           </TheorySection>
