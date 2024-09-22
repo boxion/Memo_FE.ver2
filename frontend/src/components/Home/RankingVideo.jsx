@@ -20,6 +20,7 @@ const RankingCard = styled.button`
   flex-direction: column;
   align-items: center;
   border-radius: 1vw;
+  cursor: pointer;
 `;
 
 const RankingCardImage = styled.img`

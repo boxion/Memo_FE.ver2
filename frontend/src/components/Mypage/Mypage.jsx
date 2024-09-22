@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Config from "../Config/config";
 
@@ -130,9 +131,22 @@ const NextButton = styled.button`
 const itemsPerPage = 6;
 
 const Mypage = () => {
+  const [reset, setReset] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [videoList, setVideoList] = useState([]);
+  const navigate = useNavigate();
   const [categoryName, setCategoryName] = useState(localStorage.getItem("categoryName") || "최근 본 영상");
+  localStorage.removeItem("categoryName");
+
+  // 1초마다 한번씩 리셋 트리거
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setReset(true);  // 페이지 리셋을 트리거
+      setTimeout(() => setReset(false), 0);  // 0ms 후 다시 컴포넌트 렌더링
+    }, 1000); // 원하는 리셋 주기
+
+    return () => clearTimeout(timer); // 컴포넌트가 사라질 때 타이머 정리
+  }, []);
 
   useEffect(() => {
     getVideoList(categoryName);
@@ -227,47 +241,8 @@ const Mypage = () => {
 
   // 비디오 선택 시 해당 비디오의 데이터를 가져오는 함수
   const selectVideo = async (videoUrl) => {
-    const memberEmail = localStorage.getItem("userId");
-
-    try {
-      const response = await fetch(`${Config.baseURL}/api/v1/video/select-video`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          memberEmail,
-          videoUrl
-        })
-      });
-
-      if (!response.ok) {
-        console.error("서버에서 오류가 발생했습니다.");
-        return;
-      }
-
-      const responseData = await response.json();
-      console.log("[ 선택한 video의 데이터: ] ", responseData);
-
-      const { summary, document, videoUrl, documentDate, categoryName, videoTitle } = responseData.video;
-      const { questions } = responseData;
-      var document2 = document == null ? "" : document;
-      const extractedQuestions = questions.map((question) => question.question);
-      const extractedAnswers = questions.map((question) => question.answer);
-
-      localStorage.setItem("summary", summary);
-      localStorage.setItem("document", document2);
-      localStorage.setItem("videoUrl", videoUrl);
-      localStorage.setItem("videoTitle", videoTitle);
-      localStorage.setItem("documentDate", documentDate);
-      localStorage.setItem("categoryName", categoryName);
-      localStorage.setItem("questions", JSON.stringify(extractedQuestions));
-      localStorage.setItem("answers", JSON.stringify(extractedAnswers));
-
-      window.location.href = "/video-summary";
-    } catch (error) {
-      console.error("영상 선택 중 에러가 발생했습니다:", error);
-    }
+    localStorage.setItem("videoUrl",videoUrl);
+    navigate("/video-summary");
   };
 
   // 비디오를 삭제하는 함수
@@ -301,6 +276,11 @@ const Mypage = () => {
       console.error("영상 삭제 중 에러가 발생했습니다:", error);
     }
   };
+
+  if (reset) {
+    // reset 상태일 때 비워진 상태를 렌더링
+    return <div>로딩중...</div>; // 로딩 중 메시지
+  }
 
   return (
     <>
