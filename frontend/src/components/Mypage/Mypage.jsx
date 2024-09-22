@@ -224,6 +224,10 @@ const Mypage = () => {
     }
   };
 
+  const handleButtonClick = (path) => {
+    navigate(path);
+  };
+
   // 잠금장치 기능
   const toggleLock = async (videoUrl, currentStatus) => {
     const memberEmail = localStorage.getItem("userId");
@@ -350,17 +354,11 @@ const Mypage = () => {
   return (
     <>
       <MypageHeader>
-      <ButtonContainer>
-      <CircleButton
-          style={{ backgroundImage: `url(${videoIcon})` }}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${pdfIcon})` }}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${audioIcon})` }}
-        />
-      </ButtonContainer>
+        <ButtonContainer>
+          <CircleButton style={{ backgroundImage: `url(${videoIcon})` }} onClick={() => handleButtonClick("/mypage")}/>
+          <CircleButton style={{ backgroundImage: `url(${pdfIcon})` }} onClick={() => handleButtonClick("/mypdf")}/>
+          <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => handleButtonClick("/myaudio")}/>
+        </ButtonContainer>
       <MypageText>
         {categoryName === "최근 본 영상" || categoryName === "null"
           ? "최근 본 영상"

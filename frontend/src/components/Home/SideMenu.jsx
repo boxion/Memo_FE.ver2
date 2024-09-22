@@ -183,8 +183,9 @@ const SideMenu = ({ isOpen, onClose }) => {
   const handleMenuItemClick = (category) => {
     localStorage.setItem("categoryName", category);
     onClose();
+    // window.location.reload();
     navigate("/mypage");
-    window.location.reload();
+    
   };
 
   const handleEditCategories = () => {
