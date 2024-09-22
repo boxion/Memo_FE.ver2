@@ -5,7 +5,6 @@ import Header from "../Header/Header";
 import YouTube from "react-youtube";
 import Chat from "./Chatgpt";
 import SaveFolderModal from "./SaveFolderModal";
-import axios from "axios"; // axios로 PUT 요청 보내기 위함
 import Config from "../Config/config";
 
 const Container = styled.div`
@@ -109,19 +108,60 @@ const DropdownItem = styled.button`
   }
 `;
 
-const ViewEditButton = styled.button`
-  background-color: #4144e9;
-  color: white;
-  border: none;
-  border-radius: 1vw;
-  padding: 0.5vw 1vw;
-  font-size: 0.8vw;
+// ToggleContainer 수정
+const ToggleContainer = styled.div`
+  position: relative;
+  margin-top: 1rem; /* 여백 조정 */
   cursor: pointer;
-  margin-right: 1vw;
 
-  &:hover {
-    background-color: #0056b3;
+  > .toggle-container {
+    width: 70px;
+    height: 24px;
+    border-radius: 30px;
+    background-color: #afafaf;
+    transition: background-color 0.5s;
+
+    // toggle--checked 클래스가 적용되었을 때
+    &.toggle--checked {
+      background-color: rgb(0, 200, 102);
+    }
   }
+`;
+
+// ToggleCircle 컴포넌트 생성
+const ToggleCircle = styled.div`
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #e9e9ea;
+  transition: left 0.5s;
+
+  // toggle--checked 클래스가 적용되었을 때
+  &.toggle--checked {
+    left: 47px; // 체크된 상태에서의 위치
+  }
+`;
+
+// ToggleText 컴포넌트
+const ToggleText = styled.span`
+  position: absolute;
+  left: ${({ isEdit }) => (isEdit ? "0" : "30px")}; /* EDIT일 때 위치 조정 */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #000000;
+`;
+
+const ToggleText2 = styled.span`
+  position: absolute;
+  left: ${({ isEdit }) => (isEdit ? "0" : "10px")}; /* EDIT일 때 위치 조정 */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #000000;
 `;
 
 const VideoContainer = styled.div`
@@ -242,7 +282,6 @@ const parseScript = (scriptArray) => {
 const VideoSummary = () => {
   const [videoId, setVideoId] = useState(null);
   const [playerSize, setPlayerSize] = useState({ width: 560, height: 315 });
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState("summary");
   const [viewMode, setViewMode] = useState(true);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -258,23 +297,9 @@ const VideoSummary = () => {
   const [filter, setFilter] = useState("");
   const [isPublished, setIsPublished] = useState(false);
   const [viewCount, setViewCount] = useState(0);
-  const location = useLocation();
+  const [parsedScript, setParsedScript] = useState([]);
 
-  const filters = [
-    "경제/뉴스",
-    "IT/프로그래밍",
-    "공부",
-    "스포츠",
-    "정보",
-    "언어",
-    "자격증",
-    "취업/이직",
-    "주식/투자",
-    "라이프",
-    "진로",
-    "기타",
-    "필터없음"
-  ];
+  const filters = [ "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음" ];
 
   useEffect(() => {
     const fetchVideoData = async () => {
@@ -313,42 +338,21 @@ const VideoSummary = () => {
         const { questions } = responseData;
 
         // 로컬 스토리지에 질문 데이터 저장
-        if (questions) {
-          localStorage.setItem("videoQuestions", JSON.stringify(questions));
-        }
+        if (questions) localStorage.setItem("videoQuestions", JSON.stringify(questions));
+
 
         // 상태 업데이트
         if (videoTitle) setVideoTitle(videoTitle);
-        if (summary) {
-          setSummary(
-            summary
-              .split("###")
-              .map((item) => {
-                const lines = item.split("\n");
-                return {
-                  title: lines[0],
-                  content: lines.slice(1).join("\n").trim()
-                };
-              })
-              .filter(
-                (item) => item.title.trim() !== "" || item.content.trim() !== ""
-              )
-          );
-        }
+        if (summary) handleSetSummary(summary); // 변경된 부분
         if (documentDate) setDocumentDate(documentDate);
-        if (categoryName) {setCategoryName(categoryName);
-          // localStorage.setItem("categoryName",categoryName);
-        }
+        if (categoryName) setCategoryName(categoryName);
         // filter가 null이 아닐 때만 setSelectedFilter 호출
-        if (filter !== null) {
-          setSelectedFilter(filter);
-        }
+        if (filter !== null) setSelectedFilter(filter);
         if (fullScript) {
           setFullScript(fullScript.split("\n"));
         }
         if (isPublished !== undefined) setIsPublished(isPublished);
         if (viewCount !== undefined) setViewCount(viewCount);
-
         if (videoUrl) {
           const videoId = extractVideoId(videoUrl);
           setVideoId(videoId);
@@ -380,10 +384,6 @@ const VideoSummary = () => {
         filter: selectedFilter // 현재 선택된 필터 값
       };
 
-      // 로그 출력 (보낼 주소와 데이터)
-      console.log("보낼 주소:", requestURL);
-      console.log("보낼 데이터:", requestData);
-
       // PUT 요청 보내기
       fetch(requestURL, {
         method: "PUT",
@@ -401,6 +401,26 @@ const VideoSummary = () => {
         });
     }
   }, [selectedFilter]);
+
+// summary 설정 로직
+const handleSetSummary = (newSummary) => {
+  if (newSummary) {
+    const formattedSummary = newSummary
+      .split("###")
+      .map((item) => {
+        const lines = item.split("\n");
+        return {
+          title: lines[0],
+          content: lines.slice(1).join("\n").trim()
+        };
+      })
+      .filter(
+        (item) => item.title.trim() !== "" || item.content.trim() !== ""
+      );
+
+    setSummary(formattedSummary);
+  }
+};
 
   const handleCategorySelect = (category) => {
     setSelectedFilter(category);
@@ -436,6 +456,10 @@ const VideoSummary = () => {
     });
   };
 
+  const toggleHandler = () => {
+    setViewMode(!viewMode);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -448,6 +472,105 @@ const VideoSummary = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRef]);
+  
+  useEffect(() => {
+    const parsed = parseScript(fullScript); // 스크립트 파싱
+    setParsedScript(parsed);
+  }, [fullScript]); // fullScript가 변경될 때마다 실행
+
+  // summary 수정 핸들러
+  const handleSummaryChange = (index, field, value) => {
+    setSummary((prevSummary) => {
+      const newSummary = [...prevSummary];
+      newSummary[index] = { ...newSummary[index], [field]: value };
+      return newSummary;
+    });
+  };
+
+  const handleSave = async () => {
+    const memberEmail = localStorage.getItem('userId');
+    const videoUrl = localStorage.getItem('videoUrl');
+    
+    // summary를 문자열로 변환
+    const summaryString = summary
+      .map((item) => `${item.title}\n${item.content}`) // 백틱 사용
+      .join("###");
+
+    // PUT 요청
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/update-summary`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail:memberEmail,
+          videoUrl:videoUrl,
+          summary: summaryString,
+        }),
+      });
+  
+      // 응답 로그
+      const responseText = await response.text();
+      console.log('응답 내용:', responseText);
+
+      if (!response.ok) {
+        throw new Error('요청에 문제가 발생했습니다.');
+      }
+
+      const data = JSON.parse(responseText); // JSON으로 파싱
+      console.log('요약 저장 성공:', data);
+    } catch (error) {
+      console.error('요약 저장 실패:', error);
+    }
+    handleSaveFullScript();
+    handleRegisterClick();
+  };
+
+
+  // 스크립트 수정 처리 함수
+  const handleScriptChange = (index, newText) => {
+    const updatedScript = [...parsedScript];
+    updatedScript[index].text = newText; // 텍스트 업데이트
+    setParsedScript(updatedScript); // 상태 업데이트
+  };
+
+  // 저장하기 버튼 클릭 시 fullScript 생성
+  const handleSaveFullScript = async () => {
+    const memberEmail = localStorage.getItem('userId');
+    const videoUrl = localStorage.getItem('videoUrl');
+
+    // parsedScript를 원래 형태로 변환
+    const fullScript = parsedScript.map((line) => `TS: ${line.time} | TXT: ${line.text}`).join('\n');
+
+    // PUT 요청
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/update-fullscript`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail: memberEmail,
+          videoUrl: videoUrl,
+          fullScript: fullScript,
+        }),
+      });
+
+      // 응답 로그
+      const responseText = await response.text();
+      console.log('응답 내용:', responseText);
+
+      if (!response.ok) {
+        throw new Error('요청에 문제가 발생했습니다.');
+      }
+
+      const data = JSON.parse(responseText); // JSON으로 파싱
+      console.log('스크립트 저장 성공:', data);
+    } catch (error) {
+      console.error('스크립트 저장 실패:', error);
+    }
+  };
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -457,10 +580,17 @@ const VideoSummary = () => {
           {summary.map((paragraph, index) => (
             <ListItem key={index}>
               {/* title과 content를 분리하여 각각 렌더링 */}
-              <ListText>
+              <ListText
+                contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
+                suppressContentEditableWarning={true} 
+                onBlur={(e) => handleSummaryChange(index, 'title', e.target.innerText)} >
                 <strong>{paragraph.title}</strong> {/* 소제목 */}
               </ListText>
-              <ListText>{paragraph.content}</ListText> {/* 내용 */}
+              <ListText
+                contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
+                suppressContentEditableWarning={true} // 경고 메시지 숨김
+                onBlur={(e) => handleSummaryChange(index, 'content', e.target.innerText)}
+              >{paragraph.content}</ListText> {/* 내용 */}
             </ListItem>
           ))}
         </ListBox>
@@ -473,7 +603,11 @@ const VideoSummary = () => {
           {parsedScript.map((line, index) => (
             <ScriptLine key={index}>
               <TimeText>{line.time}</TimeText>
-              <ScriptText>{line.text}</ScriptText>
+              <ScriptText
+                contentEditable={!viewMode} // viewMode에 따라 편집 가능 여부 설정
+                suppressContentEditableWarning={true} // 경고 메시지 숨김
+                onBlur={(e) => handleScriptChange(index, e.target.innerText)}
+              >{line.text}</ScriptText>
             </ScriptLine>
           ))}
         </ScriptContainer>
@@ -547,16 +681,20 @@ const VideoSummary = () => {
                   </DropdownMenu>
                 </DropdownContainer>
               </div>
-              <ViewEditButton onClick={() => setViewMode(!viewMode)}>
-                {viewMode ? "View" : "Edit"}
-              </ViewEditButton>
+              <ToggleContainer onClick={toggleHandler}>
+              <div className={`toggle-container ${viewMode ? "" : "toggle--checked"}`}>
+                  <ToggleText>{viewMode ? "VIEW" : ""}</ToggleText>
+                  <ToggleCircle className={viewMode ? "" : "toggle--checked"} />
+                  <ToggleText2>{viewMode ? "" : "EDIT"}</ToggleText2>
+                </div>
+              </ToggleContainer>
             </TabButtonContainer>
 
             {renderContent()}
 
             <ActionButtonContainer>
-              <ActionButton onClick={handleRegisterClick}>
-                등록하기
+              <ActionButton onClick={handleSave}>
+                저장하기
               </ActionButton>
             </ActionButtonContainer>
             <SaveFolderModal isOpen={isModalOpen} onClose={handleCloseModal} />
