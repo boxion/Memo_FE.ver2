@@ -56,16 +56,17 @@ const CloseButton = styled.button`
 
 const CategoryContainer = styled.div`
   margin: 1vw;
-  max-height: 80%;
+  max-height: 70vh;
+  overflow-y: auto; 
+  overflow-x: hidden;
 
   &::-webkit-scrollbar {
-    width: 1vw;
+    width: 0.7vw;
   }
 
   &::-webkit-scrollbar-thumb {
     background: #a7a7a7;
     border-radius: 1vw;
-    margin-right: 5%;
   }
 
   &::-webkit-scrollbar-thumb:hover {
@@ -124,24 +125,24 @@ const SideMenu = ({ isOpen, onClose }) => {
   const sideMenuRef = useRef(null);
   const navigate = useNavigate();
 
-  // 외부 클릭 시 사이드 메뉴 닫기
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sideMenuRef.current && !sideMenuRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
+  // // 외부 클릭 시 사이드 메뉴 닫기
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (sideMenuRef.current && !sideMenuRef.current.contains(event.target)) {
+  //       onClose();
+  //     }
+  //   };
 
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
+  //   if (isOpen) {
+  //     document.addEventListener("mousedown", handleClickOutside);
+  //   } else {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   }
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen, onClose]);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, [isOpen, onClose]);
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
