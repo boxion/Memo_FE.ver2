@@ -8,7 +8,7 @@ import Config from "../Config/config";
 const SideMenuContainer = styled.div`
   position: fixed;
   bottom: ${({ isOpen }) =>
-    isOpen ? "0" : "-100%"}; /* isOpen 상태에 따라 아래로 내려옴/올라감 */
+    isOpen ? "0" : "-100%"};
   left: 0;
   width: 18%;
   height: 85%;
@@ -16,7 +16,7 @@ const SideMenuContainer = styled.div`
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 999;
   padding-top: 30px;
-  transition: bottom 0.3s ease; /* 아래쪽으로 이동하는 애니메이션 효과 */
+  transition: bottom 0.3s ease;
 `;
 
 const SideMenuWrapper = styled.div`
@@ -24,7 +24,7 @@ const SideMenuWrapper = styled.div`
   bottom: 0;
   left: 0;
   width: 16%;
-  height: auto; /* 높이를 자동으로 조정하여 내용에 따라 늘어날 수 있도록 변경합니다. */
+  height: auto; 
   background-color: #ffffff;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   z-index: 999;
@@ -32,9 +32,9 @@ const SideMenuWrapper = styled.div`
 
 const EditButtonWrapper = styled.div`
   position: absolute;
-  bottom: 10px; /* 아래 여백 조정 */
-  left: 50%; /* 가운데 정렬 */
-  transform: translateX(-50%); /* 가운데 정렬 */
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 100%;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -46,21 +46,20 @@ const EditButtonWrapper = styled.div`
 
 const CloseButton = styled.button`
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 0;
+  right: 1vw;
   background: none;
   border: none;
-  font-size: 30px;
+  font-size: 3vw;
   cursor: pointer;
 `;
 
 const CategoryContainer = styled.div`
   margin: 1vw;
-  max-height: 80%; /* 높이 제한을 설정하여 스크롤이 필요한 경우 스크롤바가 나타나도록 함 */
-  overflow-y: auto;
+  max-height: 80%;
 
   &::-webkit-scrollbar {
-    width: 10px;
+    width: 1vw;
   }
 
   &::-webkit-scrollbar-thumb {
@@ -77,15 +76,15 @@ const CategoryContainer = styled.div`
 const StyledMenuItem = styled.div`
   display: flex;
   width: 80%;
-  border-radius: 10px; /* 둥근 네모 모양의 버튼으로 만들기 위해 border-radius 값을 조정합니다. */
-  margin: 0 0 1vw 1.2vw;
-  padding: 1vw 0 1vw 0;
-  border: 2px solid #d9d9d9; /* 테두리를 추가하여 버튼처럼 보이도록 설정합니다. */
-  cursor: pointer; /* 마우스 포인터를 올렸을 때 버튼임을 나타내기 위해 커서 모양을 변경합니다. */
-  transition: background-color 0.3s; /* 배경색 변경에 대한 애니메이션 효과를 추가합니다. */
+  border-radius: 1vw;
+  margin: 0 0 1vw 0;
+  padding: 1vw;
+  border: 0.2vw solid #d9d9d9; 
+  cursor: pointer; 
+  transition: background-color 0.3s; 
 
   &:hover {
-    background-color: #f0f0f0; /* 마우스를 올렸을 때 배경색 변경을 위한 스타일을 추가합니다. */
+    background-color: #f0f0f0; 
   }
 `;
 
@@ -96,8 +95,9 @@ const Icon = styled.img`
 `;
 
 const Text = styled.div`
-  flex: 1; /* 텍스트가 남은 공간을 차지하도록 */
-  text-align: start; /* 텍스트 중앙 정렬 */
+  flex: 1;
+  text-align: start;
+  font-size: 1.2vw;
 `;
 
 const EditButton = styled.div`
@@ -106,9 +106,9 @@ const EditButton = styled.div`
   align-items: center;
   width: 80%;
   height: 3vw;
-  font-size:1.2vw;
+  font-size: 1.2vw;
   margin: 1vw 0 1vw 1.2vw;
-  border: 2px dashed #d9d9d9;
+  border: 0.2vw dashed #d9d9d9;
   border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -191,7 +191,7 @@ const SideMenu = ({ isOpen, onClose }) => {
                 key={index}
                 onClick={() => handleMenuItemClick(category)}
               >
-                <Text>📁{category}</Text>
+                <Text>📁 {category}</Text>
               </StyledMenuItem>
             ))}
           </CategoryContainer>
