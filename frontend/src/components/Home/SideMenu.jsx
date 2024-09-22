@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import SaveModal from "../VideoSummary/SaveFolderModal";
 import folderIcon from "../../assets/images/macos_folder.png";
@@ -121,7 +122,8 @@ const SideMenu = ({ isOpen, onClose }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categoryList, setCategoryList] = useState([]); // 백엔드에서 받아온 카테고리 데이터를 저장할 상태
   const sideMenuRef = useRef(null); // 사이드 메뉴 참조 생성
-
+  const navigate = useNavigate();
+  
   // 렌더링될 때 로컬스토리지의 isLoggedIn 값이 true인지 확인 후 요청
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -163,7 +165,10 @@ const SideMenu = ({ isOpen, onClose }) => {
   }, []);
 
   const handleMenuItemClick = (category) => {
+    localStorage.setItem("categoryName",category);
     onClose();
+    navigate("/mypage");
+    window.location.reload();
   };
 
   const handleEditCategories = () => {
