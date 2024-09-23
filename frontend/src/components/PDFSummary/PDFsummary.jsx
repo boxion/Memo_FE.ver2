@@ -158,7 +158,6 @@ const PDFSummary = () => {
   const [summary, setSummary] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isGptModalOpen, setGptModalOpen] = useState(false);
-  const [documentDate, setDocumentDate] = useState("");
   useEffect(() => {
     if (pdfContainerRef.current) {
       pdfContainerRef.current.innerHTML = ''; // 기존의 canvas 삭제
@@ -207,8 +206,7 @@ const PDFSummary = () => {
       if (!infoResponse.ok) {
         throw new Error('PDF 정보 가져오기 오류: ' + infoResponse.statusText);
       }
-      const { documentDate } = documentDate;
-      if (documentDate) setDocumentDate(documentDate);
+
       const pdfInfo = await infoResponse.json();
       setPdfTitle(pdfTitle);
       setSummary(parseSummary(pdfInfo.summary));
@@ -280,7 +278,7 @@ const PDFSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-          <DateText>{documentDate}</DateText>
+          <DateText>{localStorage.getItem("documentDate")}</DateText>
           <PdfContainer ref={pdfContainerRef}>
             {pdfUrl && !isLoading && (
               <PdfViewer
