@@ -158,7 +158,7 @@ const PDFSummary = () => {
   const [summary, setSummary] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isGptModalOpen, setGptModalOpen] = useState(false);
-
+  const [documentDate, setDocumentDate] = useState("");
   useEffect(() => {
     if (pdfContainerRef.current) {
       pdfContainerRef.current.innerHTML = ''; // 기존의 canvas 삭제
@@ -174,7 +174,6 @@ const PDFSummary = () => {
     try {
       let memberEmail = localStorage.getItem("userId");
       let pdfTitle = localStorage.getItem("PDFFileName");
-      
       const response = await fetch(`${Config.baseURL}/api/v1/files/getpdffile`, {
         method: 'POST',
         headers: {
@@ -193,7 +192,7 @@ const PDFSummary = () => {
       const blob = await response.blob();
       const pdfUrl = window.URL.createObjectURL(blob);
       setPdfUrl(pdfUrl);
-  
+      
       const infoResponse = await fetch(`${Config.baseURL}/api/v1/files/getpdfinfo`, {
         method: 'POST',
         headers: {
@@ -208,7 +207,8 @@ const PDFSummary = () => {
       if (!infoResponse.ok) {
         throw new Error('PDF 정보 가져오기 오류: ' + infoResponse.statusText);
       }
-  
+      const { documentDate } = documentDate;
+      if (documentDate) setDocumentDate(documentDate);
       const pdfInfo = await infoResponse.json();
       setPdfTitle(pdfTitle);
       setSummary(parseSummary(pdfInfo.summary));
@@ -278,7 +278,7 @@ const PDFSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-          <DateText>{localStorage.getItem("documentDate")}</DateText>
+          <DateText>{documentDate}</DateText>
           <PdfContainer ref={pdfContainerRef}>
             {pdfUrl && !isLoading && (
               <PdfViewer
