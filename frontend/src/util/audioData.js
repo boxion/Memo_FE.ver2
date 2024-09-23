@@ -1,5 +1,6 @@
 const audioData = {
     title: "[10분 테코톡] 🧀 제리의 MVC 패턴",
+    thumbnail_url : "https://cdn-icons-png.flaticon.com/512/1324/1324071.png",
     content: [
       {
         title: "🖍️ MVC 패턴 소개",

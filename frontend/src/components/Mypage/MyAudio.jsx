@@ -1,4 +1,3 @@
-//내 오디오 페이지
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -6,6 +5,8 @@ import Config from "../Config/config";
 import audioIcon from "../../assets/images/audio.png";
 import pdfIcon from "../../assets/images/pdf.png";
 import videoIcon from "../../assets/images/video.png";
+import Header from "../Header/Header";
+import audioData from "../../util/audioData";
 
 const MypageHeader = styled.div`
   display: flex;
@@ -18,22 +19,22 @@ const MypageText = styled.div`
   font-weight: bold;
   text-align: center;
   color: #202020;
-  margin-left: 18.5vw; /* MypageText를 오른쪽으로 이동 */
+  margin-left: 18.5vw;
 `;
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 1vw;
-  gap: 1vw; /* 버튼 간격 */
-  margin-left: 1.5vw; /* MypageText를 오른쪽으로 이동 */
+  gap: 1vw;
+  margin-left: 1.5vw;
 `;
 const CircleButton = styled.button`
   width: 2.5vw;
   height: 2.5vw;
   border-radius: 50%;
   background-color: #202D94;
-  background-size: cover; /* 이미지 크기를 버튼에 맞게 */
-  background-position: center; /* 이미지 중앙 정렬 */
+  background-size: cover;
+  background-position: center;
   border: none;
   cursor: pointer;
 
@@ -53,7 +54,6 @@ const GridContainer = styled.div`
   grid-gap: 2vw;
   margin: 1vw 15vw 1vw 15vw;
 `;
-
 
 const VideoCard = styled.button`
   background-color: white;
@@ -86,7 +86,7 @@ const VideoCard = styled.button`
 `;
 
 const VideoCardImage = styled.img`
-  width: 100%; 
+  width: 50%; 
   height: 13vw;
   background-color: #e0e0e0;
   background-size: cover;
@@ -119,20 +119,21 @@ const PageButton = styled.button`
   width: 1.8vw;
   height: 1.8vw;
   border: none;
-  padding: 1vw 1vw 1vw 0.1w;  /* Adjust the padding to move text */
+  padding: 1vw 1vw 1vw 0.1w;
   background-color: transparent;
   font-size: 1.2vw;
   margin: 0 0.5vw;
-    cursor: pointer;
+  cursor: pointer;
+
   &:hover {
     text-decoration: underline;
   }
-    /* 현재 페이지일 경우 동그라미 */
+
   ${({ isActive }) =>
     isActive &&
     `
-      border-radius: 20%;  // 동그라미 모양
-      border: 2px solid #4144E9;  // 동그라미 외곽선
+      border-radius: 20%;
+      border: 2px solid #4144E9;
       background-color: #4144E9;
       color: white;
     `}
@@ -141,7 +142,7 @@ const PageButton = styled.button`
 const PrevButton = styled.button`
   width: 1.8vw;
   height: 1.8vw;
-  padding: 1vw 1vw 1vw 0.6w;  /* Adjust the padding to move text */
+  padding: 1vw 1vw 1vw 0.6w;
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
@@ -150,13 +151,13 @@ const PrevButton = styled.button`
   font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
-  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
+  line-height: 0.2vw;
 `;
 
 const NextButton = styled.button`
   width: 1.8vw;
   height: 1.8vw;
-  padding: 1vw 1vw 1vw 0.8w;  /* Adjust the padding to move text */
+  padding: 1vw 1vw 1vw 0.8w;
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
@@ -165,22 +166,28 @@ const NextButton = styled.button`
   font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
-  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
+  line-height: 0.2vw;
 `;
 
 const itemsPerPage = 6;
 
 const Mypage = () => {
-  const [reset, setReset] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [audioList, setAudioList] = useState([]);
   const navigate = useNavigate();
   const [categoryName, setCategoryName] = useState(localStorage.getItem("categoryName") || "최근 본 영상");
   localStorage.removeItem("categoryName");
 
-  
+  // audioData에서 title과 thumbnail_url을 가져와 audioList에 추가
+  useEffect(() => {
+    const newAudio = {
+      videoTitle: audioData.title,
+      thumbnailUrl: audioData.thumbnail_url,
+    };
+    setAudioList([newAudio]); // audioList에 추가
+  }, []);
 
-  // 페이지네이션 = 6 이상일시 화면 전환 기능
+  // 페이지네이션 로직
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = audioList.slice(startIndex, endIndex);
@@ -194,53 +201,41 @@ const Mypage = () => {
     setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
   };
 
-  const goToPage = (page) => { // 특정 페이지로 이동하는 함수
+  const goToPage = (page) => {
     setCurrentPage(page);
   };
 
   const renderPageButtons = () => {
     const totalPages = Math.ceil(audioList.length / itemsPerPage);
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(
-        <PageButton
-          key={i}
-          isActive={i === currentPage}
-          onClick={() => goToPage(i)}
-        >
-          {i}
-        </PageButton>
-      );
-    }
-    return pages;
+    return Array.from({ length: totalPages }, (_, index) => (
+      <PageButton
+        key={index + 1}
+        isActive={index + 1 === currentPage}
+        onClick={() => goToPage(index + 1)}
+      >
+        {index + 1}
+      </PageButton>
+    ));
   };
- 
+
   return (
     <>
+      <Header />
       <MypageHeader>
-      <ButtonContainer>
-      <CircleButton
-          style={{ backgroundImage: `url(${videoIcon})` }}
-          onClick={() => navigate("/mypage")}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${pdfIcon})` }}
-          onClick={() => navigate("/mypdf")}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${audioIcon})` }}
-          onClick={() => navigate("/myaudio")}
-        />
-      </ButtonContainer>
-      <MypageText>
-        {categoryName === "최근 요약한 오디오" || categoryName === "null"
-          ? "최근 요약한 오디오"
-          : categoryName + " 카테고리 오디오"}
-      </MypageText>
-    </MypageHeader>
+        <ButtonContainer>
+          <CircleButton style={{ backgroundImage: `url(${videoIcon})` }} onClick={() => navigate("/mypage")} />
+          <CircleButton style={{ backgroundImage: `url(${pdfIcon})` }} onClick={() => navigate("/mypdf")} />
+          <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => navigate("/myaudio")} />
+        </ButtonContainer>
+        <MypageText>
+          {categoryName === "최근 요약한 오디오" || categoryName === "null"
+            ? "최근 요약한 오디오"
+            : `${categoryName} 카테고리 오디오`}
+        </MypageText>
+      </MypageHeader>
       <GridContainer>
         {currentData.map((audio, index) => (
-          <VideoCard>
+          <VideoCard key={index} onClick={() => navigate("/audio-summary")}>
             <VideoCardImage src={audio.thumbnailUrl} />
             <VideoCardContent>{audio.videoTitle}</VideoCardContent>
           </VideoCard>
