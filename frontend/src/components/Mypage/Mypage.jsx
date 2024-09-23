@@ -127,39 +127,56 @@ const PaginationContainer = styled.div`
 `;
 
 const PageButton = styled.button`
-  padding: 1vw;
-  margin: 0 0.2vw;
+  width: 1.8vw;
+  height: 1.8vw;
   border: none;
-  font-size: 1vw;
-  background-color: ${({ isActive }) => (isActive ? "#4144E9" : "transparent")};
-  border-radius: 0.5vw;
-  cursor: pointer;
-  color: ${({ isActive }) => (isActive ? "#ffffff" : "#000000")}; /* isActive에 따라 색상 변경 */
-  border: 0.1vw solid #4144E9;
+  padding: 1vw 1vw 1vw 0.1w;  /* Adjust the padding to move text */
+  background-color: transparent;
+  font-size: 1.2vw;
+  margin: 0 0.5vw;
+    cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+    /* 현재 페이지일 경우 동그라미 */
+  ${({ isActive }) =>
+    isActive &&
+    `
+      border-radius: 20%;  // 동그라미 모양
+      border: 2px solid #4144E9;  // 동그라미 외곽선
+      background-color: #4144E9;
+      color: white;
+    `}
 `;
 
 const PrevButton = styled.button`
-  padding: 1vw;
+  width: 1.8vw;
+  height: 1.8vw;
+  padding: 1vw 1vw 1vw 0.6w;  /* Adjust the padding to move text */
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
   cursor: pointer;
   color: #ffffff;
-  font-size: 1vw;
+  font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
+  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
 `;
 
 const NextButton = styled.button`
-  padding: 1vw;
+  width: 1.8vw;
+  height: 1.8vw;
+  padding: 1vw 1vw 1vw 0.8w;  /* Adjust the padding to move text */
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
   cursor: pointer;
   color: #ffffff;
-  font-size: 1vw;
+  font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
+  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
 `;
 
 const itemsPerPage = 6;
