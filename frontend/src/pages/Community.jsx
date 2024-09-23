@@ -7,6 +7,7 @@ import searchIconSrc from '../assets/images/searchicon.png'; // 이미지 경로
 import favoriteIcon from '../assets/images/favoriteIcon.png'; // 즐겨찾기 아이콘 이미지 경로
 import favoriteFilledIcon from '../assets/images/favoriteFilledIcon.png'; // 채워진 즐겨찾기 아이콘 이미지 경로
 import profile from '../assets/images/profile.png'; // 즐겨찾기 아이콘 이미지 경로
+
 const BASE_URL = "http://59.5.40.202:8082";
 
 const Container = styled.div`
@@ -131,7 +132,23 @@ const Card = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
   align-items: flex-start; /* 요소들을 왼쪽 정렬 */
+  transition: all 0.3s ease-in-out;
+  &:hover {
+    transform: translateY(-0.5vw);
+    background-color: #f1f1f1;
+  }
+
+  &:active {
+    background-color: #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const ImagePlaceholder = styled.div`

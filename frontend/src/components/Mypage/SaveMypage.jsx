@@ -67,18 +67,77 @@ const VideoCardContent = styled.div`
 
 const LikeButton = styled.button`
   position: absolute;
-  top: 0.5vw;
   right: 1vw;
-  background-color: ${({ isLiked }) => (isLiked ? "red" : "gray")};
+  background-color: ${({ isLiked }) => (isLiked ? "#202D94" : "gray")};
   border: none;
-  border-radius: 50%;
-  width: 2vw;
-  height: 2vw;
+  width: 3vw;
+  height: 3vw;
   cursor: pointer;
 `;
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 1vw;
+  margin-bottom: 2vw;
+`;
 
+const PageButton = styled.button`
+  width: 1.8vw;
+  height: 1.8vw;
+  border: none;
+  padding: 1vw 1vw 1vw 0.1w;  /* Adjust the padding to move text */
+  background-color: transparent;
+  font-size: 1.2vw;
+  margin: 0 0.5vw;
+    cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+    /* 현재 페이지일 경우 동그라미 */
+  ${({ isActive }) =>
+    isActive &&
+    `
+      border-radius: 20%;  // 동그라미 모양
+      border: 2px solid #4144E9;  // 동그라미 외곽선
+      background-color: #4144E9;
+      color: white;
+    `}
+`;
+
+const PrevButton = styled.button`
+  width: 1.8vw;
+  height: 1.8vw;
+  padding: 1vw 1vw 1vw 0.6w;  /* Adjust the padding to move text */
+  margin: 0 0.2vw;
+  border: none;
+  border-radius: 0.5vw;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 1.2vw;
+  font-weight: bold;
+  background-color: #D9D9D9;
+  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
+`;
+
+const NextButton = styled.button`
+  width: 1.8vw;
+  height: 1.8vw;
+  padding: 1vw 1vw 1vw 0.8w;  /* Adjust the padding to move text */
+  margin: 0 0.2vw;
+  border: none;
+  border-radius: 0.5vw;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 1.2vw;
+  font-weight: bold;
+  background-color: #D9D9D9;
+  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
+`;
+
+const itemsPerPage = 6;
 const SaveMypage = () => {
   const navigate = useNavigate(); // useNavigate 훅을 사용하여 navigate 함수 정의
+  const [currentPage, setCurrentPage] = useState(1);
   const [videoList, setVideoList] = useState([]);
   const [likedVideos, setLikedVideos] = useState([]);
   const [currentVideoId, setCurrentVideoId] = useState(null); // 현재 처리중인 videoId 저장
@@ -232,7 +291,40 @@ const handleVideoClick = async (video) => {
     console.error('비디오 클릭 처리 중 오류 발생:', error);
   }
 };
-  
+// 페이지네이션 = 6 이상일시 화면 전환 기능
+const startIndex = (currentPage - 1) * itemsPerPage;
+const endIndex = startIndex + itemsPerPage;
+const currentData = videoList.slice(startIndex, endIndex);
+
+const goToPrevPage = () => {
+  setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+};
+
+const goToNextPage = () => {
+  const totalPages = Math.ceil(videoList.length / itemsPerPage);
+  setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
+};
+
+const goToPage = (page) => { // 특정 페이지로 이동하는 함수
+  setCurrentPage(page);
+};
+
+const renderPageButtons = () => {
+  const totalPages = Math.ceil(videoList.length / itemsPerPage);
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(
+      <PageButton
+        key={i}
+        isActive={i === currentPage}
+        onClick={() => goToPage(i)}
+      >
+        {i}
+      </PageButton>
+    );
+  }
+  return pages;
+};
   return (
     <>
       <Header />
@@ -244,13 +336,20 @@ const handleVideoClick = async (video) => {
             <VideoCardContent>{video.videoTitle}</VideoCardContent>
             <LikeButton
               isLiked={likedVideos.includes(video.videoUrl)} // 비디오 별로 좋아요 상태 확인
-              onClick={() => toggleLike(video.videoUrl, video.videoId)}
+              onClick={() => toggleLike(video.videoUrl, video.videoId)
+              }
+              style={{ fontSize: '15px' }}  // 별 아이콘의 크기를 키움
             >
-              ♥
+            ⭐
             </LikeButton>
           </VideoCard>
         ))}
       </GridContainer>
+      <PaginationContainer>
+        <PrevButton onClick={goToPrevPage}>{"<"}</PrevButton>
+        {renderPageButtons()}
+        <NextButton onClick={goToNextPage}>{">"}</NextButton>
+      </PaginationContainer>
     </>
   );
 };
