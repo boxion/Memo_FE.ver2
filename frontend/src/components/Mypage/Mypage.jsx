@@ -17,7 +17,7 @@ const MypageText = styled.div`
   font-weight: bold;
   text-align: center;
   color: #202020;
-  margin-left: 18.5vw; /* MypageText를 오른쪽으로 이동 */
+  margin-left:15vw; /* MypageText를 오른쪽으로 이동 */
 `;
 const ButtonContainer = styled.div`
   display: flex;
