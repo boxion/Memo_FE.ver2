@@ -30,7 +30,6 @@ const TabAndViewContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1vw;
 `;
 
 const TabButtonContainer = styled.div`
@@ -78,7 +77,6 @@ const MVCListItem = styled.div`
   border-radius: 1vw;        
   padding: 1vw;         
 `;
-
 const MVCListTitle = styled.div`
   font-size: 1vw;
   font-weight: bold;
@@ -94,7 +92,7 @@ const MVCListText = styled.div`
 const ActionButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
-  margin-top: 2vw;
+  margin-top: 1vw;
 `;
 
 const ActionButton = styled.button`
