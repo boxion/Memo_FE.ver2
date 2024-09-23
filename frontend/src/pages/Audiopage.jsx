@@ -131,6 +131,10 @@ const SendButton = styled.button`
   }
 `;
 
+const LoaderWrapper = styled.div`
+  margin-top: 2vw;
+`;
+
 function Audiopage() {
   const [isRecording, setIsRecording] = useState(false); // 음성녹화 상태
   const [transcript, setTranscript] = useState(''); // 음성 녹음 실시간 변환 상태
@@ -197,6 +201,12 @@ function Audiopage() {
     <>
       <Header />
       <Container>
+       {/* 로딩 스피너 */}
+          {isLoading && (
+            <LoaderWrapper>
+              <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '5vw', color: '#202D94' }} />
+            </LoaderWrapper>
+          )}
         <Title>오디오를 요약하고 스크립트로 만들어 보세요!</Title>
         <Subtitle>녹음하거나 음성파일을 업로드 할 수 있습니다.</Subtitle>
 
@@ -211,14 +221,10 @@ function Audiopage() {
         {/* 파일 선택 시 보내기 버튼 활성화 */}
         {audioFile && (
           <SendButton onClick={handleSend} disabled={isLoading}>
-            {isLoading ? (
-              <FontAwesomeIcon icon={faSpinner} spin style={{ marginRight: "1vw" }} />
-            ) : (
-              '보내기'
-            )}
+            보내기
           </SendButton>
         )}
-          {/* 음성 녹음 기능 */}
+        {/* 음성 녹음 기능 */}
         <ButtonContainer>
           <RecordButton onClick={isRecording ? stopRecording : startRecording} isRecording={isRecording}>
             {isRecording ? (
