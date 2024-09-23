@@ -228,9 +228,7 @@ const Mypage = () => {
           <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => navigate("/myaudio")} />
         </ButtonContainer>
         <MypageText>
-          {categoryName === "최근 요약한 오디오" || categoryName === "null"
-            ? "최근 요약한 오디오"
-            : `${categoryName} 카테고리 오디오`}
+        최근 요약한 오디오
         </MypageText>
       </MypageHeader>
       <GridContainer>

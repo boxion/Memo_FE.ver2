@@ -229,9 +229,7 @@ const MyPDF = () => {
           <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => navigate("/myaudio")} />
         </ButtonContainer>
         <MypageText>
-          {categoryName === "최근 본 영상" || categoryName === "null"
-            ? "최근 본 영상"
-            : `${categoryName} 카테고리 영상`}
+        저장된 PDF
         </MypageText>
       </MypageHeader>
       <GridContainer>
