@@ -229,8 +229,10 @@ const PDFSummary = () => {
   };
 
   const handleRegisterClick = () => {
-    setModalOpen(true);
+    alert("PDF 폴더에 저장되었습니다!");
+    window.location.href = "/mypage"; // /mypage로 이동
   };
+  
   
   const handleCloseModal = () => {
     setModalOpen(false);
