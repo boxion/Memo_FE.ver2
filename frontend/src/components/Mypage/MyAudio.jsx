@@ -86,7 +86,7 @@ const VideoCard = styled.button`
 `;
 
 const VideoCardImage = styled.img`
-  width: 100%; 
+  width: 50%; 
   height: 13vw;
   background-color: #e0e0e0;
   background-size: cover;
