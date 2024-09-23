@@ -208,38 +208,52 @@ const PageNavigation = styled.div`
   `;
 
   const PageButton = styled.button`
-  padding: 1vw;
-  margin: 0 0.2vw;
   border: none;
-  font-size: 1vw;
-  background-color: ${({ isActive }) => (isActive ? "#4144E9" : "transparent")};
-  border-radius: 0.5vw;
-  cursor: pointer;
-  color: ${({ isActive }) => (isActive ? "#ffffff" : "#000000")}; /* isActive에 따라 색상 변경 */
-  border: 0.1vw solid #4144E9;
+  background-color: transparent;
+  font-size: 1.2vw;
+  margin: 0 0.5vw;
+    cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+    /* 현재 페이지일 경우 동그라미 */
+  ${({ isActive }) =>
+    isActive &&
+    `
+      border-radius: 20%;  // 동그라미 모양
+      border: 2px solid #4144E9;  // 동그라미 외곽선
+      background-color: #4144E9;
+      color: white;
+    `}
 `;
 const PrevButton = styled.button`
-  padding: 1vw;
+  width: 1.8vw;
+  height: 1.8vw;
+  padding: 1vw 1vw 1vw 0.6w;  /* Adjust the padding to move text */
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
   cursor: pointer;
   color: #ffffff;
-  font-size: 1vw;
+  font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
+  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
 `;
 
 const NextButton = styled.button`
-  padding: 1vw;
+  width: 1.8vw;
+  height: 1.8vw;
+  padding: 1vw 1vw 1vw 0.8w;  /* Adjust the padding to move text */
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
   cursor: pointer;
   color: #ffffff;
-  font-size: 1vw;
+  font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
+  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
 `;
 // 제목 검색 통신 코드
 const searchVideos = async (videoTitle) => {
@@ -632,6 +646,14 @@ const handleVideoClick = async (video) => {
   const indexOfLastVideo = currentPage * videosPerPage;
   const indexOfFirstVideo = indexOfLastVideo - videosPerPage;
   const currentVideos = videos.slice(indexOfFirstVideo, indexOfLastVideo);
+  const goToPrevPage = () => {
+    setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    const totalPages = Math.ceil(videos.length / videosPerPage);
+    setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
+  };
 
   return (
     <>
@@ -688,12 +710,14 @@ const handleVideoClick = async (video) => {
           ))}
         </GridContainer>
         <PageNavigation>
+        <PrevButton onClick={goToPrevPage}>{"<"}</PrevButton>
           {pageNumbers.map((number) => (
             <PageButton key={number} onClick={() => paginate(number)}
             isActive={currentPage === number}>
               {number}
             </PageButton>
           ))}
+        <NextButton onClick={goToNextPage}>{">"}</NextButton>
         </PageNavigation>
       </Container>
     </>
