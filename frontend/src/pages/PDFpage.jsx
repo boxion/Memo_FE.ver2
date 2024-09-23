@@ -136,6 +136,10 @@ const FileName = styled.p`
   font-weight: bold;
 `;
 
+const LoaderWrapper = styled.div`
+  margin-bottom: 2vw;
+`;
+
 function PDFpage() {
   const [language, setLanguage] = useState('한국어');
   const [pdfFile, setPdfFile] = useState(null);
@@ -190,6 +194,14 @@ function PDFpage() {
     <>
       <Header />
       <Container>
+
+        {/* 로딩 스피너 */}
+        {isLoading && (
+          <LoaderWrapper>
+            <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: '5vw', color: '#202D94' }} />
+          </LoaderWrapper>
+        )}
+
         <Title>요약할 PDF파일을 업로드해주세요!</Title>
         <Subtitle>PDF파일을 업로드 하시면 AI가 요약해 드립니다!</Subtitle>
 
@@ -221,12 +233,8 @@ function PDFpage() {
         </UploadContainer>
 
         {pdfFile && (
-          <SendButton onClick={handleSendButtonClick}>
-            {isLoading ? (
-              <FontAwesomeIcon icon={faSpinner} spin />
-            ) : (
-              '보내기'
-            )}
+          <SendButton onClick={handleSendButtonClick} disabled={isLoading}>
+            보내기
           </SendButton>
         )}
 
