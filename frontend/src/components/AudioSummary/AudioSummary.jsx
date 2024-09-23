@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Header from "../Header/Header";
 import CategoryDropdown from "../Community/CategoryDropdown";
 import audioData from "../../util/audioData";
-
+import audioScriptData from "../../util/audioScriptData";
+import Chat from "../VideoSummary/Chatgpt";
 
 const Container = styled.div`
   padding: 2vw;
@@ -41,85 +42,14 @@ const TabButton = styled.button`
   padding: 0.5vw 1vw;
   font-size: 1vw;
   cursor: pointer;
-  border-radius: 1vw;
+  border-radius: 2vw;
   margin-right: 0.5vw;
   background-color: #ffffff;
-  border: 0.1vw solid #582FFF;
-  color: #582FFF;
-
-  &:hover {
-    background-color: #d0d0d0;
-  }
+  border: 0.1vw solid #d9d9d9;
+  color: #000000;
 
   &.active {
-    background-color: #ffffff;
-    border: 0.1vw solid #000000;
-  }
-`;
-
-const ViewEditButton = styled.button`
-  background-color: #4144E9;
-  color: white;
-  border: none;
-  border-radius: 1vw;
-  padding: 0.5vw 1vw;
-  font-size: 0.8vw;
-  cursor: pointer;
-  margin-right: 1vw;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const ChatContainer = styled.div`
-  flex-grow: 1;
-  background-color: #000000;
-  border-radius: 1vw;
-  padding: 1vw;
-`;
-
-const ChatHeader = styled.div`
-  background-color: #000000;
-  color: white;
-  padding: 1vw;
-  border-radius: 1vw 1vw 0 0;
-  font-size: 1vw;
-`;
-
-const ChatBox = styled.div`
-  height: 20vw;
-  overflow-y: auto;
-  padding: 1vw;
-  background-color: white;
-  border-radius: 0 0 1vw 1vw;
-`;
-
-const ChatInputContainer = styled.div`
-  display: flex;
-  margin-top: 1vw;
-`;
-
-const ChatInput = styled.input`
-  flex: 1;
-  padding: 1vw;
-  border-radius: 0.5vw;
-  border: 1px solid #ccc;
-  font-size: 1vw;
-`;
-
-const SendButton = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 0.5vw;
-  padding: 1vw 2vw;
-  font-size: 1vw;
-  cursor: pointer;
-  margin-left: 1vw;
-
-  &:hover {
-    background-color: #0056b3;
+    background-color: #d0d0d0;
   }
 `;
 
@@ -183,16 +113,108 @@ const ActionButton = styled.button`
 
 const AudioPlayer = styled.audio`
   width: 100%;
-  margin-bottom: 2vw;
+  margin: 1vw 0;
+`;
+
+const AudioPlayerTitle = styled.h3`
+  font-size: 2vw;
+  font-weight: bold;
+  margin-bottom: 1vw;
+  color: #333;
+  text-align: center;
+  font-family: 'Bangers', cursive; 
+`;
+
+const DropdownContainer = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const FilterButton = styled.button`
+  padding: 0.5vw 1vw;
+  font-size: 1vw;
+  cursor: pointer;
+  border-radius: 2vw;
+  margin-right: 0.5vw;
+  background-color: #ffffff;
+  border: 0.1vw solid #582fff;
+  color: #582fff;
+
+  width: auto;
+  white-space: nowrap;
+  max-width: 15vw;
+
+  &:hover {
+    background-color: #d0d0d0;
+  }
+
+  &.active {
+    background-color: #ffffff;
+    border: 0.1vw solid #000000;
+  }
+`;
+
+const PlaceholderText = styled.span`
+  color: #888;
+`;
+
+const Divider = styled.div`
+  height: 0.1vw;
+  background-color: #d9d9d9;
+`;
+
+const DropdownMenu = styled.div`
+  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 1vw;
+  font-size: 1vw;
+`;
+
+const DropdownItem = styled.button`
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1vw;
+  margin: 0.5vw;
+
+  &:hover {
+    background-color: #f1f1f1;
+  }
+
+  &.selected {
+    color: #582fff;
+  }
 `;
 
 const AudioSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
-  const [viewMode, setViewMode] = useState(true);
-  
-  // 오디오 파일 경로
+  const [showChat, setShowChat] = useState(true);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("");
+
+  const filters = [ "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음" ];
+
   const audioFilePath = `${process.env.PUBLIC_URL}/audio/jerry_mvc_pattern.m4a`;
 
+  const handleCategorySelect = (category) => {
+    setSelectedFilter(category);
+    setDropdownOpen(false); // 선택 후 드롭다운 닫기
+  };
+  
+  // selectedFilter가 변경될 때마다 백엔드로 PUT 요청을 보낸다.
+  useEffect(() => {
+    if (selectedFilter) {
+      console.log("필터가 변경되었습니다:", selectedFilter);
+      // 필터 업데이트 로직 (비디오와 유사)
+    }
+  }, [selectedFilter]);
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -210,9 +232,14 @@ const AudioSummary = () => {
       );
     } else if (activeTab === "script") {
       return (
-        <div>
-          <p>여기에 전체 스크립트 내용을 추가하세요.</p>
-        </div>
+        <MVCList>
+          <MVCListItem>
+            <MVCListTitle>전체 스크립트</MVCListTitle>
+            <MVCListText>{audioScriptData.split('\n').map((line, index) => (
+              <div key={index}>{line}</div>
+            ))}</MVCListText>
+          </MVCListItem>
+        </MVCList>
       );
     } else if (activeTab === "filter") {
       return (
@@ -226,24 +253,16 @@ const AudioSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-        <AudioPlayer controls>
-          <source src={audioFilePath} type="audio/mpeg" />
-          Your browser does not support the audio element.
-        </AudioPlayer>
-          {/* <ChatContainer>
-            <ChatHeader>ChatGPT와 대화</ChatHeader>
-            <ChatBox>
-            </ChatBox>
-            <ChatInputContainer>
-              <ChatInput type="text" placeholder="무엇이든 물어보세요..." />
-              <SendButton>전송</SendButton>
-            </ChatInputContainer>
-          </ChatContainer> */}
+        <AudioPlayerTitle>AudioPlayer</AudioPlayerTitle>
+          <AudioPlayer controls>
+            <source src={audioFilePath} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </AudioPlayer>
+          {showChat && <Chat visible={showChat} />}
         </LeftSection>
 
         <RightSection>
           <MVCTheorySection>
-
             <TabAndViewContainer>
               <TabButtonContainer>
                 <TabButton
@@ -258,17 +277,27 @@ const AudioSummary = () => {
                 >
                   전체 스크립트
                 </TabButton>
-                <TabButton
-                  className={activeTab === "filter" ? "active" : ""}
-                  onClick={() => setActiveTab("filter")}
-                >
-                  필터를 선택하세요
-                </TabButton>
+                <DropdownContainer>
+                  <FilterButton onClick={() => setDropdownOpen(!isDropdownOpen)}>
+                    {selectedFilter || (
+                      <PlaceholderText>필터를 선택해주세요</PlaceholderText>
+                    )}
+                  </FilterButton>
+                  <DropdownMenu isOpen={isDropdownOpen}>
+                    {filters.map((category, index) => (
+                      <React.Fragment key={category}>
+                        <DropdownItem
+                          onClick={() => handleCategorySelect(category)}
+                          className={selectedFilter === category ? "selected" : ""}
+                        >
+                          {category}
+                        </DropdownItem>
+                        {index < filters.length - 1 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </DropdownMenu>
+                </DropdownContainer>
               </TabButtonContainer>
-
-              <ViewEditButton onClick={() => setViewMode(!viewMode)}>
-                {viewMode ? "View" : "Edit"}
-              </ViewEditButton>
             </TabAndViewContainer>
 
             <MVCHeading>[10분 테코톡] 🧀 제리의 MVC 패턴</MVCHeading>
@@ -284,6 +313,5 @@ const AudioSummary = () => {
     </>
   );
 };
-
 
 export default AudioSummary;
