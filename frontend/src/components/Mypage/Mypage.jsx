@@ -365,7 +365,7 @@ const Mypage = () => {
       <MypageHeader>
         <ButtonContainer>
           <CircleButton style={{ backgroundImage: `url(${videoIcon})` }} onClick={() => handleButtonClick("/mypage")}/>
-          <CircleButton style={{ backgroundImage: `url(${pdfIcon})` }} onClick={() => handleButtonClick("/mypdf")}/>
+          <CircleButton style={{ backgroundImage: `url(${pdfIcon})`   }} onClick={() => handleButtonClick("/mypdf")}/>
           <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => handleButtonClick("/myaudio")}/>
         </ButtonContainer>
       <MypageText>
