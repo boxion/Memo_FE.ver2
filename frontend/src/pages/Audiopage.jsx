@@ -183,7 +183,7 @@ function Audiopage() {
   const handleAudioUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFileName(file.name);  // 파일 이름 업데이트
+      setFileName(file.name);
       setAudioFile(URL.createObjectURL(file));
     }
   };
@@ -194,7 +194,7 @@ function Audiopage() {
     setTimeout(() => {
       setIsLoading(false); 
       navigate('/audio-summary'); 
-    }, 5000);
+    }, 3000);
   };
 
   return (
