@@ -6,7 +6,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/Header/Header";
 import Config from "../components/Config/config";
 import axios from 'axios'; 
-import pdfIcon from '../assets/images/pdf.png';
+import pdfIcon from '../assets/images/pdf-icon.png';
 
 const Container = styled.div`
   display: flex;

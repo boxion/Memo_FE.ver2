@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../Header/Header";
 import CategoryDropdown from "../Community/CategoryDropdown";
@@ -196,6 +197,7 @@ const AudioSummary = () => {
   const [showChat, setShowChat] = useState(true);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("");
+  const navigate = useNavigate(); // useNavigate 훅 사용
 
   const filters = [ "경제/뉴스", "IT/프로그래밍", "공부", "스포츠", "정보", "언어", "자격증", "취업/이직", "주식/투자", "라이프", "진로", "기타", "필터없음" ];
 
@@ -205,14 +207,18 @@ const AudioSummary = () => {
     setSelectedFilter(category);
     setDropdownOpen(false); // 선택 후 드롭다운 닫기
   };
-  
-  // selectedFilter가 변경될 때마다 백엔드로 PUT 요청을 보낸다.
+
   useEffect(() => {
     if (selectedFilter) {
       console.log("필터가 변경되었습니다:", selectedFilter);
-      // 필터 업데이트 로직 (비디오와 유사)
+      // 필터 업데이트 로직
     }
   }, [selectedFilter]);
+
+  const handleSubmit = () => {
+    alert("오디오파일에 저장이 되었어요!");
+    navigate("/mypage"); // /mypage로 이동
+  };
 
   const renderContent = () => {
     if (activeTab === "summary") {
@@ -251,7 +257,7 @@ const AudioSummary = () => {
       <Header />
       <Container>
         <LeftSection>
-        <AudioPlayerTitle>AudioPlayer</AudioPlayerTitle>
+          <AudioPlayerTitle>AudioPlayer</AudioPlayerTitle>
           <AudioPlayer controls>
             <source src={audioFilePath} type="audio/mpeg" />
             Your browser does not support the audio element.
@@ -303,7 +309,7 @@ const AudioSummary = () => {
             {renderContent()}
 
             <ActionButtonContainer>
-              <ActionButton>등록하기</ActionButton>
+              <ActionButton onClick={handleSubmit}>등록하기</ActionButton>
             </ActionButtonContainer>
           </MVCTheorySection>
         </RightSection>
