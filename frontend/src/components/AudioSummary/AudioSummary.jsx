@@ -232,7 +232,7 @@ const AudioSummary = () => {
       return (
         <MVCList>
           <MVCListItem>
-            <MVCListTitle>전체 스크립트</MVCListTitle>
+            <MVCListTitle>📌 전체 스크립트</MVCListTitle>
             <MVCListText>{audioScriptData.split('\n').map((line, index) => (
               <div key={index}>{line}</div>
             ))}</MVCListText>
