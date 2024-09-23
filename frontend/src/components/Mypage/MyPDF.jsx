@@ -211,6 +211,14 @@ const MyPDF = () => {
     ));
   };
 
+  const handlePDFClick = (pdfTitle) => {
+    localStorage.setItem("PDFFileName", pdfTitle);
+    // 여기에서 PDF 파일을 열거나 다른 동작을 추가할 수 있습니다.
+    console.log(`Saved PDF file name: ${pdfTitle}`); // 확인용 로그
+    navigate("/PDF-Summary");
+  };
+  
+
   return (
     <>
       <Header />
@@ -228,7 +236,7 @@ const MyPDF = () => {
       </MypageHeader>
       <GridContainer>
         {currentData.map((pdf, index) => (
-          <PDFCard key={index}>
+          <PDFCard key={index} onClick={() => handlePDFClick(pdf.pdfTitle)}>
             <PDFCardImage src={pdf.thumbnailUrl} />
             <PDFCardContent>{pdf.pdfTitle}</PDFCardContent>
           </PDFCard>

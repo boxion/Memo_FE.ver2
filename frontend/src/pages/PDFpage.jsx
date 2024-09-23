@@ -154,7 +154,7 @@ function PDFpage() {
         const formData = new FormData();
         formData.append('file', pdfFile);
         formData.append('memberEmail', localStorage.getItem('userId')); 
-        formData.append('language', language);
+        formData.append('language', "한국어");
 
         const response = await axios.post(`${Config.baseURL}/api/v1/files/pdfupload`, formData, {
           headers: {
