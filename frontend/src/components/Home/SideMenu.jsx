@@ -169,7 +169,7 @@ const SideMenu = ({ isOpen, onClose }) => {
           const responseData = await response.json();
           console.log("백엔드 응답:", responseData);
 
-          const categories = responseData.map((category) => category.categoryName);
+          const categories = ["최근 본 영상", ...responseData.map((category) => category.categoryName)];
           setCategoryList(categories);
         } catch (error) {
           console.error("POST 요청 중 에러 발생:", error);
@@ -183,8 +183,7 @@ const SideMenu = ({ isOpen, onClose }) => {
   const handleMenuItemClick = (category) => {
     localStorage.setItem("categoryName", category);
     onClose();
-    navigate("/mypage");
-    window.location.reload();
+    navigate(`/mypage?category=${category}`); // 쿼리 스트링으로 category 전달
   };
 
   const handleEditCategories = () => {

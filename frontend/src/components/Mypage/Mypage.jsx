@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Config from "../Config/config";
 import audioIcon from "../../assets/images/audio.png";
@@ -186,8 +186,19 @@ const Mypage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [videoList, setVideoList] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const [categoryName, setCategoryName] = useState(localStorage.getItem("categoryName") || "최근 본 영상");
   localStorage.removeItem("categoryName");
+
+  // 쿼리 스트링에서 값을 추출하는 로직
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const category = queryParams.get("category"); // 쿼리 스트링의 'category' 값 가져오기
+
+    if (category) {
+      setCategoryName(category);
+    }
+  }, [location.search]);
 
   // 1초마다 한번씩 리셋 트리거
   useEffect(() => {
@@ -203,7 +214,7 @@ const Mypage = () => {
     getVideoList(categoryName);
   }, [categoryName]);
 
-  // 비디오 목록을 서버에서 가져오는 함수
+  // 비디오 목록을 서버에서 가져오는 함수...
   const getVideoList = async (categoryName) => {
     try {
       if (categoryName === "최근 본 영상") {
@@ -231,14 +242,16 @@ const Mypage = () => {
         isLocked: video.isPublished === false, // isPublished가 false면 잠금
       }));
   
-      
       responseData.reverse(); // 내림차순으로 비디오 정렬
-
       setVideoList(responseData); // 받아온 데이터를 상태에 저장
     } catch (error) {
       console.error("에러 발생:", error);
       console.log("해당 카테고리가 비어있습니다.");
     }
+  };
+
+  const handleButtonClick = (path) => {
+    navigate(path);
   };
 
   // 잠금장치 기능
@@ -367,17 +380,11 @@ const Mypage = () => {
   return (
     <>
       <MypageHeader>
-      <ButtonContainer>
-      <CircleButton
-          style={{ backgroundImage: `url(${videoIcon})` }}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${pdfIcon})` }}
-        />
-        <CircleButton
-          style={{ backgroundImage: `url(${audioIcon})` }}
-        />
-      </ButtonContainer>
+        <ButtonContainer>
+          <CircleButton style={{ backgroundImage: `url(${videoIcon})` }} onClick={() => handleButtonClick("/mypage")}/>
+          <CircleButton style={{ backgroundImage: `url(${pdfIcon})`   }} onClick={() => handleButtonClick("/mypdf")}/>
+          <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => handleButtonClick("/myaudio")}/>
+        </ButtonContainer>
       <MypageText>
         {categoryName === "최근 본 영상" || categoryName === "null"
           ? "최근 본 영상"
