@@ -83,7 +83,7 @@ const PDFCard = styled.button`
   }
 `;
 const PDFCardImage = styled.img`
-  width: 100%;
+  width: 50%;
   height: 13vw;
   background-color: #e0e0e0;
   background-size: cover;

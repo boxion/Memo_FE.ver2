@@ -6,6 +6,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Header from "../components/Header/Header";
 import Config from "../components/Config/config";
 import axios from 'axios'; 
+import pdfIcon from '../assets/images/pdf-icon.png';
 
 const Container = styled.div`
   display: flex;
@@ -31,16 +32,19 @@ const Subtitle = styled.h5`
 const UploadContainer = styled.div`
   display: flex;
   align-items: center;
-  background-color: #e0e0e0;
+  background-color: #f1f1f1;
   border-radius: 2vw;
   padding: 2vw;
+  margin-top: 2vw;
+  width: 40%;
   max-width: 1200px;
   box-shadow: 0px 0.8vw 1.2vw rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 `;
 
 const PDFIcon = styled.div`
   width: 5vw;
-  height: 5vw;
+  height: 4vw;
   background-color: #fff;
   border-radius: 50%;
   display: flex;
@@ -48,13 +52,11 @@ const PDFIcon = styled.div`
   justify-content: center;
   margin-right: 2vw;
   box-shadow: 0px 0.4vw 0.8vw rgba(0, 0, 0, 0.1);
-  cursor: pointer;
 `;
 
-const PDFIconText = styled.span`
-  font-size: 1.6vw;
-  font-weight: bold;
-  color: #666;
+const PDFImage = styled.img`
+  width: 70%;
+  height: auto;
 `;
 
 const OptionsContainer = styled.div`
@@ -92,6 +94,9 @@ const UploadButton = styled.button`
   display: flex;
   align-items: center;
   text-align: center;
+  font-size: 1.5vw;
+  font-weight: bold;
+  color: #666;
   &:hover {
     background-color: #999999;
   }
@@ -190,7 +195,7 @@ function PDFpage() {
 
         <UploadContainer>
           <PDFIcon onClick={() => fileInputRef.current.click()}>
-            <PDFIconText>PDF</PDFIconText>
+            <PDFImage src={pdfIcon} alt="PDF 아이콘" /> {/* 이미지로 변경 */}
           </PDFIcon>
 
           <OptionsContainer>
@@ -215,7 +220,6 @@ function PDFpage() {
           </OptionsContainer>
         </UploadContainer>
 
-        {/* 파일이 선택된 경우에만 보내기 버튼 표시 */}
         {pdfFile && (
           <SendButton onClick={handleSendButtonClick}>
             {isLoading ? (
