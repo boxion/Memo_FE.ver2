@@ -264,12 +264,7 @@ const PDFSummary = () => {
           ))}
         </ListBox>
       );
-    } else if (activeTab === "script") {
-      return (
-        <ScriptContainer>
-          {/* 필요한 경우 fullScript를 추가 */}
-        </ScriptContainer>
-      );
+
     }
   };
 
