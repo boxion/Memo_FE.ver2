@@ -19,7 +19,7 @@ const MypageText = styled.div`
   font-weight: bold;
   text-align: center;
   color: #202020;
-  margin-left: 18.5vw;
+  margin-left: 20vw; 
 `;
 const ButtonContainer = styled.div`
   display: flex;
