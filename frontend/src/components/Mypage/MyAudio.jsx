@@ -227,7 +227,9 @@ const Mypage = () => {
           <CircleButton style={{ backgroundImage: `url(${pdfIcon})` }} onClick={() => navigate("/mypdf")} />
           <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => navigate("/myaudio")} />
         </ButtonContainer>
+
         <MypageText>내 오디오</MypageText>
+
       </MypageHeader>
       <GridContainer>
         {currentData.map((audio, index) => (

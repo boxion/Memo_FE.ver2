@@ -246,7 +246,9 @@ const MyPDF = () => {
           <CircleButton style={{ backgroundImage: `url(${pdfIcon})` }} onClick={() => navigate("/mypdf")} />
           <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => navigate("/myaudio")} />
         </ButtonContainer>
+
         <MypageText>내 PDF</MypageText>
+
       </MypageHeader>
       <GridContainer>
         {currentData.map((pdf, index) => (
