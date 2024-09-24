@@ -218,7 +218,7 @@ const AudioSummary = () => {
 
   const handleSubmit = () => {
     alert("오디오파일에 저장이 되었어요!");
-    navigate("/mypage"); // /mypage로 이동
+    navigate("/myaudio"); // /mypage로 이동
   };
 
   const renderContent = () => {

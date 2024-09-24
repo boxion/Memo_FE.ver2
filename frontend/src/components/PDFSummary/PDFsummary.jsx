@@ -240,7 +240,7 @@ const PDFSummary = () => {
 
   const handleRegisterClick = () => {
     alert("PDF 폴더에 저장되었습니다!");
-    window.location.href = "/mypage"; // /mypage로 이동
+    window.location.href = "/myPDF"; // /mypage로 이동
   };
   
   
