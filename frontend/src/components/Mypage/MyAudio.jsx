@@ -19,7 +19,7 @@ const MypageText = styled.div`
   font-weight: bold;
   text-align: center;
   color: #202020;
-  margin-left: 18.5vw;
+  margin-left: 20vw; 
 `;
 const ButtonContainer = styled.div`
   display: flex;
@@ -227,9 +227,9 @@ const Mypage = () => {
           <CircleButton style={{ backgroundImage: `url(${pdfIcon})` }} onClick={() => navigate("/mypdf")} />
           <CircleButton style={{ backgroundImage: `url(${audioIcon})` }} onClick={() => navigate("/myaudio")} />
         </ButtonContainer>
-        <MypageText>
-        최근 요약한 오디오
-        </MypageText>
+
+        <MypageText>내 오디오</MypageText>
+
       </MypageHeader>
       <GridContainer>
         {currentData.map((audio, index) => (

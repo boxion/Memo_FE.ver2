@@ -282,6 +282,7 @@ const SaveFolderModal = ({ isOpen, onClose }) => {
 
         if (response.status === 200 || response.status === 201) {
           alert("비디오가 성공적으로 폴더에 저장되었습니다.");
+          window.location.href = "/mypage"; 
         }
       } catch (error) {
         console.error("비디오 저장 중 오류가 발생했습니다:", error);

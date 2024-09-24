@@ -17,22 +17,22 @@ const MypageText = styled.div`
   font-weight: bold;
   text-align: center;
   color: #202020;
-  margin-left: 18.5vw; /* MypageText를 오른쪽으로 이동 */
+  margin-left: 20vw; 
 `;
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 1vw;
-  gap: 1vw; /* 버튼 간격 */
-  margin-left: 1.5vw; /* MypageText를 오른쪽으로 이동 */
+  gap: 1vw; 
+  margin-left: 1.5vw; 
 `;
 const CircleButton = styled.button`
   width: 2.5vw;
   height: 2.5vw;
   border-radius: 50%;
   background-color: #202D94;
-  background-size: cover; /* 이미지 크기를 버튼에 맞게 */
-  background-position: center; /* 이미지 중앙 정렬 */
+  background-size: cover;
+  background-position: center;
   border: none;
   cursor: pointer;
 
@@ -130,7 +130,7 @@ const PageButton = styled.button`
   width: 1.8vw;
   height: 1.8vw;
   border: none;
-  padding: 1vw 1vw 1vw 0.1w;  /* Adjust the padding to move text */
+  padding: 1vw 1vw 1vw 0.1w; 
   background-color: transparent;
   font-size: 1.2vw;
   margin: 0 0.5vw;
@@ -142,8 +142,8 @@ const PageButton = styled.button`
   ${({ isActive }) =>
     isActive &&
     `
-      border-radius: 20%;  // 동그라미 모양
-      border: 2px solid #4144E9;  // 동그라미 외곽선
+      border-radius: 20%;  
+      border: 2px solid #4144E9; 
       background-color: #4144E9;
       color: white;
     `}
@@ -152,7 +152,7 @@ const PageButton = styled.button`
 const PrevButton = styled.button`
   width: 1.8vw;
   height: 1.8vw;
-  padding: 1vw 1vw 1vw 0.6w;  /* Adjust the padding to move text */
+  padding: 1vw 1vw 1vw 0.6w; 
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
@@ -161,13 +161,13 @@ const PrevButton = styled.button`
   font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
-  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
+  line-height: 0.2vw;   
 `;
 
 const NextButton = styled.button`
   width: 1.8vw;
   height: 1.8vw;
-  padding: 1vw 1vw 1vw 0.8w;  /* Adjust the padding to move text */
+  padding: 1vw 1vw 1vw 0.8w;
   margin: 0 0.2vw;
   border: none;
   border-radius: 0.5vw;
@@ -176,7 +176,7 @@ const NextButton = styled.button`
   font-size: 1.2vw;
   font-weight: bold;
   background-color: #D9D9D9;
-  line-height: 0.2vw;  /* Adjust line-height to shift text upwards */
+  line-height: 0.2vw;  
 `;
 
 const itemsPerPage = 6;
