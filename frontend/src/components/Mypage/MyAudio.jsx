@@ -233,10 +233,18 @@ const Mypage = () => {
       </MypageHeader>
       <GridContainer>
         {currentData.map((audio, index) => (
-          <VideoCard key={index} onClick={() => navigate("/audio-summary")}>
-            <VideoCardImage src={audio.thumbnailUrl} />
-            <VideoCardContent>{audio.videoTitle}</VideoCardContent>
-          </VideoCard>
+          <VideoCard
+          key={index}
+          onClick={() => {
+            localStorage.removeItem("videoUrl");
+            localStorage.removeItem("videoQuestions");
+            navigate("/audio-summary");
+          }}
+        >
+          <VideoCardImage src={audio.thumbnailUrl} />
+          <VideoCardContent>{audio.videoTitle}</VideoCardContent>
+        </VideoCard>
+        
         ))}
       </GridContainer>
       <PaginationContainer>
