@@ -190,7 +190,8 @@ function Audiopage() {
 
   const handleSend = () => {
     setIsLoading(true);
- 
+    localStorage.removeItem("videoUrl");
+    localStorage.removeItem("videoQuestions");
     setTimeout(() => {
       setIsLoading(false); 
       navigate('/audio-summary'); 

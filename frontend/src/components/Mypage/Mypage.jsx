@@ -339,7 +339,56 @@ const Mypage = () => {
   // 비디오 선택 시 해당 비디오의 데이터를 가져오는 함수
   const selectVideo = async (videoUrl) => {
     localStorage.setItem("videoUrl",videoUrl);
-    navigate("/video-summary");
+    fetchVideoData(videoUrl);
+    
+  };
+
+  const fetchVideoData = async (videoUrl) => {
+    // 로컬 스토리지에서 userId와 videoUrl을 가져옴
+    const memberEmail = localStorage.getItem("userId");
+
+    // POST 요청 보내기
+    const requestURL = `${Config.baseURL}/api/v1/video/select-video`;
+    const requestData = {
+      memberEmail: memberEmail,
+      videoUrl: videoUrl
+    };
+
+    try {
+      const response = await fetch(requestURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      // 응답 상태 체크
+      if (!response.ok) {
+        throw new Error("네트워크 응답에 문제가 있습니다.");
+      }
+
+      // 응답 데이터를 JSON으로 파싱
+      const responseData = await response.json();
+      console.log("[ 선택한 video의 데이터: ] ", responseData);
+
+      // 받은 데이터에서 필요한 정보를 추출합니다.
+      const { video } = responseData;
+      const { videoTitle, summary, documentDate, categoryName, filter, fullScript, isPublished, viewCount } = video;
+      const { questions } = responseData;
+
+      // 로컬 스토리지에 질문 데이터 저장
+      if (questions) localStorage.setItem("videoQuestions", JSON.stringify(questions));
+
+
+      // 상태 업데이트
+      if (categoryName) setCategoryName(categoryName);
+      // filter가 null이 아닐 때만 setSelectedFilter 호출
+
+      navigate("/video-summary");
+    } catch (error) {
+      console.error("비디오 데이터 가져오기 실패:", error);
+    }
   };
 
   // 비디오를 삭제하는 함수

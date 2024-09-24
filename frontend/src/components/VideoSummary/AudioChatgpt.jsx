@@ -211,7 +211,7 @@ const Chat = ({ visible }) => {
 const GPTQuery = async (query) => {
   try {
     const userId = localStorage.getItem("userId");
-    const videoUrl = localStorage.getItem("videoUrl");
+    const videoUrl = "https://www.youtube.com/watch?v=pZY7tDQSV7I";
 
     console.log("GPT 모델에 쿼리를 전송하는 중...");
     console.log("[ 쿼리 ] : ", query);
