@@ -419,7 +419,7 @@ function Community() {
       console.log("서버에서 받아온 데이터: ", data);
 
       // 전체 비디오를 로드하고 이를 필터링된 비디오로도 초기화
-      setVideos([...data]);
+      setVideos([...data.reverse()]);
       setFilteredVideos([...data]); // 초기에는 전체 비디오가 필터링된 비디오로 설정
 
       // 비디오를 가져온 후 좋아요 비디오 상태 초기화
