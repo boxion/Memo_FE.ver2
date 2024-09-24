@@ -49,80 +49,6 @@ const TabButton = styled.button`
   }
 `;
 
-const FilterButton = styled.button`
-  padding: 0.5vw 1vw;
-  font-size: 1vw;
-  cursor: pointer;
-  border-radius: 2vw;
-  margin-right: 0.5vw;
-  background-color: #ffffff;
-  border: 0.1vw solid #582fff;
-  color: #582fff;
-
-  width: auto;
-  white-space: nowrap; 
-  max-width: 15vw;
-
-  &:hover {
-    background-color: #d0d0d0;
-  }
-
-  &.active {
-    background-color: #ffffff;
-    border: 0.1vw solid #000000;
-  }
-`;
-
-const DropdownContainer = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const DropdownMenu = styled.div`
-  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background-color: #fff;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  z-index: 1;
-  border-radius: 1vw;
-  font-size: 1vw;
-`;
-
-const DropdownItem = styled.button`
-  background-color: #fff;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  font-size: 1vw;
-  margin: 0.5vw;
-
-  &:hover {
-    background-color: #f1f1f1;
-  }
-
-  &.selected {
-    color: #582fff;
-  }
-`;
-
-const ViewEditButton = styled.button`
-  background-color: #4144e9;
-  color: white;
-  border: none;
-  border-radius: 1vw;
-  padding: 0.5vw 1vw;
-  font-size: 0.8vw;
-  cursor: pointer;
-  margin-right: 1vw;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
 const VideoContainer = styled.div`
   margin-bottom: 2vw;
   width: 100%;
@@ -164,34 +90,7 @@ const ListText = styled.p`
   margin: 0;
 `;
 
-const ActionButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 2vw;
-`;
 
-const ActionButton = styled.button`
-  background-color: #202d94;
-  color: white;
-  border: none;
-  border-radius: 0.5vw;
-  padding: 1vw 2vw;
-  font-size: 1vw;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-`;
-
-const Divider = styled.div`
-  height: 0.1vw;
-  background-color: #d9d9d9;
-`;
-
-const PlaceholderText = styled.span`
-  color: #888;
-`;
 
 const ScriptLine = styled.div`
   display: flex;
@@ -277,13 +176,22 @@ const VideoSummary = () => {
   
       // summary와 fullScript가 정의되어 있는지 확인
       if (summary) {
-        setSummary(summary.split("###").map(item => {
-          const lines = item.split("\n");
-          return { title: lines[0], content: lines.slice(1).join("\n").trim() };
-        }));
+        setSummary(
+          summary
+            .split("###")
+            .map(item => {
+              // 각 item을 줄 단위로 나눈 후, 공백이나 줄바꿈만 있는 항목은 필터링
+              const lines = item.split("\n").filter(line => line.trim() !== ""); 
+              return {
+                title: lines[0], // 첫 번째 줄을 title로 사용
+                content: lines.slice(1).join("\n").trim(), // 나머지를 content로 사용
+              };
+            })
+        );
       } else {
         console.error("Summary is undefined or empty");
       }
+      
   
       if (fullScript) {
         setFullScript(fullScript.split("\n"));
@@ -323,20 +231,6 @@ const VideoSummary = () => {
     }
   }, [location.state]);
 
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setDropdownOpen(false); // 선택 후 드롭다운 닫기
-  };
-
-  const handleRegisterClick = () => {
-    if (!selectedCategory) {
-      // 필터가 선택되지 않았을 경우 경고창 띄우기
-      alert("필터를 선택해주세요.");
-    } else {
-      // 필터가 선택되었을 경우 모달 열기
-      setModalOpen(true);
-    }
-  };
   
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -373,17 +267,20 @@ const VideoSummary = () => {
     if (activeTab === "summary") {
       return (
         <ListBox>
-        <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
-        {summary.map((paragraph, index) => (
-          <ListItem key={index}>
-            {/* title과 content를 분리하여 각각 렌더링 */}
-            <ListText>
-              <strong>{paragraph.title}</strong> {/* 소제목 */}
-            </ListText>
-            <ListText>{paragraph.content}</ListText> {/* 내용 */}
-          </ListItem>
-        ))}
-      </ListBox>
+          <VideoTitle>{videoTitle || "비디오 제목 없음"}</VideoTitle>
+          {summary.map((paragraph, index) => (
+            // paragraph.content가 비어있거나 공백/줄바꿈만 있는 경우 표시하지 않음
+            paragraph.content.trim() !== "" && (
+              <ListItem key={index}>
+                {/* title과 content를 분리하여 각각 렌더링 */}
+                <ListText>
+                  <strong>{paragraph.title}</strong> {/* 소제목 */}
+                </ListText>
+                <ListText>{paragraph.content}</ListText> {/* 내용 */}
+              </ListItem>
+            )
+          ))}
+        </ListBox>
       );
     } else if (activeTab === "script") {
       const parsedScript = parseScript(fullScript); // 스크립트 파싱
