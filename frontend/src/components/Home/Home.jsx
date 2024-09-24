@@ -122,7 +122,6 @@ const RankingItem = styled.div`
   display: flex;
 `;
 
-
 const Home = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -154,13 +153,7 @@ const Home = () => {
       }
 
       const data = await response.json();
-      // console.log("받은 summary:", data);
-
       localStorage.setItem("videoUrl", url);
-      // localStorage.setItem("summary", data.summary);
-      // localStorage.setItem("fullScript", data.fullScript);
-      // localStorage.setItem("videoTitle", data.videoTitle);
-      // localStorage.setItem("documentDate", data.date);
 
       return data;
     
@@ -176,12 +169,15 @@ const Home = () => {
       localStorage.setItem("videoUrl", videoUrl);
       await GPTSummary(videoUrl); // GPTSummary 함수 호출
       setIsCompleted(true);
+      
+      // 요약이 완료되면 바로 /video-summary 페이지로 이동
+      navigate("/video-summary");
     } catch (error) {
       console.error("영상 요약 중 에러 발생:", error);
     }
     setIsLoading(false);
   };
-
+  
   const getTitleContent = () => {
     if (isLoading) {
       return (
@@ -210,23 +206,13 @@ const Home = () => {
   const getTitleText = () => {
     if (isLoading) {
       return "영상을 요약하고 있어요...";
-    } else if (isCompleted) {
-      return "요약을 완료했어요! 이제 필기하러 가볼까요?";
     } else {
       return "정리할 영상의 링크를 걸어주세요!";
     }
-  };
-
+  };  
+  
   const getSubheadingText = () => {
-    if (isCompleted) {
-      return "지금 바로 MEMO 하러 가요";
-    } else {
-      return "정리하고 싶은 YouTube 영상의 링크를 붙여넣어주세요.";
-    }
-  };
-
-  const handleStart = () => {
-    navigate("/video-summary");
+    return "정리하고 싶은 YouTube 영상의 링크를 붙여넣어주세요.";
   };
 
   const [videoUrl, setVideoUrl] = useState("");
@@ -268,18 +254,12 @@ const Home = () => {
               placeholder="https://www.youtube.com/"
               style={{ borderColor: isValidUrl ? "initial" : "red" }} // 유효하지 않은 URL일 경우 빨간 테두리 표시
             />
-            {isCompleted ? (
-              <Button primary onClick={handleStart}>
-                Start MEMO
-              </Button>
-            ) : (
-              <Button
-                onClick={isLoading || !isValidUrl ? () => {} : handleUpload} // 유효하지 않은 URL일 경우 버튼 비활성화
-                disabled={isLoading || videoUrl.trim() === "" || !isValidUrl} // 유효하지 않은 URL일 경우 버튼 비활성화
-              >
-                {isLoading ? "Loading.." : "Load Video"}
-              </Button>
-            )}
+            <Button
+              onClick={isLoading || !isValidUrl ? () => {} : handleUpload} // 유효하지 않은 URL일 경우 버튼 비활성화
+              disabled={isLoading || videoUrl.trim() === "" || !isValidUrl} // 유효하지 않은 URL일 경우 버튼 비활성화
+            >
+              {isLoading ? "Loading.." : "Load Video"}
+            </Button>
           </InputContainer>
         </Detail>
       </Head>
