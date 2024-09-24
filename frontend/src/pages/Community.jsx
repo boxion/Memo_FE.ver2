@@ -77,7 +77,7 @@ const CategoryDropdownButton = styled.button`
 `;
 
 const SortDropdownButton = styled.button`
-  width: 5vw;
+  width: 6vw;
   padding: 0.5vw 1vw;
   font-size: 0.85vw;
   border: 0.1vw solid #000000;
@@ -91,11 +91,12 @@ const SortDropdownButton = styled.button`
 
 const SortDropdownContent = styled.div`
   position: absolute;
-  width: 2.9vw;
+  width: 3.8vw;
   top: 55%;
   left: 0;
   background-color: #fff;
   border: 0.1vw solid #000000;
+  text-align: center;
   border-radius: 0.5vw;
   padding: 0.5vw 1vw;
   list-style-type: none;
@@ -317,48 +318,7 @@ const fetchFilteredVideos = async (filter) => {
     console.error('There was a problem with the fetch operation:', error);
   }
 };
-//인기순 정렬 통신코드
-const fetchPopularVideos = async () => {
-  try {
-    const response = await fetch(`${BASE_URL}/api/v1/community/popular`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
 
-    if (!response.ok) {
-      throw new Error('fetchPopularVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
-    }
-
-    const data = await response.json();
-    console.log(data); // 받은 인기순 데이터를 콘솔에 출력
-    return data;
-  } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
-  }
-};
-//최신순 정렬 통신코드
-const fetchLatestVideos = async () => {
-  try {
-    const response = await fetch(`${BASE_URL}/api/v1/community/latest`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('fetchLatestVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
-    }
-
-    const data = await response.json();
-    console.log(data); // 최신순 데이터를 콘솔에 출력
-    return data;
-  } catch (error) {
-    console.error('There was a problem with the fetch operation:', error);
-  }
-};
 // 클릭된 비디오 정보 전송 함수
 const sendVideoInfo = async (memberEmail, videoUrl) => {
   try {
@@ -419,7 +379,7 @@ function Community() {
       console.log("서버에서 받아온 데이터: ", data);
 
       // 전체 비디오를 로드하고 이를 필터링된 비디오로도 초기화
-      setVideos([...data]);
+      setVideos([...data.reverse()]);
       setFilteredVideos([...data]); // 초기에는 전체 비디오가 필터링된 비디오로 설정
 
       // 비디오를 가져온 후 좋아요 비디오 상태 초기화
@@ -471,7 +431,7 @@ function Community() {
       // 정렬 방식 적용
       if (sortType === '인기순') {
         filteredResults = await fetchPopularVideos();
-      } else if (sortType === '최신순') {
+      } else if (sortType === '오래된순') {
         filteredResults = await fetchLatestVideos();
       }
   
@@ -519,7 +479,51 @@ function Community() {
   
     fetchLikedVideosFromAPI();
   }, [displayedVideos]);
-  
+  //인기순 정렬 통신코드
+const fetchPopularVideos = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/popular`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('fetchPopularVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    console.log(data); // 받은 인기순 데이터를 콘솔에 출력
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
+//최신순 정렬 통신코드
+const fetchLatestVideos = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/v1/community/latest`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('fetchLatestVideos 함수 처리 중 네트워크 응답에 실패했습니다.');
+    }
+
+    const data = await response.json();
+    console.log(data); // 최신순 데이터를 콘솔에 출력
+    setVideos([...data.reverse()]); // 비디오 배열을 역순으로 설정
+    setFilteredVideos([...data]); // 필터링된 비디오 배열도 역순으로 설정
+
+    return data;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
  // 비디오 클릭 핸들러
 const handleVideoClick = async (video) => {
   try {
@@ -703,7 +707,7 @@ const handleVideoClick = async (video) => {
               {sortDropdownOpen && (
                 <SortDropdownContent>
                   <DropdownItem onClick={() => handleSortSelect('인기순')}>인기순</DropdownItem>
-                  <DropdownItem onClick={() => handleSortSelect('최신순')}>최신순</DropdownItem>
+                  <DropdownItem onClick={() => handleSortSelect('오래된순')}>오래된순</DropdownItem>
                 </SortDropdownContent>
               )}
             </Dropdown>
