@@ -140,14 +140,25 @@ const DateText = styled.div`
 // 요약본 처리해주는 함수
 const parseSummary = (summary) => {
   const paragraphs = summary.split("\n\n").filter(p => p.trim());
+
   return paragraphs.map((paragraph, index) => {
-    const [title, ...content] = paragraph.split(": ");
+    // split(":")으로 나누기
+    let [title, ...content] = paragraph.split(":");
+
+    // title과 content에서 *만 ""로 변경
+    const replaceStars = (str) => str.replace(/\**/g, "");
+
+    // title과 content에서 *을 빈 문자열로 대체
+    title = replaceStars(title);
+    content = content.map(text => replaceStars(text));
+
     return {
-      title: title.trim() || `Section ${index + 1}`,
-      content: content.join(": ").trim(),
+      title: title.trim() || `Section ${index + 1}`, // title이 빈 문자열일 경우 기본 섹션 제목 설정
+      content: content.join(": ").trim(), // 내용 합치기
     };
   });
 };
+
 
 const PDFSummary = () => {
   const [activeTab, setActiveTab] = useState("summary");
@@ -210,6 +221,7 @@ const PDFSummary = () => {
       const pdfInfo = await infoResponse.json();
       setPdfTitle(pdfTitle);
       setSummary(parseSummary(pdfInfo.summary));
+      localStorage.setItem("documentDate", pdfInfo.documentDate);
   
     } catch (error) {
       console.error('PDF 파일 가져오기 오류:', error);
