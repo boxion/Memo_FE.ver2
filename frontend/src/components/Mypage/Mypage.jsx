@@ -10,21 +10,23 @@ const MypageHeader = styled.div`
   display: flex;
   align-items: center;
   margin: 1vw 15vw 1vw 15vw;
+  justify-content: center;
 `;
 const MypageText = styled.div`
+  display: flex;
   font-size: 1.5vw;
   margin-top: 1vw;
   font-weight: bold;
   text-align: center;
   color: #202020;
-  margin-left: 20vw; 
+  margin: 1vw auto;
+  margin-left: 17vw; 
 `;
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 1vw;
   gap: 1vw; 
-  margin-left: 1.5vw; 
 `;
 const CircleButton = styled.button`
   width: 2.5vw;
@@ -387,7 +389,7 @@ const Mypage = () => {
         </ButtonContainer>
       <MypageText>
         {categoryName === "최근 본 영상" || categoryName === "null"
-          ? "최근 본 영상"
+          ? "\u00A0\u00A0\u00A0\u00A0\u00A0최근 본 영상"
           : categoryName + " 카테고리 영상"}
       </MypageText>
     </MypageHeader>
