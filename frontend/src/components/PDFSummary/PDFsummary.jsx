@@ -221,6 +221,7 @@ const PDFSummary = () => {
       const pdfInfo = await infoResponse.json();
       setPdfTitle(pdfTitle);
       setSummary(parseSummary(pdfInfo.summary));
+      localStorage.setItem("documentDate", pdfInfo.documentDate);
   
     } catch (error) {
       console.error('PDF 파일 가져오기 오류:', error);

@@ -159,16 +159,15 @@ const VideoSummary = () => {
   useEffect(() => {
     const videoData = location.state;
   
-    console.log(videoData); // videoData 확인
+    console.log("videoData: ",videoData); // videoData 확인
   
     if (videoData) {
-      const { videoTitle, summary, fullScript, videoUrl, documentDate } = videoData;
+      const { videoTitle, summary, fullScript, videoUrl } = videoData;
   
       localStorage.setItem("videoTitle", videoTitle);
       localStorage.setItem("summary", summary);
       localStorage.setItem("fullScript", fullScript);
       localStorage.setItem("videoUrl", videoUrl);
-      localStorage.setItem("documentDate", documentDate);
   
       const videoId = extractVideoId(videoUrl);
       setVideoId(videoId);
@@ -203,7 +202,7 @@ const VideoSummary = () => {
       const storedSummary = localStorage.getItem("summary");
       const storedFullScript = localStorage.getItem("fullScript");
       const storedVideoUrl = localStorage.getItem("videoUrl");
-  
+      const documentDate = localStorage.getItem("documentDate");
       console.log(storedVideoTitle, storedSummary, storedFullScript); // 저장된 값 확인
   
       if (storedVideoTitle) setVideoTitle(storedVideoTitle);
