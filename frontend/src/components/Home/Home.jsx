@@ -130,6 +130,7 @@ const Home = () => {
   const GPTSummary = async (url) => {
     try {
       const userId = localStorage.getItem("userId"); // 로컬 스토리지에서 userId 가져오기
+      localStorage.removeItem("videoQuestions");
 
       console.log("GPT 모델에 summary 요청을 전송하는 중...");
       console.log("[ 대상 URL ] : ", url);
