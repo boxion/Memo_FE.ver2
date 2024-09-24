@@ -5,7 +5,7 @@ import Header from "../Header/Header";
 import CategoryDropdown from "../Community/CategoryDropdown";
 import audioData from "../../util/audioData";
 import audioScriptData from "../../util/audioScriptData";
-import Chat from "../VideoSummary/Chatgpt";
+import Chat from "../VideoSummary/AudioChatgpt";
 
 const Container = styled.div`
   padding: 2vw;
@@ -207,6 +207,7 @@ const AudioSummary = () => {
     setSelectedFilter(category);
     setDropdownOpen(false); // 선택 후 드롭다운 닫기
   };
+
 
   useEffect(() => {
     if (selectedFilter) {

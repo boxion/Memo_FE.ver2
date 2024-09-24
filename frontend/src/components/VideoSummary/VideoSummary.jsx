@@ -458,6 +458,10 @@ const handleSetSummary = (newSummary) => {
 
   const toggleHandler = () => {
     setViewMode(!viewMode);
+    if(viewMode != true){ 
+      console.log("현재 viewMode",viewMode);
+      handleSaveToggle();
+    }
   };
 
   useEffect(() => {
@@ -485,6 +489,45 @@ const handleSetSummary = (newSummary) => {
       newSummary[index] = { ...newSummary[index], [field]: value };
       return newSummary;
     });
+  };
+
+  const handleSaveToggle = async () => {
+    const memberEmail = localStorage.getItem('userId');
+    const videoUrl = localStorage.getItem('videoUrl');
+    
+    // summary를 문자열로 변환
+    const summaryString = summary
+      .map((item) => `${item.title}\n${item.content}`) // 백틱 사용
+      .join("###");
+
+    // PUT 요청
+    try {
+      const response = await fetch(`${Config.baseURL}/api/v1/video/update-summary`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memberEmail:memberEmail,
+          videoUrl:videoUrl,
+          summary: summaryString,
+        }),
+      });
+  
+      // 응답 로그
+      const responseText = await response.text();
+      console.log('응답 내용:', responseText);
+
+      if (!response.ok) {
+        throw new Error('요청에 문제가 발생했습니다.');
+      }
+
+      const data = JSON.parse(responseText); // JSON으로 파싱
+      console.log('요약 저장 성공:', data);
+    } catch (error) {
+      console.error('요약 저장 실패:', error);
+    }
+    handleSaveFullScript();
   };
 
   const handleSave = async () => {
@@ -683,7 +726,7 @@ const handleSetSummary = (newSummary) => {
               </div>
               <ToggleContainer onClick={toggleHandler}>
               <div className={`toggle-container ${viewMode ? "" : "toggle--checked"}`}>
-                  <ToggleText>{viewMode ? "VIEW" : ""}</ToggleText>
+                  <ToggleText>{viewMode ? "SAVE" : ""}</ToggleText>
                   <ToggleCircle className={viewMode ? "" : "toggle--checked"} />
                   <ToggleText2>{viewMode ? "" : "EDIT"}</ToggleText2>
                 </div>
