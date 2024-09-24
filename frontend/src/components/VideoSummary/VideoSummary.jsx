@@ -174,7 +174,7 @@ const VideoContainer = styled.div`
 const TheorySection = styled.section`
   background-color: #fff;
   border-radius: 1vw;
-  padding: 2vw;
+  padding: 0 2vw;
   //box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
   //width: 100%;
 `;
