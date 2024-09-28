@@ -8,38 +8,26 @@
 이러한 시대적 흐름에 발맞춰 **MEMO**는 바쁜 현대인을 위한 최적의 웹 서비스로 기획되었습니다. 본 서비스는 유튜브 영상, PDF 파일, 음성 파일 등의 콘텐츠를 빠르게 요약하여 제공하며, 사용자는 이를 통해 중요한 정보를 신속하게 습득할 수 있습니다. 더불어, 필요에 따라 카테고리별로 정보를 정리하고 저장할 수 있으며, 커뮤니티 기능을 통해 다른 사용자들의 기록을 공유하고 열람할 수 있습니다.
 </div>
 
+---
+
 ## 팀원 구성
 
-<div align="center" style="display: flex; justify-content: space-around; flex-wrap: wrap; padding: 10px;">
-  <div style="text-align: center; margin: 10px;">
-    <img src="https://avatars.githubusercontent.com/u/93407332?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
-    <strong>박시현</strong><br/>프론트엔드, 기획<br/>
-    [@sihyun](https://github.com/boxion)
-  </div>
-  <div style="text-align: center; margin: 10px;">
-    <img src="https://avatars.githubusercontent.com/u/90402009?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
-    <strong>김택신</strong><br/>프론트엔드, 백엔드<br/>
-    [@taeksin](https://github.com/taeksin)
-  </div>
-  <div style="text-align: center; margin: 10px;">
-    <img src="https://avatars.githubusercontent.com/u/117005839?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
-    <strong>정진혁</strong><br/>백엔드, DB설계<br/>
-    [@jinhyuk Jeong](https://github.com/wjdwlsgurdla)
-  </div>
-  <div style="text-align: center; margin: 10px;">
-    <img src="https://avatars.githubusercontent.com/u/115892001?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
-    <strong>최영서</strong><br/>백엔드, DB설계<br/>
-    [@yeongseo](https://github.com/zeroseoS2)
-  </div>
-</div>
+<div align="center">
 
----
+|                                                                **박시현**                                                                |                                                                   **김택신**                                                                   |                                                                 **정진혁**                                                                 |                                                                 **최영서**                                                                  |
+|:-------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------:|
+| [<img src="https://avatars.githubusercontent.com/u/93407332?v=4" height=150 width=150> <br/> @sihyun](https://github.com/boxion) | [<img src="https://avatars.githubusercontent.com/u/90402009?v=4" height=150 width=150> <br/> @taeksin](https://github.com/taeksin) | [<img src="https://avatars.githubusercontent.com/u/117005839?v=4" height=150 width=150> <br/> @jinhyuk Jeong](https://github.com/wjdwlsgurdla) | [<img src="https://avatars.githubusercontent.com/u/115892001?v=4" height=150 width=150> <br/> @yeongseo](https://github.com/zeroseoS2) |
+
+</div>
 
 **팀원 및 담당 분야:**
 - 박시현: 프론트엔드, 기획
 - 김택신: 프론트엔드, 백엔드
 - 정진혁: 백엔드, DB설계
 - 최영서: 백엔드, DB설계
+
+---
+
 
 ## 기술 스택
 ### 프론트엔드
@@ -60,6 +48,9 @@
     - JPA: 데이터베이스 ORM (Object Relational Mapping)
     - Spring Security: 보안 처리 및 OAuth2 클라이언트 사용
     - 기타 라이브러리 설명 (PDF 처리, Google Cloud API 등)
+
+---
+
 
 ### Memo 실행 화면
 
@@ -98,12 +89,18 @@
     - RESTful API를 활용해 간단한 인터페이스로 다양한 콘텐츠를 요약하여 사용자가 쉽게 접근 가능
 
 
+---
+
+
 
 ## 설치 및 실행 방법
 ### 프론트엔드
 1. 필요한 의존성을 설치합니다:
    ```bash
    npm install --legacy-peer-deps
+
+
+---
 
 
 ## 라이선스
