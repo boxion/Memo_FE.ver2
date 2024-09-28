@@ -10,13 +10,30 @@
 
 ## 팀원 구성
 
-<div align="center">
-
-|                                                                **박시현**                                                                |                                                                   **김택신**                                                                   |                                                                 **정진혁**                                                                 |                                                                 **최영서**                                                                  |
-|:-------------------------------------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------:|
-| [<img src="https://avatars.githubusercontent.com/u/93407332?v=4" height=150 width=150> <br/> @sihyun](https://github.com/boxion) | [<img src="https://avatars.githubusercontent.com/u/90402009?v=4" height=150 width=150> <br/> @taeksin](https://github.com/taeksin) | [<img src="https://avatars.githubusercontent.com/u/117005839?v=4" height=150 width=150> <br/> @jinhyuk Jeong](https://github.com/wjdwlsgurdla) | [<img src="https://avatars.githubusercontent.com/u/115892001?v=4" height=150 width=150> <br/> @yeongseo](https://github.com/zeroseoS2) |
-
+<div align="center" style="display: flex; justify-content: space-around; flex-wrap: wrap; padding: 10px;">
+  <div style="text-align: center; margin: 10px;">
+    <img src="https://avatars.githubusercontent.com/u/93407332?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
+    <strong>박시현</strong><br/>프론트엔드, 기획<br/>
+    [@sihyun](https://github.com/boxion)
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <img src="https://avatars.githubusercontent.com/u/90402009?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
+    <strong>김택신</strong><br/>프론트엔드, 백엔드<br/>
+    [@taeksin](https://github.com/taeksin)
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <img src="https://avatars.githubusercontent.com/u/117005839?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
+    <strong>정진혁</strong><br/>백엔드, DB설계<br/>
+    [@jinhyuk Jeong](https://github.com/wjdwlsgurdla)
+  </div>
+  <div style="text-align: center; margin: 10px;">
+    <img src="https://avatars.githubusercontent.com/u/115892001?v=4" height="150" width="150" style="border-radius: 50%;"><br/>
+    <strong>최영서</strong><br/>백엔드, DB설계<br/>
+    [@yeongseo](https://github.com/zeroseoS2)
+  </div>
 </div>
+
+---
 
 **팀원 및 담당 분야:**
 - 박시현: 프론트엔드, 기획
