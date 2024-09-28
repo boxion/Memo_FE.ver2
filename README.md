@@ -1,6 +1,6 @@
 # 📝MEMO
 
-MEMO는 유튜브 영상을 AI로 요약하고 메모할 수 있는 웹서비스
+유튜브, PDF, 오디오를 AI로 요약하고 메모할 수 있는 웹 서비스
 
 ## 프로젝트 개요
 <div style="border: 1px solid #e1e4e8; color:#000000; padding: 16px; border-radius: 8px; background-color: #d4e7fa;">
